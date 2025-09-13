@@ -2,174 +2,174 @@
 
 | Number  | Question	        |
 | :----- | :-----------------|
-|1| [What’s the use of ensure in exception handling? When does it execute?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-1.html)
-|2| [Can you explain Turbo/Hotwire in Rails 7?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-2.html)
-|3| [What gems are you using for authentication and authorization?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-3.html)
-|4| [How do you handle multi-tenancy in your application?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-4.html)
-|5| [Why are you using a single database instead of splitting tenants across databases?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-5.html)
-|6| [What’s the difference between includes, preload, and eager_load in Rails?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-6.html)
-|7| [Have you generally used includes, preload, joins?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-7.html)
-|8| [What’s the difference between Proc and Lambda?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-8.html)
-|9| [Can you tell me something about Ruby’s journey (not Rails) — improvements from 1.8 to 3.0/3.2?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-9.html)
-|10| [In Ruby 3, how did they design internal interpreter, what architectural changes, what interpreter they are using, and what features or advantages were achieved?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-10.html)
-|11| [Why should one choose JRuby instead of Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-11.html)
-|12| [Since JRuby supports multithreading, how does it handle race conditions or thread locks? Is it similar to Ruby or different?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-12.html)
-|13| [Do you know how garbage collection works in Ruby and JRuby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-13.html)
-|14| [How does Ruby know when objects are no longer required and can free up memory?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-14.html)
-|15| [Does Ruby support multithreading? What are its limitations?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-15.html)
-|16| [What do you know about Ruby garbage collection?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-16.html)
-|17| [What is the difference between private and protected methods in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-17.html)
-|18| [Which one (private/protected) is available across instances?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-18.html)
-|19| [Can you write code to demonstrate private and protected methods in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-19.html)
-|20| [What is the difference between load and require in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-20.html)
-|21| [What about Ruby 3 — have you ever tried it?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-21.html)
-|22| [Have you ever used decorators?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-22.html)
-|23| [If your object has five attributes and you want to apply two more attributes using decorators, will it affect all the objects or just that one?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-23.html)
-|24| [Can you share your screen and write an example of how you would write concerns for two classes (A and B) with a common property?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-24.html)
-|25| [When you put any method inside the included block of a concern, will it be added as an instance method or class method?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-25.html)
-|26| [If you want to expose a method as a class method, how will you do it? Any other approach?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-26.html)
-|27| [What about helpers and how are they different from concerns?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-27.html)
-|28| [Have you ever used eval methods like instance_eval or class_eval?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-28.html)
-|29| [Have you used threads in your Ruby program? What kind of threads have you used?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-29.html)
-|30| [Do you understand how Ruby creates threads internally? Are they fully concurrent?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-30.html)
-|31| [Would it make sense to run multiple threads or multiple processes on multi-core processors?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-31.html)
-|32| [So there is no way for Ruby threads to exploit all the cores?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-32.html)
-|33| [Have you come across a use case where you had to override that limitation and extract all the CPU power?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-33.html)
-|34| [Have you used practices like frozen literals, symbols, memoization in Ruby for optimization?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-34.html)
-|35| [Have you implemented observability in your applications (custom metrics, memory usage, performance bottlenecks)?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-35.html)
-|36| [What changes are needed in your code to integrate New Relic?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-36.html)
-|37| [Logs tell you the flow, but do you also capture metrics like memory/time at each stage?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-37.html)
-|38| [Have you used benchmarking tools in Ruby to measure performance?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-38.html)
-|39| [Have you used parallel/async processing methods in Ruby (like pmap)?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-39.html)
-|40| [Have you used background processing tools like Sidekiq?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-40.html)
-|41| [Have you used procs and lambdas in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-41.html)
-|42| [How is a proc different from a lambda?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-42.html)
-|43| [What exactly is metaprogramming in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-43.html)
-|44| [Given a nested hash, can you flatten it so that nested keys are joined with a dot? Can you write pseudocode or actual code?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-44.html)
-|45| [What are Ruby’s basic data types?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-45.html)
-|46| [How are symbols different from strings in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-46.html)
-|47| [What’s the difference between ==, eql?, and equal??](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-47.html)
-|48| [What are Ruby’s truthy and falsy values?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-48.html)
-|49| [How do you define a method in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-49.html)
-|50| [Explain string interpolation in Ruby.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-50.html)
-|51| [What’s the difference between puts, print, and p?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-51.html)
-|52| [How do you declare constants in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-52.html)
-|53| [How do arrays differ from hashes in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-53.html)
-|54| [How do you iterate over an array?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-54.html)
-|55| [What are some common Array and Hash methods you’ve used?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-55.html)
-|56| [What’s the difference between map, each, and select?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-56.html)
-|57| [How do you define a class in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-57.html)
-|58| [How do instance variables differ from class variables?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-58.html)
-|59| [Explain the difference between instance methods and class methods.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-59.html)
-|60| [What’s the role of initialize in a Ruby class?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-60.html)
-|61| [What’s the difference between self inside a class vs inside an instance method?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-61.html)
-|62| [Explain blocks, procs, and lambdas. How do they differ?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-62.html)
-|63| [What are mixins? How do you use modules in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-63.html)
-|64| [What’s the difference between include, extend, and prepend?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-64.html)
-|65| [How does Ruby handle method lookup (method resolution order)?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-65.html)
-|66| [What’s duck typing in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-66.html)
-|67| [How does garbage collection work in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-67.html)
-|68| [Explain the difference between mutable and immutable objects in Ruby.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-68.html)
-|69| [What are frozen objects? What does Object#freeze do?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-69.html)
-|70| [How do you handle exceptions in Ruby? Difference between raise and throw/catch.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-70.html)
-|71| [What’s the difference between map and collect? Between detect and find?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-71.html)
-|72| [How do reduce / inject work in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-72.html)
-|73| [How do enumerators work? What’s the benefit of lazy enumerators?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-73.html)
-|74| [How do symbols help with memory optimization?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-74.html)
-|75| [When would you prefer Struct vs Class?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-75.html)
-|76| [What’s the difference between String#dup and String#clone?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-76.html)
-|77| [How does method_missing work? What are the risks of using it?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-77.html)
-|78| [How do define_method and class_eval work?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-78.html)
-|79| [What’s the difference between send and public_send?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-79.html)
-|80| [How do refinements differ from monkey patching?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-80.html)
-|81| [What is const_missing and when might you use it?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-81.html)
-|82| [Explain Ruby’s object model (everything is an object, eigenclasses, singleton methods).](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-82.html)
-|83| [How does Ruby handle scoping (lexical scope, closures, binding)?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-83.html)
-|84| [What is the difference between load, require, and autoload?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-84.html)
-|85| [How does Ruby’s Global Interpreter Lock (GIL) affect threading?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-85.html)
-|86| [What’s the difference between fibers, threads, and processes in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-86.html)
-|87| [What are Ruby’s key garbage collection algorithms?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-87.html)
-|88| [How does MRI differ from JRuby or Rubinius?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-88.html)
-|89| [How would you debug a memory leak in a Ruby application?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-89.html)
-|90| [What profiling tools exist for Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-90.html)
-|91| [How would you optimize slow Ruby code?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-91.html)
-|92| [What’s the difference between eager and lazy evaluation in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-92.html)
-|93| [Implement a method to reverse a string without using built-in methods.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-93.html)
-|94| [Write a method that checks if a word is a palindrome.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-94.html)
-|95| [Implement a custom map method.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-95.html)
-|96| [Build a simple DSL using Ruby blocks.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-96.html)
-|97| [Given a list of numbers, return only the prime numbers.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-97.html)
-|98| [Show how you would use Enumerable#inject to calculate a factorial.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-98.html)
-|99| [What is a thread? How does a thread differ from a process?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-99.html)
-|100| [How do you create and start a thread in Ruby? Show the basic syntax.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-100.html)
-|101| [How do you wait for a thread to finish (join) in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-101.html)
-|102| [What is the difference between Thread.new and Thread.start?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-102.html)
-|103| [What are race conditions? Give a simple example in Ruby.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-103.html)
-|104| [What is a critical section? How can you protect it in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-104.html)
-|105| [How do Mutex and Monitor work in Ruby? When would you use each?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-105.html)
-|106| [What is a deadlock? How might a deadlock occur with mutexes?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-106.html)
-|107| [What does Thread#kill / Thread#terminate do? Why is it dangerous?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-107.html)
-|108| [What are Thread.current and thread-local variables? How do you set/get them?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-108.html)
-|109| [What is the difference between concurrent and parallel execution in plain terms?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-109.html)
-|110| [What is a Ruby Fiber? How does it differ from a Thread?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-110.html)
-|111| [How do you create and resume a Fiber?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-111.html)
-|112| [What are common pitfalls when sharing mutable objects between threads?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-112.html)
-|113| [What is cooperative vs preemptive multitasking? Which model do Fibers use?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-113.html)
-|114| [Explain how Ruby MRI’s Global VM Lock (GVL/GIL) affects multithreading.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-114.html)
-|115| [How does JRuby’s threading model differ from MRI’s?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-115.html)
-|116| [When can Ruby threads actually run in parallel (true CPU-bound parallelism)?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-116.html)
-|117| [How would you parallelize a CPU-bound task in Ruby given MRI’s GVL?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-117.html)
-|118| [How would you parallelize IO-bound tasks in Ruby? Give examples.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-118.html)
-|119| [What are Thread.report_on_exception and Thread.abort_on_exception? How do they behave?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-119.html)
-|120| [Explain Queue and SizedQueue in Ruby. How are they used for producer/consumer patterns?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-120.html)
-|121| [How do you use ConditionVariable with Mutex? Give a use case.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-121.html)
-|122| [What is Concurrent::Future / Concurrent::Promise (from the concurrent-ruby gem)? When is it useful?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-122.html)
-|123| [How do fibers and Fiber.schedule (or Fiber + async libraries) enable async IO patterns?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-123.html)
-|124| [What are NonBlocking vs blocking operations? Give examples in Ruby.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-124.html)
-|125| [How does Process.fork interact with threads and resources in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-125.html)
-|126| [How do you safely stop a worker thread that is blocked on IO or sleeping?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-126.html)
-|127| [How can select, IO#wait_readable, or IO.select be used for concurrency in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-127.html)
-|128| [How do thread priorities work in Ruby? Are they reliable for scheduling?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-128.html)
-|129| [What is starvation in concurrent systems, and how might it show up in Ruby programs?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-129.html)
-|130| [How would you design a thread pool in Ruby? What factors do you tune?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-130.html)
-|131| [Explain memory visibility issues between threads and how Ruby ensures (or does not ensure) visibility.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-131.html)
-|132| [How can volatile or atomic semantics be achieved in Ruby? (e.g., atomics from stdlib/gem)](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-132.html)
-|133| [How do Thread.handle_interrupt and Thread.interrupt interplay with long-running operations?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-133.html)
-|134| [Describe MRI’s Global VM Lock (GVL): history, purpose, implications, and current behavior.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-134.html)
-|135| [Explain Ruby’s memory model wrt threads. Which operations are atomic? Which are not?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-135.html)
-|136| [How do you detect and debug a race condition or data race in a Ruby program? Tools and strategies.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-136.html)
-|137| [How would you detect and debug a memory leak in a long-running multithreaded Ruby process?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-137.html)
-|138| [Explain how method_missing, define_method, or dynamic code generation interact with thread safety.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-138.html)
-|139| [What are the trade-offs between using processes (fork) vs threads vs JRuby for scaling Ruby apps?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-139.html)
-|140| [How would you implement lock-free or wait-free algorithms in Ruby? When is it reasonable?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-140.html)
-|141| [Explain the semantics of ObjectSpace and GC operations while threads are running. What should you be careful about?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-141.html)
-|142| [How does Ruby’s garbage collector interact with threads and the GVL? Impacts on latency and throughput?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-142.html)
-|143| [What are the implications of using native extensions (C extensions) with threads in MRI?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-143.html)
-|144| [How would you design a high-throughput, low-latency job-processing system in Ruby? Discuss concurrency model, reliability, backpressure, and observability.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-144.html)
-|145| [How does concurrent-ruby implement thread pools, futures, and actors? What are the actor-model pros/cons here?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-145.html)
-|146| [Describe how to build deterministic tests for concurrent code. What techniques and libraries help?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-146.html)
-|147| [How would you choose between Fork + exec, Process.spawn, threads, and external services for parallelism in a production system?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-147.html)
-|148| [Discuss how to implement backpressure and flow control across threaded pipelines in Ruby.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-148.html)
-|149| [What are the pitfalls of using global mutable state in a concurrent Ruby app, and how to mitigate them?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-149.html)
-|150| [How do you benchmark and profile concurrency and parallelism issues in Ruby (CPU, lock contention, GC pauses)? Tools and approaches.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-150.html)
-|151| [Explain priority inversion and possible remedies in Ruby systems.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-151.html)
-|152| [What is the correctness definition for a concurrent data structure (e.g., linearizability)? How could you test for it in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-152.html)
-|153| [What are the concurrency/security implications of eval-ing untrusted code inside threads?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-153.html)
-|154| [Write a Ruby program that spawns N threads to compute parts of an array sum and returns the total. Discuss thread-safety and correctness.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-154.html)
-|155| [Implement a thread-safe counter (increment/decrement) without using Mutex (hint: use stdlib atomics or other mechanisms).](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-155.html)
-|156| [Implement a producer-consumer pipeline using Queue with multiple producers and consumers; add graceful shutdown.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-156.html)
-|157| [Build a simple thread pool class (fixed-size) with job submission and graceful shutdown.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-157.html)
-|158| [Implement a rate-limited worker queue (allow X jobs per second) with multiple threads.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-158.html)
-|159| [Show how to use IO.select (or Process.wait) to concurrently wait for multiple IO streams.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-159.html)
-|160| [Create a small example that demonstrates a deadlock; then fix it and explain your changes.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-160.html)
-|161| [Write tests that reliably reproduce a race condition, then fix the underlying code.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-161.html)
-|162| [Compare performance of a CPU-bound workload implemented with threads vs using multiple processes (fork) on MRI. Measure and report.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-162.html)
-|163| [Implement an asynchronous HTTP fetcher using Fibers or async/nio4r (or describe how to do it without external gems).](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-163.html)
-|164| [Tell me about a concurrency bug you found in the wild. How did you find and fix it?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-164.html)
-|165| [How do you decide whether to use threads, processes, or external workers for scaling?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-165.html)
-|166| [When would you prefer actor-model libraries (e.g., concurrent-ruby Actors) over shared-memory threads?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-166.html)
-|167| [How do you design for observability in concurrent systems (metrics, tracing, logging)?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-167.html)
-|168| [How do you approach testing, staging, and deploying concurrency-sensitive changes?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-168.html)
-|166| [When would you prefer actor-model libraries (e.g., concurrent-ruby Actors) over shared-memory threads?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-166.html)
-|167| [How do you design for observability in concurrent systems (metrics, tracing, logging)?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-167.html)
-|168| [How do you approach testing, staging, and deploying concurrency-sensitive changes?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-168.html)
+|1| [What’s the use of ensure in exception handling? When does it execute?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-1.html){:target="_blank"}
+|2| [Can you explain Turbo/Hotwire in Rails 7?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-2.html){:target="_blank"}
+|3| [What gems are you using for authentication and authorization?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-3.html){:target="_blank"}
+|4| [How do you handle multi-tenancy in your application?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-4.html){:target="_blank"}
+|5| [Why are you using a single database instead of splitting tenants across databases?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-5.html){:target="_blank"}
+|6| [What’s the difference between includes, preload, and eager_load in Rails?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-6.html){:target="_blank"}
+|7| [Have you generally used includes, preload, joins?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-7.html){:target="_blank"}
+|8| [What’s the difference between Proc and Lambda?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-8.html){:target="_blank"}
+|9| [Can you tell me something about Ruby’s journey (not Rails) — improvements from 1.8 to 3.0/3.2?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-9.html){:target="_blank"}
+|10| [In Ruby 3, how did they design internal interpreter, what architectural changes, what interpreter they are using, and what features or advantages were achieved?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-10.html){:target="_blank"}
+|11| [Why should one choose JRuby instead of Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-11.html){:target="_blank"}
+|12| [Since JRuby supports multithreading, how does it handle race conditions or thread locks? Is it similar to Ruby or different?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-12.html){:target="_blank"}
+|13| [Do you know how garbage collection works in Ruby and JRuby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-13.html){:target="_blank"}
+|14| [How does Ruby know when objects are no longer required and can free up memory?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-14.html){:target="_blank"}
+|15| [Does Ruby support multithreading? What are its limitations?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-15.html){:target="_blank"}
+|16| [What do you know about Ruby garbage collection?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-16.html){:target="_blank"}
+|17| [What is the difference between private and protected methods in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-17.html){:target="_blank"}
+|18| [Which one (private/protected) is available across instances?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-18.html){:target="_blank"}
+|19| [Can you write code to demonstrate private and protected methods in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-19.html){:target="_blank"}
+|20| [What is the difference between load and require in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-20.html){:target="_blank"}
+|21| [What about Ruby 3 — have you ever tried it?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-21.html){:target="_blank"}
+|22| [Have you ever used decorators?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-22.html){:target="_blank"}
+|23| [If your object has five attributes and you want to apply two more attributes using decorators, will it affect all the objects or just that one?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-23.html){:target="_blank"}
+|24| [Can you share your screen and write an example of how you would write concerns for two classes (A and B) with a common property?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-24.html){:target="_blank"}
+|25| [When you put any method inside the included block of a concern, will it be added as an instance method or class method?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-25.html){:target="_blank"}
+|26| [If you want to expose a method as a class method, how will you do it? Any other approach?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-26.html){:target="_blank"}
+|27| [What about helpers and how are they different from concerns?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-27.html){:target="_blank"}
+|28| [Have you ever used eval methods like instance_eval or class_eval?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-28.html){:target="_blank"}
+|29| [Have you used threads in your Ruby program? What kind of threads have you used?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-29.html){:target="_blank"}
+|30| [Do you understand how Ruby creates threads internally? Are they fully concurrent?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-30.html){:target="_blank"}
+|31| [Would it make sense to run multiple threads or multiple processes on multi-core processors?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-31.html){:target="_blank"}
+|32| [So there is no way for Ruby threads to exploit all the cores?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-32.html){:target="_blank"}
+|33| [Have you come across a use case where you had to override that limitation and extract all the CPU power?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-33.html){:target="_blank"}
+|34| [Have you used practices like frozen literals, symbols, memoization in Ruby for optimization?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-34.html){:target="_blank"}
+|35| [Have you implemented observability in your applications (custom metrics, memory usage, performance bottlenecks)?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-35.html){:target="_blank"}
+|36| [What changes are needed in your code to integrate New Relic?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-36.html){:target="_blank"}
+|37| [Logs tell you the flow, but do you also capture metrics like memory/time at each stage?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-37.html){:target="_blank"}
+|38| [Have you used benchmarking tools in Ruby to measure performance?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-38.html){:target="_blank"}
+|39| [Have you used parallel/async processing methods in Ruby (like pmap)?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-39.html){:target="_blank"}
+|40| [Have you used background processing tools like Sidekiq?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-40.html){:target="_blank"}
+|41| [Have you used procs and lambdas in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-41.html){:target="_blank"}
+|42| [How is a proc different from a lambda?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-42.html){:target="_blank"}
+|43| [What exactly is metaprogramming in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-43.html){:target="_blank"}
+|44| [Given a nested hash, can you flatten it so that nested keys are joined with a dot? Can you write pseudocode or actual code?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-44.html){:target="_blank"}
+|45| [What are Ruby’s basic data types?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-45.html){:target="_blank"}
+|46| [How are symbols different from strings in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-46.html){:target="_blank"}
+|47| [What’s the difference between ==, eql?, and equal??](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-47.html){:target="_blank"}
+|48| [What are Ruby’s truthy and falsy values?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-48.html){:target="_blank"}
+|49| [How do you define a method in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-49.html){:target="_blank"}
+|50| [Explain string interpolation in Ruby.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-50.html){:target="_blank"}
+|51| [What’s the difference between puts, print, and p?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-51.html){:target="_blank"}
+|52| [How do you declare constants in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-52.html){:target="_blank"}
+|53| [How do arrays differ from hashes in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-53.html){:target="_blank"}
+|54| [How do you iterate over an array?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-54.html){:target="_blank"}
+|55| [What are some common Array and Hash methods you’ve used?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-55.html){:target="_blank"}
+|56| [What’s the difference between map, each, and select?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-56.html){:target="_blank"}
+|57| [How do you define a class in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-57.html){:target="_blank"}
+|58| [How do instance variables differ from class variables?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-58.html){:target="_blank"}
+|59| [Explain the difference between instance methods and class methods.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-59.html){:target="_blank"}
+|60| [What’s the role of initialize in a Ruby class?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-60.html){:target="_blank"}
+|61| [What’s the difference between self inside a class vs inside an instance method?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-61.html){:target="_blank"}
+|62| [Explain blocks, procs, and lambdas. How do they differ?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-62.html){:target="_blank"}
+|63| [What are mixins? How do you use modules in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-63.html){:target="_blank"}
+|64| [What’s the difference between include, extend, and prepend?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-64.html){:target="_blank"}
+|65| [How does Ruby handle method lookup (method resolution order)?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-65.html){:target="_blank"}
+|66| [What’s duck typing in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-66.html){:target="_blank"}
+|67| [How does garbage collection work in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-67.html){:target="_blank"}
+|68| [Explain the difference between mutable and immutable objects in Ruby.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-68.html){:target="_blank"}
+|69| [What are frozen objects? What does Object#freeze do?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-69.html){:target="_blank"}
+|70| [How do you handle exceptions in Ruby? Difference between raise and throw/catch.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-70.html){:target="_blank"}
+|71| [What’s the difference between map and collect? Between detect and find?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-71.html){:target="_blank"}
+|72| [How do reduce / inject work in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-72.html){:target="_blank"}
+|73| [How do enumerators work? What’s the benefit of lazy enumerators?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-73.html){:target="_blank"}
+|74| [How do symbols help with memory optimization?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-74.html){:target="_blank"}
+|75| [When would you prefer Struct vs Class?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-75.html){:target="_blank"}
+|76| [What’s the difference between String#dup and String#clone?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-76.html){:target="_blank"}
+|77| [How does method_missing work? What are the risks of using it?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-77.html){:target="_blank"}
+|78| [How do define_method and class_eval work?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-78.html){:target="_blank"}
+|79| [What’s the difference between send and public_send?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-79.html){:target="_blank"}
+|80| [How do refinements differ from monkey patching?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-80.html){:target="_blank"}
+|81| [What is const_missing and when might you use it?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-81.html){:target="_blank"}
+|82| [Explain Ruby’s object model (everything is an object, eigenclasses, singleton methods).](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-82.html){:target="_blank"}
+|83| [How does Ruby handle scoping (lexical scope, closures, binding)?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-83.html){:target="_blank"}
+|84| [What is the difference between load, require, and autoload?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-84.html){:target="_blank"}
+|85| [How does Ruby’s Global Interpreter Lock (GIL) affect threading?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-85.html){:target="_blank"}
+|86| [What’s the difference between fibers, threads, and processes in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-86.html){:target="_blank"}
+|87| [What are Ruby’s key garbage collection algorithms?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-87.html){:target="_blank"}
+|88| [How does MRI differ from JRuby or Rubinius?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-88.html){:target="_blank"}
+|89| [How would you debug a memory leak in a Ruby application?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-89.html){:target="_blank"}
+|90| [What profiling tools exist for Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-90.html){:target="_blank"}
+|91| [How would you optimize slow Ruby code?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-91.html){:target="_blank"}
+|92| [What’s the difference between eager and lazy evaluation in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-92.html){:target="_blank"}
+|93| [Implement a method to reverse a string without using built-in methods.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-93.html){:target="_blank"}
+|94| [Write a method that checks if a word is a palindrome.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-94.html){:target="_blank"}
+|95| [Implement a custom map method.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-95.html){:target="_blank"}
+|96| [Build a simple DSL using Ruby blocks.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-96.html){:target="_blank"}
+|97| [Given a list of numbers, return only the prime numbers.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-97.html){:target="_blank"}
+|98| [Show how you would use Enumerable#inject to calculate a factorial.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-98.html){:target="_blank"}
+|99| [What is a thread? How does a thread differ from a process?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-99.html){:target="_blank"}
+|100| [How do you create and start a thread in Ruby? Show the basic syntax.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-100.html){:target="_blank"}
+|101| [How do you wait for a thread to finish (join) in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-101.html){:target="_blank"}
+|102| [What is the difference between Thread.new and Thread.start?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-102.html){:target="_blank"}
+|103| [What are race conditions? Give a simple example in Ruby.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-103.html){:target="_blank"}
+|104| [What is a critical section? How can you protect it in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-104.html){:target="_blank"}
+|105| [How do Mutex and Monitor work in Ruby? When would you use each?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-105.html){:target="_blank"}
+|106| [What is a deadlock? How might a deadlock occur with mutexes?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-106.html){:target="_blank"}
+|107| [What does Thread#kill / Thread#terminate do? Why is it dangerous?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-107.html){:target="_blank"}
+|108| [What are Thread.current and thread-local variables? How do you set/get them?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-108.html){:target="_blank"}
+|109| [What is the difference between concurrent and parallel execution in plain terms?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-109.html){:target="_blank"}
+|110| [What is a Ruby Fiber? How does it differ from a Thread?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-110.html){:target="_blank"}
+|111| [How do you create and resume a Fiber?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-111.html){:target="_blank"}
+|112| [What are common pitfalls when sharing mutable objects between threads?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-112.html){:target="_blank"}
+|113| [What is cooperative vs preemptive multitasking? Which model do Fibers use?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-113.html){:target="_blank"}
+|114| [Explain how Ruby MRI’s Global VM Lock (GVL/GIL) affects multithreading.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-114.html){:target="_blank"}
+|115| [How does JRuby’s threading model differ from MRI’s?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-115.html){:target="_blank"}
+|116| [When can Ruby threads actually run in parallel (true CPU-bound parallelism)?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-116.html){:target="_blank"}
+|117| [How would you parallelize a CPU-bound task in Ruby given MRI’s GVL?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-117.html){:target="_blank"}
+|118| [How would you parallelize IO-bound tasks in Ruby? Give examples.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-118.html){:target="_blank"}
+|119| [What are Thread.report_on_exception and Thread.abort_on_exception? How do they behave?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-119.html){:target="_blank"}
+|120| [Explain Queue and SizedQueue in Ruby. How are they used for producer/consumer patterns?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-120.html){:target="_blank"}
+|121| [How do you use ConditionVariable with Mutex? Give a use case.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-121.html){:target="_blank"}
+|122| [What is Concurrent::Future / Concurrent::Promise (from the concurrent-ruby gem)? When is it useful?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-122.html){:target="_blank"}
+|123| [How do fibers and Fiber.schedule (or Fiber + async libraries) enable async IO patterns?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-123.html){:target="_blank"}
+|124| [What are NonBlocking vs blocking operations? Give examples in Ruby.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-124.html){:target="_blank"}
+|125| [How does Process.fork interact with threads and resources in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-125.html){:target="_blank"}
+|126| [How do you safely stop a worker thread that is blocked on IO or sleeping?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-126.html){:target="_blank"}
+|127| [How can select, IO#wait_readable, or IO.select be used for concurrency in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-127.html){:target="_blank"}
+|128| [How do thread priorities work in Ruby? Are they reliable for scheduling?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-128.html){:target="_blank"}
+|129| [What is starvation in concurrent systems, and how might it show up in Ruby programs?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-129.html){:target="_blank"}
+|130| [How would you design a thread pool in Ruby? What factors do you tune?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-130.html){:target="_blank"}
+|131| [Explain memory visibility issues between threads and how Ruby ensures (or does not ensure) visibility.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-131.html){:target="_blank"}
+|132| [How can volatile or atomic semantics be achieved in Ruby? (e.g., atomics from stdlib/gem)](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-132.html){:target="_blank"}
+|133| [How do Thread.handle_interrupt and Thread.interrupt interplay with long-running operations?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-133.html){:target="_blank"}
+|134| [Describe MRI’s Global VM Lock (GVL): history, purpose, implications, and current behavior.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-134.html){:target="_blank"}
+|135| [Explain Ruby’s memory model wrt threads. Which operations are atomic? Which are not?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-135.html){:target="_blank"}
+|136| [How do you detect and debug a race condition or data race in a Ruby program? Tools and strategies.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-136.html){:target="_blank"}
+|137| [How would you detect and debug a memory leak in a long-running multithreaded Ruby process?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-137.html){:target="_blank"}
+|138| [Explain how method_missing, define_method, or dynamic code generation interact with thread safety.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-138.html){:target="_blank"}
+|139| [What are the trade-offs between using processes (fork) vs threads vs JRuby for scaling Ruby apps?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-139.html){:target="_blank"}
+|140| [How would you implement lock-free or wait-free algorithms in Ruby? When is it reasonable?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-140.html){:target="_blank"}
+|141| [Explain the semantics of ObjectSpace and GC operations while threads are running. What should you be careful about?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-141.html){:target="_blank"}
+|142| [How does Ruby’s garbage collector interact with threads and the GVL? Impacts on latency and throughput?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-142.html){:target="_blank"}
+|143| [What are the implications of using native extensions (C extensions) with threads in MRI?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-143.html){:target="_blank"}
+|144| [How would you design a high-throughput, low-latency job-processing system in Ruby? Discuss concurrency model, reliability, backpressure, and observability.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-144.html){:target="_blank"}
+|145| [How does concurrent-ruby implement thread pools, futures, and actors? What are the actor-model pros/cons here?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-145.html){:target="_blank"}
+|146| [Describe how to build deterministic tests for concurrent code. What techniques and libraries help?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-146.html){:target="_blank"}
+|147| [How would you choose between Fork + exec, Process.spawn, threads, and external services for parallelism in a production system?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-147.html){:target="_blank"}
+|148| [Discuss how to implement backpressure and flow control across threaded pipelines in Ruby.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-148.html){:target="_blank"}
+|149| [What are the pitfalls of using global mutable state in a concurrent Ruby app, and how to mitigate them?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-149.html){:target="_blank"}
+|150| [How do you benchmark and profile concurrency and parallelism issues in Ruby (CPU, lock contention, GC pauses)? Tools and approaches.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-150.html){:target="_blank"}
+|151| [Explain priority inversion and possible remedies in Ruby systems.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-151.html){:target="_blank"}
+|152| [What is the correctness definition for a concurrent data structure (e.g., linearizability)? How could you test for it in Ruby?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-152.html){:target="_blank"}
+|153| [What are the concurrency/security implications of eval-ing untrusted code inside threads?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-153.html){:target="_blank"}
+|154| [Write a Ruby program that spawns N threads to compute parts of an array sum and returns the total. Discuss thread-safety and correctness.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-154.html){:target="_blank"}
+|155| [Implement a thread-safe counter (increment/decrement) without using Mutex (hint: use stdlib atomics or other mechanisms).](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-155.html){:target="_blank"}
+|156| [Implement a producer-consumer pipeline using Queue with multiple producers and consumers; add graceful shutdown.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-156.html){:target="_blank"}
+|157| [Build a simple thread pool class (fixed-size) with job submission and graceful shutdown.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-157.html){:target="_blank"}
+|158| [Implement a rate-limited worker queue (allow X jobs per second) with multiple threads.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-158.html){:target="_blank"}
+|159| [Show how to use IO.select (or Process.wait) to concurrently wait for multiple IO streams.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-159.html){:target="_blank"}
+|160| [Create a small example that demonstrates a deadlock; then fix it and explain your changes.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-160.html){:target="_blank"}
+|161| [Write tests that reliably reproduce a race condition, then fix the underlying code.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-161.html){:target="_blank"}
+|162| [Compare performance of a CPU-bound workload implemented with threads vs using multiple processes (fork) on MRI. Measure and report.](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-162.html){:target="_blank"}
+|163| [Implement an asynchronous HTTP fetcher using Fibers or async/nio4r (or describe how to do it without external gems).](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-163.html){:target="_blank"}
+|164| [Tell me about a concurrency bug you found in the wild. How did you find and fix it?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-164.html){:target="_blank"}
+|165| [How do you decide whether to use threads, processes, or external workers for scaling?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-165.html){:target="_blank"}
+|166| [When would you prefer actor-model libraries (e.g., concurrent-ruby Actors) over shared-memory threads?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-166.html){:target="_blank"}
+|167| [How do you design for observability in concurrent systems (metrics, tracing, logging)?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-167.html){:target="_blank"}
+|168| [How do you approach testing, staging, and deploying concurrency-sensitive changes?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-168.html){:target="_blank"}
+|166| [When would you prefer actor-model libraries (e.g., concurrent-ruby Actors) over shared-memory threads?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-166.html){:target="_blank"}
+|167| [How do you design for observability in concurrent systems (metrics, tracing, logging)?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-167.html){:target="_blank"}
+|168| [How do you approach testing, staging, and deploying concurrency-sensitive changes?](https://amol-aher.github.io/my-career/questions-answers/ruby/answer-168.html){:target="_blank"}
