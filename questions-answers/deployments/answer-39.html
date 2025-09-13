@@ -1,0 +1,67 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Enforcing Security Compliance in CI/CD</title>
+  <style>
+    body{font-family:Inter,Arial,Helvetica,sans-serif;margin:24px;color:#222;line-height:1.6}
+    h1{background:#fd7e14;color:#fff;padding:12px;border-radius:8px}
+    h2{color:#fd7e14;margin-top:18px}
+    pre{background:#fff7ed;padding:12px;border-radius:6px;overflow:auto}
+    ul{margin:8px 0 8px 20px}
+  </style>
+</head>
+<body>
+  <h1>Ensuring Security Compliance Checks are Part of CI/CD</h1>
+
+  <h2>Shift-left security</h2>
+  <p>Integrate security tools early in the pipeline: static analysis (SAST), dependency scanning (SCA), IaC scanning, secret scanning, and container image scanning.</p>
+
+  <h2>Recommended pipeline gates</h2>
+  <ul>
+    <li><strong>PR checks:</strong> Linting, unit tests, SAST.</li>
+    <li><strong>Pre-build:</strong> Dependency scanning (Snyk, Dependabot alerts).</li>
+    <li><strong>Build:</strong> Image/container scanning (Trivy, ECR scan).</li>
+    <li><strong>Pre-deploy:</strong> IaC scanning for security misconfigurations (tfsec, checkov).</li>
+    <li><strong>Post-deploy:</strong> Automated security tests, runtime scanning (GuardDuty, runtime protection).</li>
+  </ul>
+
+  <h2>Policy-as-code & enforcement</h2>
+  <p>Use OPA/Gatekeeper or Terraform Sentinel to enforce organization policies (no wide-open security groups, required tags, approved AMIs). Block pipeline promotion when policies fail.</p>
+
+  <h2>Audit & evidence</h2>
+  <ul>
+    <li>Record scan results and artifact provenance.</li>
+    <li>Store audit logs (CloudTrail) for changes to pipelines and infra.</li>
+    <li>Generate compliance reports automatically for auditors.</li>
+  </ul>
+
+  <h2>Example pipeline stage integration</h2>
+  <pre><code>1. PR: run SAST and unit tests.
+2. Build: run SCA and create artifact.
+3. Scan: run Trivy on built image and fail on high severity.
+4. IaC lint: run checkov/tflint and fail pipeline if critical.
+5. Approvals: require security approval for production promotion.</code></pre>
+
+  <h2>Tools & services</h2>
+  <ul>
+    <li>Snyk, Dependabot, WhiteSource — dependency scanning</li>
+    <li>Trivy, Clair, Amazon ECR image scanning — container scans</li>
+    <li>tfsec, checkov — IaC scanning</li>
+    <li>OPA / Gatekeeper — policy-as-code for Kubernetes</li>
+    <li>AWS Config, Security Hub, GuardDuty — runtime and compliance monitoring</li>
+  </ul>
+
+  <h2>Subquestions</h2>
+  <h3>How to prevent sensitive data leakage in pipelines?</h3>
+  <p>A: Use secret scanning on commits, forbid storing secrets in repos, use OIDC for cloud access, and redact/mask secrets in CI logs.</p>
+
+  <h3>How to handle vulnerabilities discovered late?</h3>
+  <p>A: Block promotion of affected artifacts, create prioritized tickets, and if running in production, use mitigations like feature flags, quick rollbacks, patches, or WAF rules while investigating.</p>
+
+  <h2>Conclusion</h2>
+  <p>Security must be enforced across CI/CD via automated checks, policy enforcement, artifact scanning, and audit trails. Treat compliance as code and integrate checks as gating stages in the pipeline.</p>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!doctype html><html><head><meta charset='utf-8'><title>Handling sequencing of tasks</title>
+<style>
+body{font-family:Segoe UI,Arial,Helvetica,sans-serif;line-height:1.5;padding:24px;max-width:900px;margin:auto;color:#111}
+header{border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:18px}
+h1{font-size:20px;margin:0 0 6px 0}
+.role{color:#555;font-size:13px;margin-bottom:6px}
+pre{background:#f6f6f6;padding:12px;border-radius:6px;overflow:auto}
+code{font-family:monospace;font-size:13px}
+section{margin-bottom:18px}
+.sub{font-weight:600;margin-top:8px}
+ul{margin-left:18px}
+ol{margin-left:18px}
+</style></head><body><header><h1>Handling sequencing of tasks</h1><div class='role'>System architect · Technical lead · Senior software engineer (Ruby on Rails, AWS, SQL, Vue.js)</div></header>
+<section>
+<p><strong>Summary:</strong> Sequencing is driven by dependencies, risk reduction, business priority, and opportunity for parallelization. I use dependency graphs, critical path analysis, and regular syncs to keep sequencing optimal.</p>
+
+<div class='sub'>Decision factors</div>
+<ul>
+<li><strong>Blocking dependencies:</strong> Tasks that unblock many others are prioritized.</li>
+<li><strong>Risk-first:</strong> High-risk or high-uncertainty tasks (spikes) are scheduled early to de-risk the plan.</li>
+<li><strong>Value-first:</strong> Deliver smallest vertical slices that provide visible business value.</li>
+<li><strong>Parallelism:</strong> Identify independent tasks that can be worked on concurrently by different team members.</li>
+<li><strong>Resource constraints:</strong> Sequence work to fit specialized skills (e.g., DB migration windows, infra changes).</li>
+</ul>
+
+<div class='sub'>Practical tools & practices</div>
+<ul>
+<li>Maintain a dependency map in Confluence or a lightweight diagram (Miro) showing connections between stories.</li>
+<li>Use Jira links (blocks/is blocked by) to encode dependencies.</li>
+<li>Run daily standups and a short unblock sync when sequencing is tight.</li>
+<li>Use Gantt sparingly to visualize critical path for complex releases.</li>
+</ul>
+
+<div class='sub'>Example: Sequencing for a feature with DB migration</div>
+<ol>
+<li>Spike: validate migration strategy & rollback (2 days)</li>
+<li>Backend API changes with backward compatibility (3 days)</li>
+<li>Deploy API (canary) and keep old codepaths compatible</li>
+<li>Run zero-downtime migration during low traffic window</li>
+<li>Deploy frontend switch to new field</li>
+</ol>
+
+<div class='sub'>Communication</div>
+<p>Document sequence in the ticket and highlight dates for migrations or coordinated releases. If sequencing changes, communicate immediately to stakeholders and update the plan.</p>
+</section>
+</body></html>

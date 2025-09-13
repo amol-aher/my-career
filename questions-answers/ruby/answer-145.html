@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 145</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 145: How does concurrent-ruby implement thread pools, futures, and actors? What are the actor-model pros/cons here?</h1>
+<h2>Concept</h2>
+<p>concurrent-ruby provides abstractions for concurrency: thread pools (fixed, cached), futures/promises for async values, and actors for isolated state/message-passing.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Thread pools reuse worker threads to run tasks efficiently. Futures/Promises represent async computations. Actors isolate state and process messages sequentially, avoiding explicit locks. Pros: safety and isolation; Cons: higher messaging overhead and debugging complexity.</p>
+
+<h2>Example</h2>
+<pre><code class="language-ruby">require 'concurrent-ruby'
+pool = Concurrent::FixedThreadPool.new(5)
+future = Concurrent::Future.execute(executor: pool) { heavy_work }
+puts future.value</code></pre>
+
+<h2>Best practices</h2>
+<ul>
+<li>Use actors when you want isolated state. Use futures for async pipelines. Tune pools carefully.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 145</footer>
+</body></html>

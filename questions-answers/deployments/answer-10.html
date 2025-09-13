@@ -1,0 +1,63 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Blue-Green Deployments on AWS</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:22px;color:#222;line-height:1.6}
+    h1{background:#1976d2;color:#fff;padding:12px;border-radius:8px}
+    h2{color:#1976d2}
+    pre{background:#f0f6ff;padding:12px;border-radius:6px;overflow:auto}
+    ul{margin:8px 0 8px 20px}
+  </style>
+</head>
+<body>
+  <h1>Blue-Green Deployments on AWS</h1>
+  <h2>What is blue-green?</h2>
+  <p>Blue-green deployment means maintaining two production environments: <em>blue</em> (current live) and <em>green</em> (new version). Traffic is switched from blue to green once the new environment passes validation.</p>
+
+  <h2>Approaches on AWS</h2>
+  <ol>
+    <li><strong>ECS (ALB target groups):</strong> Create new task set in ECS service (for Fargate/EC2) and attach to a separate ALB target group. Use ALB listener rules or weight-based routing to move traffic.</li>
+    <li><strong>EKS (Kubernetes):</strong> Deploy green as new k8s deployments/services and shift traffic via Ingress controller (ALB Ingress) or service mesh (Istio/Linkerd) using weighted routing.</li>
+    <li><strong>Lambda:</strong> CodeDeploy supports traffic shifting for Lambda aliases (linear/canary) and automated validation hooks.</li>
+    <li><strong>Elastic Beanstalk:</strong> Has built-in blue/green support to swap CNAMEs between environments.</li>
+    <li><strong>Route53 weighted routing:</strong> Use DNS weights to gradually increase traffic to green — suitable when ALB-level routing isn't available.</li>
+  </ol>
+
+  <h2>Step-by-step example (ECS on Fargate)</h2>
+  <ol>
+    <li>Build a new container image and push to ECR.</li>
+    <li>Create a new task definition revision for the green version.</li>
+    <li>Register a new target group (green) on ALB and register the green tasks to it.</li>
+    <li>Run smoke tests against the green target group (internal test URLs or health endpoints).</li>
+    <li>Switch traffic: update ALB listener rule weights or update service to point to the green target group.</li>
+    <li>Monitor metrics for a rollback window; if everything looks good, decommission blue or keep it warm for quick rollback.</li>
+  </ol>
+
+  <h2>Automating the shift using CodeDeploy</h2>
+  <p>CodeDeploy can perform the traffic shifting automatically and supports hooks for validation. For ECS, you configure a CodeDeploy application with <code>BLUE_GREEN</code> deployment configuration and provide target groups and a listener.</p>
+
+  <h2>Database migration considerations</h2>
+  <ul>
+    <li>Prefer backward-compatible DB changes. Use feature flags for schema-dependent features.</li>
+    <li>For incompatible schema changes, consider a phased approach: add columns, update code to write both formats, backfill and then switch readers.</li>
+    <li>Avoid tight coupling of deploy to DB migration during traffic shift unless you have robust rollback for the migration.</li>
+  </ul>
+
+  <h2>Rollback strategy</h2>
+  <p>Keep the blue environment ready for at least the rollback window. If metrics cross thresholds, automate or manually revert traffic and investigate. For DB changes that are destructive, ensure you have backups and tested rollback scripts.</p>
+
+  <h2>Subquestions (examples)</h2>
+  <h3>How long should I keep the blue environment after switching?</h3>
+  <p>Keep it warm for at least the length of your rollback window — typically 15–60 minutes for simple services, or longer if business-critical metrics need observation. Cost vs safety trade-offs apply.</p>
+
+  <h3>How to ensure zero downtime?</h3>
+  <p>Ensure session state is externalized (Redis/DynamoDB), readiness and liveness probes are accurate, and health checks prevent routing to unhealthy instances. Use graceful connection draining on ALB/targets.</p>
+
+  <h2>Conclusion</h2>
+  <p>Blue-green is a strong strategy to reduce risk during production releases. On AWS, combine ALB, ECS/EKS, CodeDeploy, and Route53 depending on your stack. Prepare for DB migrations and automate validations to make traffic shifts safe.</p>
+</body>
+</html>

@@ -1,0 +1,55 @@
+
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>System Health: Instrumentation and Logging</title>
+  <style>
+    body {font-family: Arial, sans-serif; margin:40px;}
+    h1 {color:#1f4e79;}
+    pre {background:#f6f8fa;padding:12px;border-radius:6px;}
+  </style>
+</head>
+<body>
+  <h1>System Health: Instrumentation and Logging</h1>
+
+  <h2>Key Signals of Healthy Systems</h2>
+  <ul>
+    <li>Availability (uptime, error rate)</li>
+    <li>Latency (p50, p95, p99)</li>
+    <li>Throughput (requests/sec, jobs/sec)</li>
+    <li>Resource utilization (CPU, memory, I/O)</li>
+    <li>Business KPIs (orders processed, revenue, conversion)</li>
+  </ul>
+
+  <h2>Instrumentation</h2>
+  <ul>
+    <li><strong>APM:</strong> NewRelic/Datadog/AppSignal for tracing requests, service maps, span breakdowns.</li>
+    <li><strong>Distributed Tracing:</strong> OpenTelemetry/Jaeger/Zipkin to trace across microservices.</li>
+    <li><strong>Metrics:</strong> Prometheus + Grafana for custom metrics (counters, gauges, histograms).</li>
+    <li><strong>Health checks:</strong> Readiness and liveness endpoints for orchestration and LB.</li>
+  </ul>
+
+  <h2>Logging</h2>
+  <ul>
+    <li>Structured logs (JSON) shipped to a central store (ELK/CloudWatch/Datadog Logs).</li>
+    <li>Correlation IDs and trace IDs in logs to tie logs to traces.</li>
+    <li>Log retention and sampling for noise control (sample verbose logs).</li>
+  </ul>
+
+  <h2>Alerting and SLOs</h2>
+  <p>Define SLOs (e.g., 99.9% of requests complete within 500ms). Alert on SLO breaches, not raw outages. Use multi-channel escalation (PagerDuty, Slack).</p>
+
+  <h2>Example: Adding Metrics in Ruby</h2>
+  <pre><code># using prometheus-client
+registry = Prometheus::Client.registry
+http_latency = Prometheus::Client::Histogram.new(:http_request_duration_seconds, docstring: '...')
+registry.register(http_latency)
+# in middleware
+http_latency.observe(duration)
+  </code></pre>
+
+  <h2>Playbooks and Runbooks</h2>
+  <p>Maintain runbooks for common incidents (DB failover, high latency, memory leak). Include steps, dashboards to observe, and rollback plans.</p>
+</body>
+</html>

@@ -1,0 +1,69 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Triggering Pipelines on Commits vs Scheduled Builds</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:24px;color:#222;line-height:1.6}
+    h1{background:#6f42c1;color:#fff;padding:12px;border-radius:8px}
+    h2{color:#6f42c1;margin-top:18px}
+    pre{background:#f7f4fb;padding:12px;border-radius:6px;overflow:auto}
+    ul{margin:8px 0 8px 20px}
+  </style>
+</head>
+<body>
+  <h1>Triggering Pipelines: Code Commits vs Scheduled Builds</h1>
+
+  <h2>On code commits (event-driven)</h2>
+  <p>Use webhooks or provider-native integrations to trigger pipelines on push, pull request, tag creation or merge events. Examples: GitHub Actions `on: push`, CodePipeline with CodeStar Connections, GitLab webhooks, or Bitbucket triggers.</p>
+  <ul>
+    <li>Pros: immediate feedback, short lead time, quick detection of regressions.</li>
+    <li>Cons: high frequency may pressure shared runners; noise for trivial changes.</li>
+  </ul>
+
+  <h2>Scheduled builds (time-driven)</h2>
+  <p>Use cron-like schedules to run nightly builds, periodic security scans, heavy integration tests, or performance tests. Examples: GitHub Actions `schedule` (cron), AWS EventBridge triggers, or pipeline cron in GitLab CI.</p>
+  <ul>
+    <li>Pros: predictable resource use, good for long-running tests and maintenance tasks.</li>
+    <li>Cons: less immediate feedback for branch-level changes.</li>
+  </ul>
+
+  <h2>When to use which?</h2>
+  <ul>
+    <li><strong>Commits:</strong> Unit tests, linters, quick integration tests, and deployments to staging/prod.</li>
+    <li><strong>Scheduled:</strong> Nightly E2E, performance, dependency scanning, full integration with external partners, or batch data jobs.</li>
+    <li><strong>Hybrid:</strong> Use commit triggers for fast feedback and scheduled builds for heavy suites and housekeeping.</li>
+  </ul>
+
+  <h2>Implementation examples</h2>
+  <h3>GitHub Actions — commit trigger</h3>
+  <pre><code>on:
+  push:
+    branches: [ main ]
+  pull_request: {}</code></pre>
+
+  <h3>GitHub Actions — scheduled</h3>
+  <pre><code>on:
+  schedule:
+    - cron: '0 2 * * *'  # daily at 02:00 UTC</code></pre>
+
+  <h2>Advanced triggers</h2>
+  <ul>
+    <li><strong>Path filters:</strong> Only trigger when certain files change (docs-only, frontend-only).</li>
+    <li><strong>Manual triggers:</strong> Use workflow_dispatch or manual approvals for on-demand runs.</li>
+    <li><strong>Event-driven triggers:</strong> Trigger pipeline from other systems (issue closed, upstream repo updated) via webhook or EventBridge.</li>
+  </ul>
+
+  <h2>Subquestions</h2>
+  <h3>How to avoid wasted runs for docs-only changes?</h3>
+  <p>A: Use path filters in pipeline definitions, or use a lightweight job to detect changes and conditionally run heavy jobs.</p>
+
+  <h3>How to schedule regional/regression tests?</h3>
+  <p>A: Use EventBridge to trigger CodeBuild jobs in specific regions, or schedule separate pipelines per region that run at off-peak times.</p>
+
+  <h2>Conclusion</h2>
+  <p>Design triggers to balance fast feedback with resource use: event-driven for rapid developer loops and scheduled for heavy, expensive, or periodic validation tasks.</p>
+</body>
+</html>

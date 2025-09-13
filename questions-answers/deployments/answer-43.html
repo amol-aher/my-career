@@ -1,0 +1,84 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Monitoring Pipeline Failures and Deployment Health</title>
+  <style>
+    body{font-family:Inter,Arial,Helvetica,sans-serif;margin:22px;color:#222;line-height:1.65}
+    h1{background:#0d6efd;color:white;padding:12px;border-radius:8px}
+    h2{color:#0d6efd;margin-top:18px}
+    pre{background:#f1f5ff;padding:12px;border-radius:6px;overflow:auto}
+    ul{margin:8px 0 8px 20px}
+    .tip{background:#fff3cd;border-left:4px solid #ffc107;padding:10px;border-radius:6px}
+  </style>
+</head>
+<body>
+  <h1>Monitoring Pipeline Failures and Deployment Health</h1>
+
+  <h2>Signals to monitor</h2>
+  <ul>
+    <li>Pipeline orchestration signals: CodePipeline state changes, CodeBuild failures, CodeDeploy alarms.</li>
+    <li>Application metrics: error rate (5xx), latency (p95/p99), request throughput.</li>
+    <li>Infrastructure metrics: CPU, memory, disk, queue depth (SQS), DB connections.</li>
+    <li>Logs & traces: CloudWatch Logs, X-Ray traces, OpenTelemetry traces.</li>
+    <li>Synthetic checks: periodic canaries or health probes.</li>
+  </ul>
+
+  <h2>AWS-native monitoring stack</h2>
+  <ul>
+    <li><strong>CloudWatch Metrics & Alarms:</strong> Alarms for thresholds and anomaly detection.</li>
+    <li><strong>CloudWatch Logs & Logs Insights:</strong> Centralized logs with searchable queries for errors.</li>
+    <li><strong>AWS X-Ray:</strong> Distributed tracing and latency breakdowns.</li>
+    <li><strong>CloudWatch Synthetics:</strong> Run canaries to verify user journeys.</li>
+    <li><strong>EventBridge:</strong> React to pipeline events and route to notification systems.</li>
+  </ul>
+
+  <h2>Example: Alerting flow for a failed deployment</h2>
+  <ol>
+    <li>CodePipeline failure emits EventBridge event.</li>
+    <li>EventBridge rule matches pipeline failure and triggers SNS topic.</li>
+    <li>SNS notifies PagerDuty and a Slack webhook via Lambda (or integrates directly).</li>
+    <li>Pipeline run logs are attached to the incident for triage.</li>
+  </ol>
+
+  <h2>Sample CloudWatch Logs Insights query (find recent errors)</h2>
+  <pre><code>fields @timestamp, @message
+| filter @message like /ERROR/ or @message like /Exception/
+| sort @timestamp desc
+| limit 50</code></pre>
+
+  <h2>Using X-Ray for deployment health</h2>
+  <ul>
+    <li>Instrument services with X-Ray / OpenTelemetry to get end-to-end traces.</li>
+    <li>Compare trace latencies and error rates for the new version's traces (use annotations to annotate trace with deployed version).</li>
+    <li>Use service map to find where latency/error spikes occur.</li>
+  </ul>
+
+  <h2>Dashboards & SLOs</h2>
+  <ul>
+    <li>Define SLOs (availability, latency). Create CloudWatch or Grafana dashboards showing SLO burn rate.</li>
+    <li>Use alerts on burn rate and error budget exhaustion to pause or rollback deployments automatically.</li>
+  </ul>
+
+  <h2>Observability during progressive rollouts</h2>
+  <p>When using canary/blue-green, include traffic tagging (route a header or use dedicated target groups) so you can split metrics by old/new versions. Tools like Prometheus + Grafana or CloudWatch metrics support label-based filtering.</p>
+
+  <h2>Operational runbook tips</h2>
+  <ul>
+    <li>Create a "deployment health" runbook describing steps to check logs, traces, and status pages.</li>
+    <li>Automate runbook steps where possible: fetch logs, metrics, and open a reproducible incident template.</li>
+    <li>Practice regular runbook drills and postmortems.</li>
+  </ul>
+
+  <h2>Subquestions</h2>
+  <h3>Q: How to notify engineers on pipeline failures?</h3>
+  <p>A: Use EventBridge -> SNS -> PagerDuty/Slack integration. Include relevant links and pre-formatted context (pipeline id, commit SHA, logs).</p>
+
+  <h3>Q: How to detect regressions quickly after rollout?</h3>
+  <p>A: Use canaries, synthetic transactions, and compare key metrics for canary vs baseline cohorts. Use automated alerting for anomalous metric changes.</p>
+
+  <div class="tip"><strong>Tip:</strong> Tag deployments (e.g., with git SHA) in metrics and logs. This makes it trivial to query CloudWatch/X-Ray for behavior associated with a particular deploy.</div>
+</body>
+</html>

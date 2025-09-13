@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metaprogramming in Ruby</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; margin-top: 30px; }
+        .section { background-color: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .code-block { background-color: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto; margin: 15px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<h1>Metaprogramming in Ruby</h1>
+
+<div class="section">
+    <h2>Definition and Purpose</h2>
+    <p>Metaprogramming refers to writing programs that manipulate other programs or themselves. In Ruby, it allows dynamic modification of classes, objects, and methods at runtime.</p>
+    
+    <h3>Key Metaprogramming Concepts</h3>
+    <ul>
+        <li><strong>Open Classes:</strong> Modifying existing classes</li>
+        <li><strong>Method Lookup:</strong> Understanding how Ruby finds methods</li>
+        <li><strong>Dynamic Method Creation:</strong> Creating methods programmatically</li>
+        <li><strong>Blocks and Procs:</strong> Passing executable code as objects</li>
+    </ul>
+    
+    <h3>Common Metaprogramming Techniques</h3>
+    <div class="code-block"># Open Class Example
+class String
+  def reverse_words
+    split.reverse.join(' ')
+  end
+end
+
+# Dynamic Method Definition
+define_method(:greet) do |name|
+  "Hello, #{name}!"
+end
+
+# Using Blocks with Instance_eval
+obj.instance_eval do
+  define_method(:square) { |x| x * x }
+end</div>
+    
+    <h3>Practical Applications</h3>
+    <ul>
+        <li>Creating DSLs (Domain Specific Languages)</li>
+        <li>Building ORMs and other frameworks</li>
+        <li>Implementing Aspect-Oriented Programming</li>
+        <li>Creating flexible plugin systems</li>
+    </ul>
+    
+    <h3>Best Practices</h3>
+    <ul>
+        <li>Use metaprogramming judiciously</li>
+        <li>Prefer composition over inheritance</li>
+        <li>Document dynamically defined methods</li>
+        <li>Be aware of method conflicts</li>
+    </ul>
+</div>
+
+</body>
+</html>

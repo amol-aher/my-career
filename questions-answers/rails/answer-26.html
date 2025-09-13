@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design Patterns in Ruby on Rails</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; margin-top: 30px; }
+        .section { background-color: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .code-block { background-color: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto; margin: 15px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<h1>Design Patterns in Ruby on Rails</h1>
+
+<div class="section">
+    <h2>Essential Design Patterns</h2>
+    
+    <h3>1. Service Objects</h3>
+    <p>Encapsulate business logic in plain Ruby classes:</p>
+    <div class="code-block"># app/services/order_processor.rb
+class OrderProcessor
+  def initialize(order)
+    @order = order
+  end
+  
+  def process_payment
+    # Business logic here
+  end
+end</div>
+    
+    <h3>2. Repository Pattern</h3>
+    <p>Separate data access logic from domain models:</p>
+    <div class="code-block"># app/repositories/user_repository.rb
+class UserRepository
+  def find_active
+    User.where(active: true)
+  end
+end</div>
+    
+    <h3>3. Command Pattern</h3>
+    <p>Encapsulate requests as objects:</p>
+    <div class="code-block"># app/commands/create_user_command.rb
+class CreateUserCommand
+  def initialize(attributes)
+    @attributes = attributes
+  end
+  
+  def execute
+    User.create(@attributes)
+  end
+end</div>
+    
+    <h3>4. Observer Pattern</h3>
+    <p>Define hooks for model events:</p>
+    <div class="code-block"># app/models/user.rb
+class User < ApplicationRecord
+  after_create :send_welcome_email
+  
+  private
+  
+  def send_welcome_email
+    # Email sending logic
+  end
+end</div>
+    
+    <h3>5. Strategy Pattern</h3>
+    <p>Select algorithms at runtime:</p>
+    <div class="code-block"># app/strategies/payment_strategy.rb
+class PaymentStrategy
+  def pay(amount)
+    raise NotImplementedError
+  end
+end
+
+class CreditCardStrategy < PaymentStrategy
+  def pay(amount)
+    # Credit card processing logic
+  end
+end
+
+class PayPalStrategy < PaymentStrategy
+  def pay(amount)
+    # PayPal processing logic
+  end
+end</div>
+    
+    <h2>Why These Patterns Matter</h2>
+    <ul>
+        <li><strong>Maintainability:</strong> Decouple concerns and responsibilities</li>
+        <li><strong>Testability:</strong> Isolate units for easier testing</li>
+        <li><strong>Scalability:</strong> Design systems that grow with application needs</li>
+        <li><strong>Collaboration:</strong> Standardized patterns help team communication</li>
+    </ul>
+</div>
+
+</body>
+</html>

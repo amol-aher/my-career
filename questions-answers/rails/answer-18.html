@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monkey Patching in Ruby</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; margin-top: 30px; }
+        .section { background-color: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .code-block { background-color: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto; margin: 15px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<h1>Monkey Patching in Ruby</h1>
+
+<div class="section">
+    <h2>Definition and Purpose</h2>
+    <p>Monkey patching (or dynamic patching) is the process of modifying or extending existing classes or modules at runtime without changing their original source code.</p>
+    
+    <h3>Why Use Monkey Patching?</h3>
+    <ul>
+        <li>Fix bugs in third-party libraries</li>
+        <li>Add functionality to core classes</li>
+        <li>Create mock objects for testing</li>
+        <li>Implement cross-cutting concerns (logging, security)</li>
+    </ul>
+    
+    <h3>Basic Implementation</h3>
+    <div class="code-block"># Adding a method to String class
+class String
+  def shout
+    self.upcase + "!!!"
+  end
+end
+
+# Using the patched method
+puts "hello".shout  # => "HELLO!!!"</div>
+    
+    <h3>Scope Considerations</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Scope</th>
+                <th>Effect</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Global Scope</td>
+                <td>Affects all instances</td>
+            </tr>
+            <tr>
+                <td>Module Scope</td>
+                <td>Limited to specific context</td>
+            </tr>
+            <tr>
+                <td>Class-Specific</td>
+                <td>Modifies only one class</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h3>Best Practices</h3>
+    <ul>
+        <li>Use sparingly and document thoroughly</li>
+        <li>Consider alternatives like composition first</li>
+        <li>Test patches thoroughly</li>
+        <li>Be cautious of method name collisions</li>
+    </ul>
+    
+    <h3>Advanced Techniques</h3>
+    <div class="code-block"># Using alias_method to preserve original behavior
+class String
+  alias_method :original_upcase, :upcase
+  
+  def upcase
+    original_upcase + " (MODIFIED)"
+  end
+end
+
+# Using prepend to add methods before existing ones
+String.prepend(Module.new {
+  def upcase
+    super + " (PREPEND)"
+  end
+})</div>
+    
+    <h3>Potential Risks</h3>
+    <ul>
+        <li>Unexpected side effects</li>
+        <li>Compatibility issues with library updates</li>
+        <li>Difficulty in debugging</li>
+        <li>Namespace pollution</li>
+    </ul>
+</div>
+
+</body>
+</html>

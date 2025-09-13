@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>respond_to_missing in Ruby</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; line-height:1.6; margin: 24px; color:#111 }
+    pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto }
+    code { font-family: monospace; font-size:0.95em }
+    h1 { color:#1a56db }
+    h2 { color:#0b5a78 }
+    .toc { background:#eef6ff; padding:10px; border-radius:6px }
+    table { border-collapse: collapse; margin-top:8px }
+    td, th { border:1px solid #ddd; padding:6px }
+  </style>
+</head>
+<body>
+  <h1>respond_to_missing? in Ruby</h1>
+
+  <p><strong>Short answer:</strong> <code>respond_to_missing?(method_name, include_private = false)</code> is the method you implement so that Ruby’s reflective method <code>respond_to?</code> (and related introspection) knows whether you handle certain method names dynamically (for example via <code>method_missing</code>).</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ul>
+      <li>Why respond_to_missing? exists</li>
+      <li>Signature and behavior</li>
+      <li>Example: delegation/proxy</li>
+      <li>Best practices and pitfalls</li>
+      <li>Subquestions answered</li>
+    </ul>
+  </div>
+
+  <h2>Why it exists</h2>
+  <p>When you implement <code>method_missing</code> to claim methods that don't exist at compile time, most introspection utilities (like <code>respond_to?</code>, <code>methods</code>, documentation tools, and other libraries) still only look at the object's concrete method table. To make introspection accurate you implement <code>respond_to_missing?</code> so <code>respond_to?</code> returns <code>true</code> for the virtual methods you can handle.</p>
+
+  <h2>Signature and behavior</h2>
+  <p>Method signature:</p>
+  <pre><code class="language-ruby">def respond_to_missing?(method_name, include_private = false)
+  # return true/false
+end</code></pre>
+  <p>Implementation should call <code>super</code> when you don't handle the method, to preserve normal behavior (and to support inheritance correctly).</p>
+
+  <h2>Example: Delegator / Proxy pattern</h2>
+  <p>This is a common pattern: an object delegates unknown methods to an internal target.</p>
+  <pre><code class="language-ruby">class Proxy
+  def initialize(target)
+    @target = target
+  end
+
+  def method_missing(method_name, *args, &block)
+    if @target.respond_to?(method_name)
+      @target.public_send(method_name, *args, &block)
+    else
+      super
+    end
+  end
+
+  def respond_to_missing?(method_name, include_private = false)
+    @target.respond_to?(method_name, include_private) || super
+  end
+end
+
+arr = Proxy.new([1,2,3])
+arr.push(4)               # works via method_missing
+arr.respond_to?(:push)    # => true (because respond_to_missing? says so)</code></pre>
+
+  <h2>Best practices</h2>
+  <ul>
+    <li><strong>Always</strong> implement <code>respond_to_missing?</code> when you use <code>method_missing</code> to claim methods: this keeps introspection tools and other libraries happy.</li>
+    <li>Use <code>super</code> inside <code>respond_to_missing?</code> so that ancestor behavior is preserved.</li>
+    <li>Keep your logic simple and predictable—favor explicit definitions with <code>define_method</code> where possible rather than catching everything in <code>method_missing</code>.</li>
+    <li>Consider documenting dynamic methods in your README or YARD comments so users/developers know what methods are expected.</li>
+  </ul>
+
+  <h2>Pitfalls</h2>
+  <ul>
+    <li>If you forget <code>respond_to_missing?</code>, <code>respond_to?</code> (and many libraries/gems) will misreport capabilities.</li>
+    <li>Overly-broad <code>method_missing</code> + <code>respond_to_missing?</code> can make debugging and auto-complete painful.</li>
+    <li>Don't use <code>eval</code> carelessly in <code>method_missing</code>—it can introduce security and performance issues.</li>
+  </ul>
+
+  <h2>Subquestions (and answers)</h2>
+  <h3>Q: When is <code>respond_to_missing?</code> called?</h3>
+  <p>Ruby's <code>respond_to?</code> implementation checks the object's method tables first; if not present, it calls <code>respond_to_missing?(method_name, include_private)</code>. So implementers of <code>method_missing</code> should implement <code>respond_to_missing?</code>.</p>
+
+  <h3>Q: Should I override <code>respond_to?</code> instead?</h3>
+  <p>Generally no—override <code>respond_to_missing?</code> to keep compatibility and allow inheritance/super calls. Overriding <code>respond_to?</code> is more error-prone.</p>
+
+  <h3>Q: How does <code>include_private</code> affect behavior?</h3>
+  <p>If you can respond to private methods, honor <code>include_private = true</code>. Otherwise ignore it or forward appropriately.</p>
+
+  <h2>Summary</h2>
+  <p><code>respond_to_missing?</code> is the companion to <code>method_missing</code> that keeps Ruby's reflection and libraries honest. Implement it whenever you claim methods dynamically and make sure to call <code>super</code> when appropriate.</p>
+
+</body>
+</html>

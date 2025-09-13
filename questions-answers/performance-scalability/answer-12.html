@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Partitioning By Region — Inter-Regional Considerations</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}</style>
+</head>
+<body>
+  <h1>Partitioning By Region — Inter-Regional Considerations</h1>
+  <p>Partitioning by region is a common approach to achieve locality of reads/writes and simplify regulatory compliance. However, multi-region deployments introduce latency, consistency, cost, and operational complexity.</p>
+
+  <h2>Key aspects to consider</h2>
+  <ol>
+    <li><strong>Data locality and latency:</strong> Keep region's traffic and storage inside the same region to reduce latency for users.</li>
+    <li><strong>Replication vs single-region primary:</strong> Choose between single primary with read replicas or multi-primary / active-active depending on workload and conflict tolerance.</li>
+    <li><strong>Cross-region queries:</strong> Minimize cross-region joins/transactions; use async replication/event propagation for aggregated/global views.</li>
+    <li><strong>Failover and DR:</strong> Plan for region failure with health checks, DNS failover, and data replication strategy.</li>
+    <li><strong>Cost:</strong> Inter-region replication costs and increased operational overhead need evaluation.</li>
+    <li><strong>Compliance:</strong> Data residency rules might mandate certain data stay within region — partitioning helps compliance.</li>
+  </ol>
+
+  <h2>Architectural options</h2>
+  <ul>
+    <li><strong>Region partitioned primary DBs:</strong> Each region has an independent DB instance for data originating there; global reads are served by separate aggregated stores.</li>
+    <li><strong>Global DB (managed):</strong> Use purpose-built global databases: Aurora Global DB (read replicas cross-region), DynamoDB Global Tables, CockroachDB, or MongoDB Global Clusters.</li>
+    <li><strong>Event-driven sync:</strong> Publish events to a central stream (Kafka or SNS) to build global read models in other regions or data warehouses.</li>
+  </ul>
+
+  <h2>Routing and API surface</h2>
+  <p>Use a global load balancer (Route53 latency-based, CloudFront, or GSLB) to route users to nearest region; enforce region-specific tenancy in application logic.</p>
+
+  <h2>Consistency and conflict resolution</h2>
+  <p>Active-active designs require conflict resolution strategies (last-write-wins, vector clocks, CRDTs) or avoid by partitioning writes to a single region per key.</p>
+
+  <h2>Example: Pattern</h2>
+  <pre><code>clients -> regional-api (region writes) -> regional-db (primary)
+regional-api publishes events -> central Kafka topic -> central workers build global-aggregates (data-warehouse)
+Read-heavy dashboards -> served from read-optimized replicas or DW
+  </code></pre>
+
+  <h2>Summary</h2>
+  <p>Partitioning by region improves latency and compliance but adds complexity in replication, failover, and cross-region queries. Choose patterns that minimize synchronous cross-region work and prefer async event-driven propagation for global views.</p>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 124</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 124: What are NonBlocking vs blocking operations? Give examples in Ruby.</h1>
+<h2>Concept</h2>
+<p>Blocking operations wait until completion and block the current thread/fiber; non-blocking operations return immediately and require polling/callbacks or use async APIs to be awaited later.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Blocking: File.read, sleep, synchronous Net::HTTP. Non-blocking: IO#read_nonblock, async HTTP clients integrated with fiber schedulers.</p>
+
+<h2>Examples</h2>
+<pre><code class="language-ruby"># blocking
+data = TCPSocket.open(host, port).read
+
+# non-blocking
+sock = TCPSocket.new(host, port)
+sock.read_nonblock(1024) rescue IO::WaitReadable
+# use IO.select or event loop to wait for readiness</code></pre>
+
+<h2>Best practices</h2>
+<ul>
+<li>Prefer non-blocking or fiber-aware IO in high-concurrency servers to avoid tying up threads.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 124</footer>
+</body></html>

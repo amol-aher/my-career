@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Testing and maintaining DSLs created with metaprogramming</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; margin:20px; color:#111 }
+    h1 { color:#1a56db } h2 { color:#0b5a78 }
+    pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto }
+    code { font-family: monospace; }
+    .toc { background:#eef6ff; padding:10px; border-radius:6px }
+  </style>
+</head>
+<body>
+  <h1>How to test and maintain DSLs built with metaprogramming</h1>
+
+  <p>DSLs created with metaprogramming are expressive but require disciplined testing and maintenance so they remain reliable and discoverable. Below is a practical guide with examples and patterns.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ul>
+      <li>Testing strategies (unit, integration, contract)</li>
+      <li>Design for testability</li>
+      <li>Documentation & discoverability</li>
+      <li>Versioning, breaking changes and migration</li>
+      <li>Examples</li>
+    </ul>
+  </div>
+
+  <h2>Testing strategies</h2>
+  <h3>1. Unit tests for the engine</h3>
+  <p>Test the internal parser/engine that interprets the DSL. Validate that specific DSL constructs produce the correct internal data structure.</p>
+
+  <h3>2. Acceptance / integration tests</h3>
+  <p>Write tests that exercise the DSL as a user would — use small, real-world snippets and assert final behavior or outputs.</p>
+
+  <h3>3. Contract / property tests</h3>
+  <p>For complex DSLs, property-based (fuzz) tests or contract tests that assert invariants can catch edge cases.</p>
+
+  <h3>4. Snapshot tests</h3>
+  <p>When DSL output is code or structured data (e.g., generated SQL, HTML), snapshot tests help detect unexpected changes.</p>
+
+  <h2>Design for testability</h2>
+  <ul>
+    <li>Keep the DSL interpreter separated from runtime side effects so it can be tested in isolation.</li>
+    <li>Expose an API to retrieve the internal AST / config that the DSL builds, and assert on that rather than on side effects.</li>
+    <li>Provide hooks or dependency injection points so tests can replace I/O (files, networks) with fakes.</li>
+  </ul>
+
+  <h2>Documentation and discoverability</h2>
+  <p>Because metaprogrammed DSLs hide methods, maintain:</p>
+  <ul>
+    <li>Readable user docs (guide, examples).</li>
+    <li>YARD/RDoc annotations for dynamic methods.</li>
+    <li>Editor snippets or language server integration to help IDEs.</li>
+    <li>Generate reference output (list of recognized DSL keywords/options) programmatically and include it in docs.</li>
+  </ul>
+
+  <h2>Versioning and compatibility</h2>
+  <ul>
+    <li>Semantic versioning and changelogs for DSL changes.</li>
+    <li>Document deprecations and provide automated migration tools if breaking changes are necessary.</li>
+    <li>Provide adapter layers that translate old DSL forms to new ones.</li>
+  </ul>
+
+  <h2>Operational maintenance</h2>
+  <ul>
+    <li>Performance tests for DSL translation paths (especially if generating code dynamically).</li>
+    <li>Monitor runtime errors from DSL usage in production and fold back into tests.</li>
+    <li>Keep a regression suite of representative DSL examples used in your codebase.</li>
+  </ul>
+
+  <h2>Example: Testing a config DSL</h2>
+  <pre><code class="language-ruby"># DSL (simple)
+class ConfigBuilder
+  attr_reader :config
+  def initialize(&block)
+    @config = {}
+    instance_eval(&block) if block
+  end
+  def set(name, value) @config[name.to_sym] = value end
+  def method_missing(name, *args) set(name, args.first) end
+  def respond_to_missing?(m, _=false) true end
+end
+
+# RSpec tests (integration)
+RSpec.describe "ConfigBuilder DSL" do
+  it "builds config using method style" do
+    cfg = ConfigBuilder.new do
+      host "db"
+      port 5432
+    end
+    expect(cfg.config).to include(host: "db", port: 5432)
+  end
+end</code></pre>
+
+  <h2>Tooling & CI</h2>
+  <ul>
+    <li>Run the full DSL regression suite on each PR.</li>
+    <li>Use linters and static checks for code that generates DSL constructs.</li>
+    <li>Consider visual diffs for generated outputs (HTML, SQL), integrated into CI (e.g., Percy for UI snapshots).</li>
+  </ul>
+
+  <h2>Subquestions you may face</h2>
+  <h3>Q: How to ensure backwards compatibility for a popular DSL?</h3>
+  <p>Keep old forms supported via adapters, introduce deprecation warnings, bump major version only for incompatible changes, and provide migration guides and codemods where possible.</p>
+
+  <h3>Q: How to debug a DSL user error?</h3>
+  <p>Provide clear, contextual error messages with source locations, include examples in docs, and add an option to emit the internal AST for debugging.</p>
+
+  <h2>Conclusion</h2>
+  <p>Testing and maintaining DSLs requires good separation of concerns, strong test coverage (unit + integration + regression), thorough documentation, and a careful versioning/migration policy. With these in place, DSLs can be a high‑leverage, maintainable abstraction.</p>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Vertical vs Horizontal Scaling on AWS</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Vertical vs Horizontal Scaling on AWS</h1>
+
+  <h2>Vertical scaling</h2>
+  <p>Increase instance size (CPU, RAM) — quick but limited and often more expensive per performance unit. RDS instance resizing is a common vertical operation.</p>
+
+  <h2>Horizontal scaling</h2>
+  <p>Add more instances behind load balancers (EC2 ASG, ECS tasks, EKS pods, Lambda concurrency). Preferred for web tiers and most stateless services.</p>
+
+  <h2>AWS specifics</h2>
+  <ul>
+    <li>RDS favors read replica (horizontal) for read scaling; vertical resizing for single-node performance.</li>
+    <li>Aurora scales storage automatically and supports read replicas for horizontal scaling.</li>
+  </ul>
+
+  <h2>Recommendation</h2>
+  <p>Prefer horizontal scaling for elasticity and resilience; use vertical scaling for temporary relief or specialized needs.</p>
+</body>
+</html>

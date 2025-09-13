@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Choosing RDS vs DynamoDB vs Aurora</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>When to choose RDS vs DynamoDB vs Aurora</h1>
+
+  <h2>Short summary</h2>
+  <ul>
+    <li><strong>RDS (Postgres/MySQL):</strong> Relational, strong consistency, complex queries, ACID transactions, vertical/horizontal scaling via read replicas and sharding. Good for OLTP with relational models.</li>
+    <li><strong>Aurora:</strong> Managed MySQL/Postgres-compatible with better performance, storage auto-scaling, global read replicas (Aurora Global DB). Good when you want managed relational with scalability and lower latency reads.</li>
+    <li><strong>DynamoDB:</strong> Fully managed NoSQL key-value / document store. Single-digit ms reads/writes at scale, auto-scaling, global tables for multi-region, eventual or strong consistency (per-request). Good for massive scale, predictable access patterns, and flexible schema.</li>
+  </ul>
+
+  <h2>Decision factors</h2>
+  <ul>
+    <li><strong>Data model complexity:</strong> Use relational (RDS/Aurora) for complex joins and transactions; DynamoDB for simple access patterns and denormalized documents.</li>
+    <li><strong>Scale and throughput:</strong> DynamoDB scales virtually unlimited; Aurora scales reads via replicas and writes are limited to the cluster's writer.</li>
+    <li><strong>Cost model:</strong> DynamoDB billed on RCUs/WCUs and storage; RDS/Aurora billed for instances and storage; consider unpredictable traffic vs provisioned capacity.</li>
+    <li><strong>Global requirements:</strong> DynamoDB Global Tables are easy for multi-region active-active; Aurora Global DB supports cross-region read replicas (best for active-passive or read-heavy scenarios).</li>
+    <li><strong>Operational preferences:</strong> If you need SQL, choose RDS/Aurora; if you want serverless and minimal ops, consider DynamoDB or Aurora Serverless.</li>
+  </ul>
+
+  <h2>Examples</h2>
+  <ul>
+    <li>E-commerce catalog with complex queries & reporting: RDS/Aurora + data warehouse for analytics.</li>
+    <li>High-scale session store or user feature flags: DynamoDB (low-latency, high throughput).</li>
+    <li>Financial systems requiring strong ACID across multiple entities: RDS/Aurora.</li>
+  </ul>
+
+  <h2>Summary checklist</h2>
+  <ol>
+    <li>Define access patterns and query complexity.</li>
+    <li>Estimate read/write throughput and growth.</li>
+    <li>Decide on consistency vs availability trade-offs.</li>
+    <li>Choose DB that minimizes operational burden and fits data model.</li>
+  </ol>
+</body>
+</html>

@@ -1,0 +1,74 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Building a Pipeline for Lambda Deployments</title>
+  <style>
+    body{font-family:Inter,Arial,Helvetica,sans-serif;margin:24px;color:#222;line-height:1.6}
+    h1{background:#2e7d32;color:#fff;padding:12px;border-radius:8px}
+    h2{color:#2e7d32;margin-top:18px}
+    pre{background:#f3fbf4;padding:12px;border-radius:6px;overflow:auto}
+    ul{margin:8px 0 8px 20px}
+  </style>
+</head>
+<body>
+  <h1>Building a CI/CD Pipeline for AWS Lambda Deployments</h1>
+
+  <h2>Pipeline stages</h2>
+  <ol>
+    <li><strong>Source:</strong> GitHub/CodeCommit -> trigger pipeline.</li>
+    <li><strong>Build & Test:</strong> Install dependencies, run unit and integration tests, package the function (zip or container image).</li>
+    <li><strong>Scan & Security:</strong> Run SCA and SAST tools; scan container images if used.</li>
+    <li><strong>Package & Upload:</strong> `sam package` or upload artifacts to S3/ECR.</li>
+    <li><strong>Deploy (staging):</strong> Deploy with SAM/Serverless/CDK; use Lambda versions & aliases.</li>
+    <li><strong>Validate:</strong> Run smoke tests, synthetic checks and monitor X-Ray traces.</li>
+    <li><strong>Promotion to prod:</strong> Use CodeDeploy for traffic shifting (canary/linear) or automated alias update.</li>
+  </ol>
+
+  <h2>Example buildspec.yml for SAM-based Lambda</h2>
+  <pre><code>version: 0.2
+phases:
+  install:
+    runtime-versions:
+      python: 3.9
+    commands:
+      - pip install -r requirements-dev.txt
+  build:
+    commands:
+      - pytest --junitxml=report.xml
+      - sam build --use-container
+  post_build:
+    commands:
+      - sam package --s3-bucket $ARTIFACT_BUCKET --output-template-file packaged.yaml
+      - sam deploy --template-file packaged.yaml --stack-name myapp-staging --capabilities CAPABILITY_IAM</code></pre>
+
+  <h2>Traffic shifting & versioning</h2>
+  <p>Use Lambda versions and aliases. Deploy new version and adjust alias routing (CodeDeploy) to accomplish canary/linear releases. If alarms trigger, CodeDeploy can roll back alias to previous version.</p>
+
+  <h2>Monitoring and observability</h2>
+  <ul>
+    <li>Enable CloudWatch Logs, X-Ray tracing and custom metrics for invocation, errors and latency.</li>
+    <li>Use alarms to drive automatic rollback or manual alerts.</li>
+  </ul>
+
+  <h2>Best practices</h2>
+  <ul>
+    <li>Keep functions small and single responsibility.</li>
+    <li>Use environment variables for non-sensitive config and Secrets Manager for secrets.</li>
+    <li>Prefer container images for larger dependencies or custom runtimes.</li>
+    <li>Warm critical functions with provisioned concurrency if latency-sensitive.</li>
+  </ul>
+
+  <h2>Subquestions & answers</h2>
+  <h3>How to run database migrations for serverless?</h3>
+  <p>Run migrations as a separate pipeline job (ephemeral task) that is triggered before the deployment or run migration code guarded by feature flags. Ensure migrations are idempotent and backed up.</p>
+
+  <h3>How to test locally?</h3>
+  <p>Use SAM CLI (`sam local invoke`) or serverless-offline to simulate Lambda locally and run unit/integration tests in CI containers.</p>
+
+  <h2>Conclusion</h2>
+  <p>A robust Lambda pipeline automates packaging, testing, secure deployment and traffic shifting while preserving observability and rollback capabilities. Use SAM/Serverless/CDK and CodeDeploy to implement safe, auditable serverless releases.</p>
+</body>
+</html>

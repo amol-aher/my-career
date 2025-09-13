@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>AWS Auto Scaling for Unpredictable Traffic Spikes</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>AWS Auto Scaling — How It Works & Handling Spikes</h1>
+
+  <h2>How Auto Scaling works</h2>
+  <p>Auto Scaling Groups (ASG) add/remove instances based on policies: target tracking, step scaling, scheduled scaling. For containers, ECS/EKS autoscaling works at service/task level.</p>
+
+  <h2>Strategies for unpredictable spikes</h2>
+  <ul>
+    <li><strong>Target tracking on request/target metrics:</strong> Use ALB request count per target or custom metrics (queue depth) rather than CPU.</li>
+    <li><strong>Warm pool / pre-warming:</strong> Keep a small number of standby instances warm for rapid scale-out.</li>
+    <li><strong>Scale-out grace and cooldown:</strong> Tune cooldown and scale-in protection to avoid oscillation.</li>
+    <li><strong>Use SQS/ECS autoscaling based on queue length:</strong> Buffer work in queues and scale consumers by depth.</li>
+    <li><strong>Predictive scaling:</strong> AWS Predictive Scaling can anticipate patterns.</li>
+  </ul>
+
+  <h2>Practical tips</h2>
+  <ul>
+    <li>Prefer horizontal scaling with ASG and autoscaling policies based on business metrics.</li>
+    <li>Test scaling behavior with load tests to ensure safe thresholds and warm-up times.</li>
+    <li>Consider spot instances for worker clusters to reduce cost with fallbacks.</li>
+  </ul>
+</body>
+</html>

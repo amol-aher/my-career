@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Using the Command pattern in Ruby</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>When and how to use the Command pattern in Ruby</h1>
+
+    <p><strong>Intent</strong>: encapsulate a request as an object, thereby letting you parameterize clients with different requests, queue or log requests, and support undoable operations.</p>
+
+    <h2>Use cases</h2>
+    <ul>
+      <li>Background job systems where you want to enqueue rich commands.</li>
+      <li>Undo/redo stacks in UIs.</li>
+      <li>Transaction scripts where you want to compose operations and run them later.</li>
+      <li>Implementing CLI command handlers in a uniform way.</li>
+    </ul>
+
+    <h2>Example — command objects for order processing</h2>
+    <pre><code>class CreateInvoiceCommand
+  def initialize(order_id)
+    @order_id = order_id
+  end
+
+  def call
+    order = Order.find(@order_id)
+    Invoice.create_from(order)
+  end
+end
+
+class SendInvoiceEmailCommand
+  def initialize(invoice_id)
+    @invoice_id = invoice_id
+  end
+
+  def call
+    invoice = Invoice.find(@invoice_id)
+    InvoiceMailer.send(invoice).deliver_now
+  end
+end
+
+# Enqueueing commands
+class CommandWorker
+  include Sidekiq::Worker
+  def perform(class_name, *args)
+    klass = Object.const_get(class_name)
+    klass.new(*args).call
+  end
+end
+
+# usage
+CommandWorker.perform_async('CreateInvoiceCommand', order.id)
+</code></pre>
+
+    <h2>Benefits</h2>
+    <ul>
+      <li>Commands encapsulate both data and behavior — easy to serialize if arguments are simple.</li>
+      <li>Commands make replay, logging, and testing straightforward.</li>
+      <li>Composing commands (execute one after another) supports complex orchestrations.</li>
+    </ul>
+
+    <h2>Considerations</h2>
+    <ul>
+      <li>Avoid very large command objects — keep them focused (SRP).</li>
+      <li>For complex workflows, consider a workflow engine rather than ad-hoc chaining.</li>
+      <li>When serializing commands for queues, prefer arguments that are IDs or primitives, not entire AR objects.</li>
+    </ul>
+
+    <h2>Interview tip</h2>
+    <p>Explain how you use commands with Sidekiq/Resque to build robust background job pipelines and how you would implement undo or logging if required.</p>
+  </div>
+</body>
+</html>

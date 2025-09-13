@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rails Engines: Architecture and Usage</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; }
+        .subquestion { margin-top: 30px; padding-left: 15px; border-left: 3px solid #3498db; }
+        .code-block { background-color: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; padding: 12px; margin: 15px 0; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>Rails Engines: Architecture and Usage</h1>
+
+    <p>Rails engines are mini-applications that can be mounted within a main application. They encapsulate related functionality, allowing for better organization and reusability of code.</p>
+
+    <h2>Core Characteristics:</h2>
+
+    <ol>
+        <li><strong>Isolation:</strong> Engines have their own routes, controllers, models, and views</li>
+        <li><strong>Mountable:</strong> Can be mounted at specific paths in the parent application</li>
+        <li><strong>Reusable Components:</strong> Ideal for shared functionality across projects</li>
+        <li><strong>Autoloading:</strong> Follow Rails autoloading conventions</li>
+    </ol>
+
+    <h2>When to Use Engines Instead of Gems:</h2>
+
+    <div class="subquestion">
+        <h2>Sub-question: What are the advantages of engines?</h2>
+        <ul>
+            <li><strong>Code Organization:</strong> Group related functionality together</li>
+            <li><strong>Shared Functionality:</strong> Easily share complex features across multiple apps</li>
+            <li><strong>Customization:</strong> Override engine components while keeping core functionality</li>
+            <li><strong>Namespacing:</strong> Prevent naming conflicts between applications</li>
+            <li><strong>Testing:</strong> Test engines independently from the main application</li>
+        </ul>
+    </div>
+
+    <div class="subquestion">
+        <h2>Sub-question: When would you prefer gems?</h2>
+        <ul>
+            <li><strong>Simple Utilities:</strong> Small, focused pieces of functionality</li>
+            <li><strong>Low Coupling:</strong> When minimal dependencies are preferred</li>
+            <li><strong>Performance:</strong> Gems typically have less overhead than engines</li>
+            <li><strong>Simplicity:</strong> For straightforward additions without complex routing</li>
+        </ul>
+    </div>
+
+    <div class="subquestion">
+        <h2>Sub-question: How to create a Rails engine?</h2>
+        <p>Create a new engine using the Rails generator:</p>
+        
+        <pre class="code-block">$ rails plugin new my_engine --mountable</pre>
+        
+        <p>This generates a basic engine structure with:</p>
+        <ul>
+            <li>Separate routes file</li>
+            <li>Controllers, models, and views directories</li>
+            <li>Engine class definition</li>
+            <li>Test directory</li>
+        </ul>
+        
+        <p>To mount the engine in your main application:</p>
+        <pre class="code-block"># config/routes.rb
+mount MyEngine::Engine => "/my_engine"</pre>
+    </div>
+
+    <div class="subquestion">
+        <h2>Sub-question: How to override engine views and controllers?</h2>
+        <p>You can customize engine components in the main application:</p>
+        
+        <h3>Overriding Views:</h3>
+        <p>Create view templates in the same path as the engine but under `app/views`:</p>
+        <pre class="code-block"># Main App Structure:
+app/
+└── views/
+    └── my_engine/
+        └── users/
+            └── index.html.erb</pre>
+            
+        <h3>Overriding Controllers:</h3>
+        <p>Inherit from the engine controller and redefine actions:</p>
+        <pre class="code-block"># app/controllers/my_engine/users_controller.rb
+class MyEngine::UsersController &lt; MyEngine::ApplicationController
+  def index
+    # Custom logic here
+  end
+end</pre>
+    </div>
+
+    <div class="subquestion">
+        <h2>Sub-question: What are common use cases for engines?</h2>
+        <table>
+            <tr>
+                <th>Use Case</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>Admin Interface</td>
+                <td>Complete admin dashboard for managing application data</td>
+            </tr>
+            <tr>
+                <td>E-commerce Features</td>
+                <td>Shopping cart, product catalog, checkout flow</td>
+            </tr>
+            <tr>
+                <td>Authentication System</td>
+                <td>Oauth providers, multi-factor authentication</td>
+            </tr>
+            <tr>
+                <td>Reporting Module</td>
+                <td>Data visualization and export functionality</td>
+            </tr>
+            <tr>
+                <td>Payment Gateway</td>
+                <td>Integrated payment processing with multiple providers</td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

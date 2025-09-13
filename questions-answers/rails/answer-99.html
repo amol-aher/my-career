@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Performance-heavy Task Optimized — Case Study</title><style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.6; padding:28px; color:#111; background:#fff; }
+    .container{max-width:980px;margin:0 auto;}
+    header{border-bottom:1px solid #e6e6e6;margin-bottom:18px;padding-bottom:8px;}
+    h1{font-size:26px;margin:0 0 6px 0;}
+    h2{font-size:18px;margin-top:18px;color:#0b69ff;}
+    h3{font-size:15px;margin-top:14px;color:#0b69ff;}
+    p{margin:8px 0;}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:4px;}
+    ul{margin:8px 0 8px 20px;}
+    table{border-collapse:collapse;width:100%;margin:8px 0;}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+    .muted{color:#666;font-size:13px;}
+    footer{border-top:1px solid #e6e6e6;margin-top:22px;padding-top:12px;color:#666;font-size:13px;}
+    .kbd{background:#f4f4f4;padding:2px 6px;border-radius:4px;font-family:monospace;}
+    </style></head>
+<body>
+<div class="container">
+<header>
+<h1>Performance-heavy Task Optimized — Case Study</h1>
+<p class="muted">Prepared by: Senior Software Engineer &amp; System Architect — Rails / AWS / SQL / Vue.js</p>
+<p class="muted">Date: 2025-09-10 (UTC)</p>
+</header>
+
+<p class="muted"><strong>Overview</strong></p>
+<p>A step-by-step case study: problem, measurement, hypothesis, remediation, results, and lessons learned.</p>
+
+<section><h2>Problem statement</h2>
+<p>Example: A dashboard page that rendered in ~2.8s p95 under load, with heavy DB usage, causing poor user experience. Many concurrent users amplified the issue.</p>
+</section>
+<section><h2>Initial measurement</h2>
+<ul>
+<li>APM showed request time 2.8s (p95), DB queries per request: ~24, many small queries.</li>
+<li>Bullet flagged multiple N+1s in associations, and EXPLAIN showed seq scans on a large table due to missing index.</li>
+</ul>
+</section>
+<section><h2>Hypothesis & plan</h2>
+<ol>
+<li>Fix N+1 queries by eager loading and batching.</li>
+<li>Add targeted indexes to remove seq scans.</li>
+<li>Cache computed aggregates at edge (Redis) and precompute with background jobs.</li>
+</ol>
+</section>
+<section><h2>Remediation steps</h2>
+<ul>
+<li>Rewrote ActiveRecord queries with <code>includes</code> and selective <code>select</code> to reduce columns fetched.</li>
+<li>Created composite index on <code>(user_id, created_at DESC)</code> to support common queries and ordering, created concurrently.</li>
+<li>Moved heavy statistics to a nightly background job that writes to a summary table and used Redis for per-minute hot counters.</li>
+<li>Introduced fragment caching for parts of the view with cache keys based on content versions.</li>
+</ul>
+</section>
+<section><h2>Results and metrics</h2>
+<ul>
+<li>Queries per request reduced from ~24 → ~4 on average.</li>
+<li>p95 latency dropped from 2.8s → 430ms.</li>
+<li>DB CPU utilization decreased, and the system handled 2x concurrent users with the same infrastructure.</li>
+</ul>
+</section>
+<section><h2>Lessons learned</h2>
+<ul>
+<li>Profile early — don't optimize blind.</li>
+<li>Prefer small, focused changes (indexes, eager loads) before large refactors.</li>
+<li>Cache carefully and invalidate using versioned keys.</li>
+</ul>
+</section>
+<section><h2>Subquestions you should expect</h2>
+<ol>
+<li><strong>How to ensure cache consistency?</strong><br/>Use versioned cache keys and event-driven invalidation (write-through or explicit purge on updates).</li>
+<li><strong>How to test index effectiveness?</strong><br/>Use EXPLAIN ANALYZE on staging-sized dataset or run queries against a recent production replica, and measure latency before/after.</li>
+</ol>
+</section>
+
+
+<footer>I can analyze up to 5 slow endpoints if you provide traces or logs and produce a prioritized optimization plan.</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,40 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Thoughts on QA — Manual vs Automated Testing</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <style>body{font-family:Arial,sans-serif;margin:24px;color:#111}h1{font-size:24px}h2{font-size:20px}ul{margin-left:18px}</style>
+</head>
+<body>
+  <h1>Thoughts on QA — Manual vs Automated Testing</h1>
+
+  <section>
+    <h2>Philosophy</h2>
+    <p>Quality assurance is multi-layered. Automated tests provide speed and safety; manual testing provides exploratory coverage and UX validation. Both are needed.</p>
+  </section>
+
+  <section>
+    <h2>Automated Testing</h2>
+    <ul>
+      <li>Unit tests — fast feedback on logic.</li>
+      <li>Integration tests — ensure components talk correctly.</li>
+      <li>E2E tests — verify user workflows with tools like Cypress or Capybara.</li>
+      <li>CI/CD integration — run automated suites pre-merge to prevent regressions.</li>
+    </ul>
+
+    <h2>Manual Testing</h2>
+    <ul>
+      <li>Exploratory testing uncovers issues automation may miss.</li>
+      <li>UI/UX validation — humans detect usability issues better than scripts.</li>
+      <li>Regression passes for complex user flows before major releases.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Conclusion</h2>
+    <p>Automated testing is the backbone; manual testing provides context and human perspective. The two complement each other, not replace.</p>
+  </section>
+</body>
+</html>

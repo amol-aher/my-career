@@ -1,0 +1,61 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Tools I've Used to Build Pipelines</title>
+  <style>
+    body{font-family:Inter,Arial,Helvetica,sans-serif;margin:22px;color:#111;line-height:1.65}
+    h1{background:#455a64;color:#fff;padding:14px;border-radius:8px}
+    h2{color:#455a64;margin-top:18px}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{padding:8px;border:1px solid #e6e6e6;text-align:left}
+    th{background:#f4f7f8}
+  </style>
+</head>
+<body>
+  <h1>Tools I've Used to Build Pipelines (Jenkins, GitHub Actions, GitLab CI, AWS CodePipeline, etc.)</h1>
+
+  <h2>Overview</h2>
+  <p>I've built CI/CD using a range of tools — hosted and self-managed — choosing each by constraints like team skillset, integration needs and scale.</p>
+
+  <h2>Tool experience summary</h2>
+  <table>
+    <tr><th>Tool</th><th>Where I used it</th><th>Strengths</th></tr>
+    <tr><td>Jenkins</td><td>On-prem & cloud for complex enterprise pipelines</td><td>Highly extensible, lots of plugins, pipelines as code (Jenkinsfile)</td></tr>
+    <tr><td>GitHub Actions</td><td>Cloud-native for OSS and many internal projects</td><td>Simple integration with GitHub, OIDC support, hosted runners</td></tr>
+    <tr><td>GitLab CI</td><td>GitLab-hosted repos and self-managed GitLab</td><td>Tight integration, pipelines-as-code, built-in container registry</td></tr>
+    <tr><td>AWS CodePipeline / CodeBuild / CodeDeploy</td><td>AWS-native deployments and managed services</td><td>Deep integration with AWS services, useful for all-AWS stacks</td></tr>
+    <tr><td>CircleCI / Travis</td><td>CI for smaller teams and public projects</td><td>Fast runners, simple config</td></tr>
+    <tr><td>ArgoCD / Flux</td><td>GitOps CD for Kubernetes</td><td>Declarative git-driven deployments, drift detection</td></tr>
+    <tr><td>Spinnaker</td><td>Large-scale multi-cloud CD</td><td>Powerful deployment strategies, multi-cloud orientation</td></tr>
+  </table>
+
+  <h2>How I choose a CI/CD tool</h2>
+  <ul>
+    <li>Repository location & ecosystem (GitHub Actions if on GitHub).</li>
+    <li>Need for managed vs self-hosted runners.</li>
+    <li>Integration with cloud provider and security requirements.</li>
+    <li>Pipeline complexity and approval/enterprise governance needs.</li>
+  </ul>
+
+  <h2>Practical patterns I've implemented</h2>
+  <ul>
+    <li>PR checks (lint, unit tests) using GitHub Actions for speed and integration.</li>
+    <li>Build agents with Jenkins for long-running integration tests and monorepo builds.</li>
+    <li>GitOps with ArgoCD + Helm for k8s CD and automated drift healing.</li>
+    <li>AWS CodePipeline for end-to-end AWS deployments when teams prefer AWS-managed tooling.</li>
+  </ul>
+
+  <h2>Subquestions</h2>
+  <h3>How do you handle secrets in these tools?</h3>
+  <p>Use native secrets store (GitHub Secrets, GitLab CI Variables) with OIDC for short-lived AWS creds or external vaults (HashiCorp Vault) integrated with runners.</p>
+
+  <h3>Which tool for monorepo?</h3>
+  <p>Prefer orchestrators that support targeted builds: Bazel with custom pipelines, or GitHub Actions with path filters and caching. Jenkins works too for more complex setups.</p>
+
+  <h2>Conclusion</h2>
+  <p>I've used the right tool for the job — GitHub Actions for developer-friendly CI, Jenkins for complex enterprise needs, and GitOps tools for Kubernetes. If you tell me your repo/provider and constraints, I can propose a concrete pipeline architecture and sample CI config.</p>
+</body>
+</html>

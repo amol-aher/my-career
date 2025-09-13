@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 94</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 94: Write a method that checks if a word is a palindrome.</h1>
+<h2>Concept</h2>
+<p>A palindrome reads the same forwards and backwards; normalization (case, non-alphanumeric removal) is commonly applied.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Normalize the string, then check if it equals its reverse (or compare characters from ends inward).</p>
+
+<h2>Code</h2>
+<pre><code class="language-ruby">def palindrome?(s)
+  normalized = s.downcase.gsub(/[^a-z0-9]/i, '')
+  normalized == normalized.reverse
+end
+
+palindrome?('A man, a plan, a canal: Panama') # => true</code></pre>
+
+<h2>Notes</h2>
+<p>For large strings, compare characters without creating reversed copy to save memory.</p>
+
+<hr/><footer>Generated HTML for question 94</footer>
+</body></html>

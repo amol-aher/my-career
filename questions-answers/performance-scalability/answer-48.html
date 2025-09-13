@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>The Saga Pattern for Distributed Transactions</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>The Saga Pattern for Distributed Transactions</h1>
+
+  <h2>Overview</h2>
+  <p>Saga breaks a distributed transaction into a sequence of local transactions; each step publishes events. If a step fails, compensating transactions are executed to rollback.</p>
+
+  <h2>Types</h2>
+  <ul>
+    <li><strong>Choreography:</strong> Each service listens to events and reacts, no central coordinator.</li>
+    <li><strong>Orchestration:</strong> A central orchestrator coordinates steps and compensation (e.g., a saga manager).</li>
+  </ul>
+
+  <h2>Example flow (order placement)</h2>
+  <ol>
+    <li>Order service creates order (PENDING) and emits <code>order.created</code>.</li>
+    <li>Inventory service reserves items; if successful emits <code>inventory.reserved</code>.</li>
+    <li>Payment service attempts charge; if successful emits <code>payment.completed</code> and order moves to CONFIRMED.</li>
+    <li>If payment fails, payment service emits <code>payment.failed</code>, and Inventory service performs compensation <code>inventory.release</code>.</li>
+  </ol>
+
+  <h2>Implementation considerations</h2>
+  <ul>
+    <li>Idempotency & dedupe for events</li>
+    <li>Timeouts and manual reconciliation for long-running sagas</li>
+    <li>Observability for saga state</li>
+  </ul>
+</body>
+</html>

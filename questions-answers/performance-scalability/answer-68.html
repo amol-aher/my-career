@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>CloudWatch: Metrics, Logs, and Alarms</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>CloudWatch Metrics, Logs, and Alarms — Differences</h1>
+
+  <h2>Metrics</h2>
+  <p>Time-series numeric data points (CPUUtilization, RequestCount). Useful for dashboards and SLOs. Metrics have retention and resolution (1-minute, 1-second with higher granularity).</p>
+
+  <h2>Logs</h2>
+  <p>Unstructured or structured events (application logs, Lambda logs). Store in Log Groups and query with CloudWatch Logs Insights for ad-hoc analysis.</p>
+
+  <h2>Alarms</h2>
+  <p>Alarms monitor metrics and fire when thresholds are crossed. Alarms can trigger SNS notifications, auto-scaling, or automated actions.</p>
+
+  <h2>Integration</h2>
+  <ul>
+    <li>Use Metric Filters to create metrics from logs (e.g., error count).</li>
+    <li>Use Logs Insights to debug and correlate traces.</li>
+    <li>Create dashboards that mix metrics and log-derived metrics for richer context.</li>
+  </ul>
+</body>
+</html>

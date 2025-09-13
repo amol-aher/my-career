@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ActiveModel vs ActiveRecord in Rails</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; }
+        .subquestion { margin-top: 30px; padding-left: 15px; border-left: 3px solid #3498db; }
+        .code-block { background-color: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; padding: 12px; margin: 15px 0; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>ActiveModel vs ActiveRecord in Rails</h1>
+
+    <p>Understanding the distinction between ActiveModel and ActiveRecord is crucial for effective Rails development. While both facilitate object-relational mapping, they serve different purposes.</p>
+
+    <h2>ActiveRecord Overview</h2>
+    <p>ActiveRecord is the ORM layer in Rails that provides database interaction capabilities:</p>
+    
+    <ul>
+        <li><strong>Database Integration:</strong> Maps Ruby classes to database tables</li>
+        <li><strong>CRUD Operations:</strong> Provides methods for creating, reading, updating, and deleting records</li>
+        <li><strong>Associations:</strong> Manages relationships between models (has_many, belongs_to, etc.)</li>
+        <li><strong>Validations:</strong> Enforces business rules at the model level</li>
+        <li><strong>Migrations:</strong> Manages database schema evolution</li>
+    </ul>
+
+    <h2>ActiveModel Overview</h2>
+    <p>ActiveModel provides a subset of ActiveRecord functionality for non-database models:</p>
+    
+    <ul>
+        <li><strong>Model Abstraction:</strong> Allows plain Ruby objects to interact with Rails features</li>
+        <li><strong>Validation Framework:</strong> Reuses ActiveRecord's validation system</li>
+        <li><strong>Callbacks:</strong> Supports lifecycle callbacks similar to ActiveRecord</li>
+        <li><strong>Serialization:</strong> Provides methods for converting objects to/from formats like JSON</li>
+        <li><strong>Internationalization:</span> Integrates with Rails I18n system</li>
+    </ul>
+
+    <div class="subquestion">
+        <h2>Sub-question: When to use each?</h2>
+        <table>
+            <tr>
+                <th>Scenario</th>
+                <th>Recommendation</th>
+                <th>Reason</th>
+            </tr>
+            <tr>
+                <td>Database-backed models</td>
+                <td>ActiveRecord</td>
+                <td>Provides full ORM functionality</td>
+            </tr>
+            <tr>
+                <td>Form objects</td>
+                <td>ActiveModel</td>
+                <td>Encapsulates complex form logic</td>
+            </tr>
+            <tr>
+                <td>API resources</td>
+                <td>ActiveModel::Serializers</td>
+                <td>Standardized JSON output</td>
+            </tr>
+            <tr>
+                <td>Service objects</td>
+                <td>ActiveModel</td>
+                <td>Reuses validation and callback infrastructure</td>
+            </tr>
+            <tr>
+                <td>Background jobs</td>
+                <td>ActiveModel</td>
+                <td>Consistent interface with other models</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="subquestion">
+        <h2>Sub-question: How to implement ActiveModel in a plain Ruby class?</h2>
+        <pre class="code-block"># app/models/contact_form.rb
+class ContactForm
+  include ActiveModel::Model
+  
+  attr_accessor :name, :email, :message
+  
+  validates :name, presence: true
+  validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
+  validates :message, length: { minimum: 10 }
+  
+  def submit
+    # Business logic for form submission
+  end
+end</pre>
+        
+        <p>This class can now be used in controllers similarly to ActiveRecord models:</p>
+        <pre class="code-block"># app/controllers/contacts_controller.rb
+def create
+  @contact_form = ContactForm.new(contact_params)
+  
+  if @contact_form.valid?
+    @contact_form.submit
+    redirect_to thank_you_path, notice: 'Message sent successfully!'
+  else
+    render :new
+  end
+end</pre>
+    </div>
+
+    <div class="subquestion">
+        <h2>Sub-question: What are the key differences?</h2>
+        <table>
+            <tr>
+                <th>Feature</th>
+                <th>ActiveRecord</th>
+                <th>ActiveModel</th>
+            </tr>
+            <tr>
+                <td>Database Interaction</td>
+                <td>Yes (full ORM)</td>
+                <td>No</td>
+            </tr>
+            <tr>
+                <td>Table Mapping</td>
+                <td>Automatic via conventions</td>
+                <td>Not applicable</td>
+            </tr>
+            <tr>
+                <td>Associations</td>
+                <td>Yes (has_many, belongs_to, etc.)</td>
+                <td>No</td>
+            </tr>
+            <tr>
+                <td>Validations</td>
+                <td>Yes</td>
+                <td>Yes</td>
+            </tr>
+            <tr>
+                <td>Callbacks</td>
+                <td>Yes</td>
+                <td>Yes</td>
+            </tr>
+            <tr>
+                <td>Serialization</td>
+                <td>Yes</td>
+                <td>Yes</td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

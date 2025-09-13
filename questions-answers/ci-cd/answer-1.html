@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CI/CD, Docker, Kubernetes and Cloud Deployment Experience</title>
+<style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.6; padding:28px; color:#111; background:#fff; }
+    .container{max-width:980px;margin:0 auto;}
+    header{border-bottom:1px solid #e6e6e6;margin-bottom:18px;padding-bottom:8px;}
+    h1{font-size:26px;margin:0 0 6px 0;}
+    h2{font-size:18px;margin-top:18px;color:#0b69ff;}
+    h3{font-size:15px;margin-top:14px;color:#0b69ff;}
+    p{margin:8px 0;}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:4px;}
+    ul{margin:8px 0 8px 20px;}
+    table{border-collapse:collapse;width:100%;margin:8px 0;}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+    .muted{color:#666;font-size:13px;}
+    footer{border-top:1px solid #e6e6e6;margin-top:22px;padding-top:12px;color:#666;font-size:13px;}
+    .kbd{background:#f4f4f4;padding:2px 6px;border-radius:4px;font-family:monospace;}
+    </style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>CI/CD, Docker, Kubernetes and Cloud Deployment Experience</h1>
+<p class="muted">Prepared by: Senior Software Engineer &amp; System Architect — Rails / AWS / SQL / Vue.js</p>
+<p class="muted">Date: 2025-09-10 (UTC)</p>
+</header>
+
+<p class="muted"><strong>Overview</strong></p>
+<p>A complete, practical overview of CI/CD philosophy, pipeline components, Docker and Kubernetes best practices, deployment strategies, and cloud deployment experience (including infra-as-code and operational considerations).</p>
+
+<section><h2>CI/CD Fundamentals and Goals</h2>
+<p>CI/CD is about automating the lifecycle from code change to production in a safe, repeatable, and auditable way. The goals I follow:</p>
+<ul>
+<li><strong>Fast feedback:</strong> Developers get quick signals from linting, unit tests, and static analysis on PRs.</li>
+<li><strong>Automated verification:</strong> Integration tests, security scans, and contract tests before merging.</li>
+<li><strong>Deterministic builds:</strong> Build artifacts are reproducible and immutable (image + checksum).</li>
+<li><strong>Safe deployments:</strong> Use progressive delivery (canary, blue/green) and automated rollbacks.</li>
+<li><strong>Observability &amp; traceability:</strong> Correlate deploys with metrics and logs and enable easy rollback triggers.</li>
+</ul>
+</section>
+<section><h2>Typical CI Pipeline Stages</h2>
+<ul>
+<li><strong>Pre-merge (PR) checks:</strong> Lint, unit tests, basic static analysis, type checks (Sorbet/TypeProf), and lightweight integration tests.</li>
+<li><strong>Build:</strong> Compile, bundle, install dependencies, build container image (multi-stage Docker), run tests inside the image where appropriate.</li>
+<li><strong>Scan:</strong> SAST (Brakeman), dependency scanning (bundler-audit / SCA), image scanning (Trivy/Clair).</li>
+<li><strong>Artifact publish:</strong> Push built images to a registry (ECR/GHCR) with immutable tags (git SHA + semver).</li>
+<li><strong>Deploy:</strong> Deploy to staging via Helm/manifest apply or trigger ArgoCD/Flux/GitOps flow. Run smoke tests and integration tests on staging.</li>
+<li><strong>Promote:</strong> Promote the tested artifact to production using controlled workflows (manual gates, approvals, or automated based on SLOs).</li>
+<li><strong>Post-deploy verification:</strong> Alerting checks, synthetic tests, and rollback if error budget exceeded.</li>
+</ul>
+</section>
+<section><h2>Docker best practices</h2>
+<ul>
+<li><strong>Multi-stage builds:</strong> Build artifacts in a build stage and copy only runtime artifacts to the final image to keep images small.</li>
+<li><strong>Minimal base images:</strong> Use distroless or slim images to reduce attack surface.</li>
+<li><strong>Non-root user:</strong> Run processes as a non-root user in containers.</li>
+<li><strong>Build args &amp; secrets:</strong> Do not bake secrets into images; use build-time args only for non-sensitive values and runtime secrets via environment or secret mounts.</li>
+<li><strong>Image tagging:</strong> Use <code>repo:gitsha</code> for immutability and <code>repo:latest</code> only for convenience (not recommended for production deploys).</li>
+<li><strong>Image scanning:</strong> Integrate Trivy or Clair into the pipeline and fail builds on critical vulnerabilities.</li>
+</ul>
+
+<pre><code># Example Dockerfile (multi-stage)
+FROM ruby:3.2.2 AS builder
+WORKDIR /app
+COPY Gemfile Gemfile.lock ./
+RUN bundle install --without development test
+
+COPY . .
+RUN RAILS_ENV=production bundle exec rake assets:precompile
+
+FROM gcr.io/distroless/ruby
+WORKDIR /app
+COPY --from=builder /app /app
+USER nobody
+CMD ["puma", "-C", "config/puma.rb"]
+</code></pre>
+</section>
+<section><h2>Kubernetes best practices</h2>
+<ul>
+<li><strong>Resources:</strong> Define requests and limits for CPU/memory to enable the scheduler to make smart decisions.</li>
+<li><strong>Probes:</strong> Add readiness and liveness probes to detect unhealthy pods and avoid traffic to startup pods.</li>
+<li><strong>Config &amp; Secrets:</strong> Use ConfigMaps for non-sensitive config and Secrets (backed by KMS/Secrets Manager) for sensitive data. Consider tools like SealedSecrets or SOPS for GitOps workflows.</li>
+<li><strong>RBAC &amp; NetworkPolicy:</strong> Use least-privilege RBAC and enforce network segmentation with NetworkPolicies.</li>
+<li><strong>Autoscaling:</strong> Use HPA for pod autoscaling and Cluster Autoscaler for node-level scaling.</li>
+<li><strong>Namespaces:</strong> Organize environments and teams via namespaces and resource quotas.</li>
+</ul>
+
+<pre><code># Example minimal Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels: { app: web }
+    spec:
+      containers:
+        - name: web
+          image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/myapp:abcdef
+          ports: [{ containerPort: 3000 }]
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            requests: { cpu: "200m", memory: "512Mi" }
+            limits:   { cpu: "1000m", memory: "1Gi" }
+</code></pre>
+</section>
+<section><h2>Deployment strategies & progressive delivery</h2>
+<ul>
+<li><strong>Rolling updates:</strong> Default for Kubernetes; gradually replace pods with new versions.</li>
+<li><strong>Canary releases:</strong> Deploy a fraction of traffic to new version and monitor metrics before increasing.</li>
+<li><strong>Blue/Green:</strong> Deploy parallel environment and switch traffic atomically via load balancer or DNS.</li>
+<li><strong>Feature flags:</strong> Combine with canary to control feature rollout (LaunchDarkly, Flipper).</li>
+<li><strong>GitOps:</strong> Use ArgoCD or Flux for declarative deployments and auditability.</li>
+</ul>
+</section>
+<section><h2>Database migrations & schema changes</h2>
+<p>Migrations are one of the riskiest parts of deploys. I use the expand-contract pattern:</p>
+<ol>
+<li><strong>Expand:</strong> Deploy backward-compatible changes first (add columns, new tables).</li>
+<li><strong>Migrate data:</strong> Backfill data to new structures in background jobs.</li>
+<li><strong>Switch:</strong> Deploy code that uses the new column but remains tolerant of the old.</li>
+<li><strong>Contract:</strong> Remove old columns after verification.</li>
+</ol>
+<p>Also use <code>pg_repack</code> and online tools for large table maintenance and avoid locking operations during peak traffic.</p>
+</section>
+<section><h2>Secrets, IAM &amp; Security</h2>
+<ul>
+<li>Use AWS Secrets Manager or SSM Parameter Store for secrets; for Kubernetes use IAM Roles for Service Accounts (IRSA) + external-secret tooling to inject secrets.</li>
+<li>Encrypt everything at rest where possible (RDS SSE, S3 SSE, EBS encryption).</li>
+<li>Apply IAM least privilege and use short-lived credentials (STS roles) for deployment agents.</li>
+<li>Scan dependencies (SCA), static analysis (Brakeman), and container image scanning as part of CI gates.</li>
+</ul>
+</section>
+<section><h2>Observability &amp; operations</h2>
+<ul>
+<li>Centralized logging (CloudWatch, ELK/Opensearch), metrics (Prometheus + Grafana or CloudWatch Metrics), and tracing (OpenTelemetry, X-Ray).</li>
+<li>Automated alarms for SLO breaches and playbooks for runbooks and incident response.</li>
+<li>Use health checks, readiness endpoints and chaos experiments (Chaos engineering) for resilience testing.</li>
+</ul>
+</section>
+<section><h2>Infra as Code and environments</h2>
+<ul>
+<li>Use Terraform or CloudFormation/CDK for provisioning. Keep infra code versioned and peer-reviewed.</li>
+<li>Use separate AWS accounts or projects per environment (dev/stage/prod) for blast-radius containment.</li>
+<li>Automate environment provisioning in CI for ephemeral preview environments per PR.</li>
+</ul>
+</section>
+<section><h2>Subquestions you should expect</h2>
+<ol>
+<li><strong>How do you handle rollbacks?</strong><br/>Prefer automatic rollback on health-check or error rate spikes using deployment controllers or Argo Rollouts; keep the previous image tag readily available to redeploy quickly.</li>
+<li><strong>How do you handle DB migrations that can't be backward compatible?</strong><br/>Use feature toggles and schedule maintenance windows; for large schema moves, use a queued migration strategy or migrate in a read-only mode with traffic shifting.</li>
+<li><strong>How do you secure your pipelines?</strong><br/>Use least-privilege service accounts, sign artifacts, restrict secrets to the runner environment, and require approvals for production deployments.</li>
+<li><strong>Do you use GitOps?</strong><br/>Yes — it provides audit trails, declarative state, and easier rollbacks. ArgoCD + Helm or Kustomize is typical for K8s.</li>
+</ol>
+</section>
+
+
+<footer>
+If you'd like, I can produce a full GitHub Actions pipeline + Dockerfile + Helm chart for a Rails app, or a Terraform skeleton to provision EKS, RDS, and ECR.
+</footer>
+</div>
+</body>
+</html>

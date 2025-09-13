@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Observer pattern with ActiveSupport callbacks</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Applying the Observer pattern using ActiveSupport callbacks</h1>
+
+    <p>Rails provides lifecycle callbacks on ActiveRecord models (e.g., <code>after_create</code>, <code>after_commit</code>) which can be used to implement observer-like behavior. For more decoupled instrumentation, <code>ActiveSupport::Notifications</code> or background jobs are preferred.</p>
+
+    <h2>Simple callback-based observer</h2>
+    <pre><code>class Order &lt; ApplicationRecord
+  after_create :publish_order_created_event
+
+  private
+
+  def publish_order_created_event
+    OrderNotifier.publish(self.id)
+  end
+end
+
+class OrderNotifier
+  def self.publish(order_id)
+    # push to queue or call subscribers
+    EventBus.publish('order.created', order_id: order_id)
+  end
+end
+</code></pre>
+
+    <h2>Using ActiveSupport::Notifications (recommended for decoupling)</h2>
+    <pre><code># instrumenting
+class Order &lt; ApplicationRecord
+  after_create_commit :announce
+
+  def announce
+    ActiveSupport::Notifications.instrument('order.created', order_id: id, user_id: user_id)
+  end
+end
+
+# subscriber (e.g., in an initializer)
+ActiveSupport::Notifications.subscribe('order.created') do |name, start, finish, id, payload|
+  Analytics.track('order_created', payload)
+  EmailWorker.perform_later(payload[:order_id])
+end
+</code></pre>
+
+    <h2>Advantages</h2>
+    <ul>
+      <li>Callbacks are easy to add and good for short synchronous side effects.</li>
+      <li><code>ActiveSupport::Notifications</code> provides a pub/sub mechanism without tight coupling to handlers and is helpful for metrics and asynchronous processing.</li>
+    </ul>
+
+    <h2>Caveats</h2>
+    <ul>
+      <li>Don't mix heavy business logic into callbacks — they can make transactions and error handling complex.</li>
+      <li>Prefer <code>after_commit</code> for publishing events that should run only once the DB transaction succeeds.</li>
+      <li>Use background jobs for IO-heavy observers to avoid blocking web requests.</li>
+    </ul>
+
+    <h2>Interview tip</h2>
+    <p>Discuss trade-offs between simple callbacks and more robust event-driven designs (SNS/Kafka/Sidekiq). Show how you used notifications and subscribers to instrument production traffic or to decouple side-effects.</p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"/><title>Answer 15</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6; color:#111 }
+pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto }
+code { font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace }
+h1,h2,h3 { color:#0b5394 }
+footer { color:#666; font-size:0.9em }
+</style></head><body>
+<h1>Question 15: Does Ruby support multithreading? What are its limitations?</h1>
+<h2>Concept</h2>
+<p>Ruby supports threads at the language level. MRI historically enforces a Global VM Lock (GVL/GIL) that prevents true parallel execution of Ruby bytecode; JRuby and others don't have this limitation.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Yes — Ruby threads exist, but on MRI the GVL limits CPU-bound parallelism. IO-bound tasks still benefit; use native extensions, JRuby, or process-based parallelism for CPU-bound workloads.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>When can threads be parallel in MRI?</strong> — When extensions release the GVL (e.g., blocking IO implemented in C) or when using JRuby.</li>
+<li><strong>Alternatives for CPU-bound jobs?</strong> — Process.fork, background workers, or JRuby for true parallelism.</li>
+</ul>
+
+<h2>Best practices / Pitfalls</h2>
+<ul>
+<li>Prefer thread pools and proper synchronization; avoid unbounded thread creation.</li>
+<li>Prefer processes for CPU-heavy tasks on MRI to utilize multiple cores.</li>
+</ul>
+
+<hr/>
+<footer>Generated HTML for question 15</footer>
+</body></html>

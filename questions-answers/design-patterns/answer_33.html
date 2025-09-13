@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Form Object pattern — handling complex forms in Rails</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Form Object pattern and improving complex forms</h1>
+
+    <p><strong>Problem</strong>: multi-model forms (signup + profile + preferences), complex validation flows, or transient data that doesn't map to a single ActiveRecord model.</p>
+
+    <h2>Form Object — what it is</h2>
+    <p>A Form Object is a PORO that includes <code>ActiveModel::Model</code> to get validations, conversions and form-style behaviors while orchestrating multiple models or transient attributes.</p>
+
+    <h2>Example: Signup form that creates User + Profile</h2>
+    <pre><code>class SignupForm
+  include ActiveModel::Model
+
+  attr_accessor :email, :password, :first_name, :last_name, :newsletter
+
+  validates :email, :password, presence: true
+  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }
+
+  def save
+    return false unless valid?
+
+    ActiveRecord::Base.transaction do
+      user = User.create!(email: email, password: password)
+      Profile.create!(user: user, first_name: first_name, last_name: last_name)
+      NewsletterSubscription.create!(user: user) if newsletter == '1'
+    end
+    true
+  rescue ActiveRecord::RecordInvalid => e
+    errors.add(:base, e.message)
+    false
+  end
+end
+
+# controller
+def create
+  form = SignupForm.new(signup_params)
+  if form.save
+    redirect_to success_path
+  else
+    render :new
+  end
+end
+</code></pre>
+
+    <h2>Benefits</h2>
+    <ul>
+      <li>Keeps models small and focused; controllers become thin—delegate orchestration to the form object.</li>
+      <li>Easier to test validations and save flows isolated from controllers.</li>
+      <li>Supports complex validations that span multiple models.</li>
+    </ul>
+
+    <h2>Alternatives</h2>
+    <ul>
+      <li><strong>Reform gem</strong> — powerful form objects with coercions, composition and nested forms.</li>
+      <li><strong>Nested attributes</strong> — Rails built-in but can become complex and less explicit.</li>
+    </ul>
+
+    <h2>Interview tips</h2>
+    <p>Show the simple example, explain why nested attributes are sometimes insufficient, and mention how you test forms and handle error propagation to views.</p>
+  </div>
+</body>
+</html>

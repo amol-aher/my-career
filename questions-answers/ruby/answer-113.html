@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 113</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 113: What is cooperative vs preemptive multitasking? Which model do Fibers use?</h1>
+<h2>Concept</h2>
+<p>Cooperative multitasking requires tasks to yield control voluntarily. Preemptive multitasking allows the scheduler to interrupt tasks arbitrarily. Fibers use cooperative multitasking.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Fibers are cooperative: they run until they yield or finish. Threads (OS-level) are usually preemptive (scheduler can interrupt). Use fibers for deterministic control and lower overhead for async IO.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>Implication:</strong> fiber code must yield, otherwise it can starve others in the same scheduler.</li>
+<li><strong>Use cases:</strong> Fibers are ideal for implementing async IO libraries and coroutines.</li>
+</ul>
+
+<h2>Best practices</h2>
+<ul>
+<li>Ensure library code using fibers yields on IO or long computations; otherwise cooperative model can hang the system.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 113</footer>
+</body></html>

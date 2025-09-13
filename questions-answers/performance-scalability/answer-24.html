@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>When Stakeholders Say "Skip It" — How to Respond</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>When Stakeholders Say "Skip It" — How to Respond</h1>
+  <p>Stakeholders sometimes deprioritize technical fixes. The goal is to justify the work quantitatively, escalate when necessary, and accept pragmatic trade-offs.</p>
+
+  <h2>Steps I follow</h2>
+  <ol>
+    <li><strong>Quantify risk/cost:</strong> Show potential impact (technical debt, outages, user impact, future cost) in numbers if possible.</li>
+    <li><strong>Offer alternatives:</strong> e.g., partial fixes, monitoring-only, or a timeboxed spike.</li>
+    <li><strong>Document decision:</strong> Capture the decision and the acceptance of risk in the ADR or ticket.</li>
+    <li><strong>Revisit periodically:</strong> Put it on a tech-debt backlog with SLA for reassessment.</li>
+  </ol>
+
+  <h2>When to escalate</h2>
+  <p>If the issue is a safety, compliance, or major revenue risk, escalate to product leadership with evidence and remediation options.</p>
+
+  <h2>Example</h2>
+  <pre><code>Problem: Single point of failure in payment worker.
+Cost: 4 hours of downtime estimated per incident; average $X revenue lost.
+Option A: Full rewrite (3 sprints).
+Option B: Add monitoring + circuit breaker + failover (2 weeks).
+Stakeholder decision: Accept B now, schedule A later.
+  </code></pre>
+</body>
+</html>

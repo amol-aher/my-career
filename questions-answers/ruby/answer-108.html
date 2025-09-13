@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 108</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 108: What are Thread.current and thread-local variables? How do you set/get them?</h1>
+<h2>Concept</h2>
+<p><code>Thread.current</code> gives the currently executing thread. Thread-local variables are stored per-thread in a hash-like structure.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Use <code>Thread.current[:key] = value</code> to set and <code>Thread.current[:key]</code> to get. Each thread has its own storage.</p>
+
+<h2>Example</h2>
+<pre><code class="language-ruby">Thread.new do
+  Thread.current[:id] = 123
+  puts Thread.current[:id] # => 123
+end.join</code></pre>
+
+<h2>Best practices</h2>
+<ul>
+<li>Thread-local vars are useful for request context (e.g., current_user in web apps), but clear them to avoid leaks in thread pools.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 108</footer>
+</body></html>

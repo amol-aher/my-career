@@ -1,0 +1,71 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Adapting CI/CD for Regulated Production Environments</title>
+  <style>
+    body{font-family:Georgia,serif;margin:24px;color:#222;line-height:1.6}
+    h1{background:#6f42c1;color:#fff;padding:12px;border-radius:8px}
+    h2{color:#6f42c1;margin-top:18px}
+    pre{background:#f7f4fb;padding:12px;border-radius:6px;overflow:auto}
+    ul{margin:8px 0 8px 20px}
+  </style>
+</head>
+<body>
+  <h1>Adapting CI/CD When Production is Regulated (Finance / Healthcare)</h1>
+
+  <h2>Extra requirements in regulated environments</h2>
+  <ul>
+    <li>Strict audit trails and immutable logs.</li>
+    <li>Segregation of duties and approval workflows.</li>
+    <li>Strong identity and access controls (MFA, least privilege).</li>
+    <li>Immutable and reproducible artifacts with provenance.</li>
+    <li>Enhanced testing (QA, UAT, compliance tests) and evidence generation.</li>
+  </ul>
+
+  <h2>Pipeline adaptations</h2>
+  <ul>
+    <li><strong>Enforce approvals:</strong> Add manual gates and multi-person sign-off for production promotions.</li>
+    <li><strong>Extended auditing:</strong> Store logs and pipeline run artifacts in tamper-evident storage and enable CloudTrail/immutable S3 with Object Lock if required.</li>
+    <li><strong>Artifact signing:</strong> Sign builds and images (cosign/sigstore) so their provenance can be verified.</li>
+    <li><strong>Policy enforcement:</strong> Enforce policies as code and block infra changes that violate compliance.</li>
+    <li><strong>Comprehensive testing:</strong> Add compliance test suites and record results to support audits.</li>
+    <li><strong>Change management:</strong> Integrate with change advisory boards and ticketing systems (Jira) and attach evidence to change requests.</li>
+  </ul>
+
+  <h2>Access control & separation of duties</h2>
+  <p>Use distinct roles/accounts for development, staging and production. Ensure that deploys to production require a role that only authorized personnel can assume (e.g., MFA enforced)</p>
+
+  <h2>Data handling</h2>
+  <ul>
+    <li>Encrypt data at rest and in transit (KMS, TLS).</li>
+    <li>Ensure data residency and retention policies are met.</li>
+    <li>Use anonymized or synthetic data for non-production tests.</li>
+  </ul>
+
+  <h2>Compliance evidence & reporting</h2>
+  <p>Automate generation of evidence: test results, deployment manifests, who approved what, and when. Provide auditors with read-only access or packaged reports.</p>
+
+  <h2>Disaster recovery & business continuity</h2>
+  <p>Document RTO/RPO, run regular DR drills, and keep clear rollback and escalation procedures in runbooks with assigned roles.</p>
+
+  <h2>Tooling & controls</h2>
+  <ul>
+    <li>Use AWS Artifact, CloudTrail, Config for compliance records.</li>
+    <li>Use signed artifact registries, image scanners and mandatory policy gates.</li>
+    <li>Enforce VPC endpoints and private service access for critical systems.</li>
+  </ul>
+
+  <h2>Subquestions</h2>
+  <h3>How to manage emergency fixes?</h3>
+  <p>A: Create a separate emergency patch process with elevated approvals and immediate audit logging; require post-facto review and documentation.</p>
+
+  <h3>How to provide evidence for auditors?</h3>
+  <p>A: Export pipeline run metadata, build artifacts, test reports and access logs. Use immutable storage (S3 with Object Lock/Write Once Read Many) to keep evidence tamper-evident.</p>
+
+  <h2>Conclusion</h2>
+  <p>Regulated environments require stronger controls integrated into CI/CD: approvals, auditability, least privilege, artifact signing, and extensive testing. Design pipelines to produce verifiable evidence and enforce policies automatically to remain compliant while preserving delivery velocity where possible.</p>
+</body>
+</html>

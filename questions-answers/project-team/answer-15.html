@@ -1,0 +1,35 @@
+<!doctype html><html><head><meta charset='utf-8'><title>Detecting if work is stuck in QA or in-progress too long</title>
+<style>
+body{font-family:Segoe UI,Arial,Helvetica,sans-serif;line-height:1.5;padding:24px;max-width:900px;margin:auto;color:#111}
+header{border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:18px}
+h1{font-size:20px;margin:0 0 6px 0}
+.role{color:#555;font-size:13px;margin-bottom:6px}
+pre{background:#f6f6f6;padding:12px;border-radius:6px;overflow:auto}
+code{font-family:monospace;font-size:13px}
+section{margin-bottom:18px}
+.sub{font-weight:600;margin-top:8px}
+ul{margin-left:18px}
+ol{margin-left:18px}
+</style></head><body><header><h1>Detecting if work is stuck in QA or in-progress too long</h1><div class='role'>System architect · Technical lead · Senior software engineer (Ruby on Rails, AWS, SQL, Vue.js)</div></header>
+<section>
+<p><strong>Summary:</strong> Monitor status dwell times (time spent per workflow state), PR age, and lead time. Set SLAs for stages like 'In Review' and 'In QA' and alert when exceeded.</p>
+
+<div class='sub'>Concrete signals</div>
+<ul>
+<li>Median time in QA rising over several sprints.</li>
+<li>Backlog of PRs waiting for review for >24–48 hours.</li>
+<li>Stories cycling between QA and In Progress more than N times.</li>
+</ul>
+
+<div class='sub'>Automated alerts</div>
+<p>Use CI/Jira automation to flag PRs older than X hours and stories in QA beyond a threshold. Slack alerts to the team or a dedicated triage channel help visibility.</p>
+
+<div class='sub'>Root causes and remedies</div>
+<ul>
+<li><strong>Flaky tests:</strong> stabilize tests, quarantine flaky tests, and ensure deterministic test data.</li>
+<li><strong>Environment instability:</strong> invest in reliable staging environments and parallel test runners.</li>
+<li><strong>Review bottleneck:</strong> implement review SLAs and rotate on-call reviewers.</li>
+<li><strong>Incomplete test coverage:</strong> expand test matrix and add smoke tests for critical flows.</li>
+</ul>
+</section>
+</body></html>

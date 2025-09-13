@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 163</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 163: Implement an asynchronous HTTP fetcher using Fibers or async/nio4r (or describe how to do it without external gems).</h1>
+<h2>Concept</h2>
+<p>Async IO with fibers allows writing sequential-style code while performing non-blocking IO. Libraries like async and nio4r integrate with the fiber scheduler; without gems, use non-blocking sockets and IO.select.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Prefer async gem for clarity. Without gems, create non-blocking sockets, register them with select, and resume fibers when sockets are readable/writable.</p>
+
+<h2>Example (simple select-based fetcher)</h2>
+<pre><code class="language-ruby">require 'socket'
+require 'uri'
+
+def fetch_nonblocking(url)
+  uri = URI(url)
+  port = uri.port || 80
+  host = uri.host
+
+  sock = TCPSocket.new(host, port)
+  sock.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
+  sock.fcntl(Fcntl::F_SETFL, Fcntl::O_NONBLOCK)
+rescue
+  # fallback blocking
+  return Net::HTTP.get(uri)
+end
+
+# Simplified: using blocking Net::HTTP is recommended unless using a library like async or nio4r</code></pre>
+
+<h2>Notes</h2>
+<p>Implementing a robust async HTTP client is non-trivial; use vetted libraries like async, httpx, or nio4r unless you need custom behavior.</p>
+
+<hr/><footer>Generated HTML for question 163</footer>
+</body></html>

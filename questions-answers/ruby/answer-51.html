@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 51</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 51: What’s the difference between puts, print, and p?</h1>
+<h2>Concept</h2>
+<p>These are Ruby's basic output methods, but they differ in formatting and inspection.</p>
+
+<h2>Optimal answer (concise)</h2>
+<ul>
+<li><code>puts</code>: adds a newline after output, calls <code>to_s</code>.</li>
+<li><code>print</code>: no newline, calls <code>to_s</code>.</li>
+<li><code>p</code>: outputs using <code>inspect</code> (good for debugging), adds newline.</li>
+</ul>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>When to use p?</strong> — debugging objects (shows type/quotes/structure).</li>
+<li><strong>When to use puts/print?</strong> — user-facing output or formatted text.</li>
+</ul>
+
+<h2>Example</h2>
+<pre><code class="language-ruby">puts "hi"     # hi\n
+print "hi"    # hi (no newline)
+p "hi"        # "hi"</code></pre>
+
+<hr/><footer>Generated HTML for question 51</footer>
+</body></html>

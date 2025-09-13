@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"/><title>Answer 18</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6; color:#111 }
+pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto }
+code { font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace }
+h1,h2,h3 { color:#0b5394 }
+footer { color:#666; font-size:0.9em }
+</style></head><body>
+<h1>Question 18: Which one (private/protected) is available across instances?</h1>
+<h2>Concept</h2>
+<p>Protected methods can be invoked across instances within the same class hierarchy; private methods cannot be called with an explicit receiver (hence not across instances).</p>
+
+<h2>Optimal answer (concise)</h2>
+<p><code>protected</code> methods are available across instances of the same class/subclasses; <code>private</code> are not.</p>
+
+<h2>Example</h2>
+<pre><code class="language-ruby">class C
+  protected
+  def p; 'p' end
+end
+a, b = C.new, C.new
+a.send(:p) # works if called within class context</code></pre>
+
+<hr/>
+<footer>Generated HTML for question 18</footer>
+</body></html>

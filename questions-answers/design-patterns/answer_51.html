@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Structuring a Rails app with complex business logic across domains</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:1100px;margin:0 auto;background:#fff;padding:28px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px;margin-bottom:4px}
+    h2{font-size:18px;margin-top:18px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    ul{margin-left:18px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>How to structure a Rails app with complex business logic across multiple domains</h1>
+
+    <p><strong>Summary</strong>: For complex domains, prefer a modular, domain-oriented structure: isolate bounded contexts, keep a thin Rails surface (controllers/AR), move domain logic into PORO domain services, use explicit interfaces (repositories/adapters), and adopt an event-driven boundary between domains. This gives maintainability, testability and clear team ownership.</p>
+
+    <h2>High-level principles</h2>
+    <ul>
+      <li><strong>Bounded contexts:</strong> Identify domain boundaries (orders, billing, inventory, integrations) and isolate code and data where practical.</li>
+      <li><strong>Separation of concerns:</strong> Keep persistence (AR) separate from domain logic: domain objects, services and policies.</li>
+      <li><strong>Composition over inheritance:</strong> Use modules/concerns sparingly and prefer services, repositories and presenters for responsibilities.</li>
+      <li><strong>Explicit dependencies:</strong> Inject services/adapters to make boundaries testable and replaceable.</li>
+      <li><strong>Event-driven integration:</strong> Use domain events to decouple domains and enable asynchronous processing and eventual consistency.</li>
+    </ul>
+
+    <h2>Recommended folder/layout (modular monolith)</h2>
+    <pre><code>app/
+  controllers/
+  models/ (AR models only)
+  services/          # orchestration & application services
+  domain/
+    orders/
+      entities/      # plain Ruby domain entities, value objects
+      services/      # domain services (business rules)
+      repositories/  # repository adapters to AR
+      events/        # domain event definitions
+      projections/   # read models
+    billing/
+    inventory/
+  queries/           # Query objects
+  presenters/        # view presenters / decorators
+  workers/           # background tasks
+  policies/          # authorization
+  serializers/       # JSON views
+</code></pre>
+
+    <h2>How domains interact</h2>
+    <p>Use an application service or mediator at a boundary. Domain services emit events (e.g., <code>order.created</code>) to an event bus (Kafka, Redis streams, or RailsEventStore). Other domains subscribe and react by projecting read models or invoking their own domain logic.</p>
+
+    <h2>Persistence & repositories</h2>
+    <ul>
+      <li>Keep ActiveRecord models thin, mapping to DB schema and relationships.</li>
+      <li>Implement repository adapters in <code>domain/*/repositories</code> which contain queries and transformations to/from AR models so domain code doesn't import AR directly.</li>
+    </ul>
+
+    <h2>Example: order flow simplified (code snippets)</h2>
+    <pre><code># app/domain/orders/services/create_order.rb (domain service)
+class Orders::CreateOrder
+  Result = Struct.new(:ok?, :order, :errors)
+
+  def initialize(order_repo: Orders::Repository.new, payments: Payments::Gateway.new)
+    @order_repo = order_repo
+    @payments = payments
+  end
+
+  def call(attrs)
+    order = Orders::Entity.new(attrs)
+    return Result.new(false, nil, order.errors) unless order.valid?
+
+    @order_repo.transaction do
+      persisted = @order_repo.save(order)
+      payment = @payments.charge(persisted)
+      raise PaymentError unless payment.success?
+      EventBus.publish('order.created', order_id: persisted.id)
+      Result.new(true, persisted, nil)
+    end
+  rescue => e
+    Result.new(false, nil, [e.message])
+  end
+end
+
+# app/domain/orders/repositories/orders_repository.rb
+class Orders::Repository
+  def save(order_entity)
+    OrderRecord.create!(order_entity.to_h)
+  end
+
+  def transaction(&blk)
+    ActiveRecord::Base.transaction(&blk)
+  end
+end
+</code></pre>
+
+    <h2>Testing strategy</h2>
+    <ul>
+      <li>Unit-test domain services and entities without touching DB (use repository test doubles).</li>
+      <li>Integration tests for repositories and AR mappings (small suite).</li>
+      <li>End-to-end tests for flows and event handlers.</li>
+    </ul>
+
+    <h2>Deployment & operational notes</h2>
+    <ul>
+      <li>Start as a modular monolith: use namespaces and engines only if you need independent deployments.</li>
+      <li>Use feature flags for migrations and schema changes across domains.</li>
+      <li>Integrate monitoring per domain: trace requests, event lag, and error rates.</li>
+    </ul>
+
+    <h2>Team & ownership</h2>
+    <p>Assign domain owners. Keep change scopes small and use clear contracts (events + repository interfaces) between teams to reduce coordination overhead.</p>
+
+    <h2>Interview tips</h2>
+    <p>Draw the separation of layers: controllers -> application services -> domain -> repositories -> AR. Explain how this structure helped you ship features faster, reduced regressions, and improved tests.</p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Explain in detail  flex in CSS?</title>
+<style>
+body{font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; max-width:900px; margin:24px auto; line-height:1.6; padding:20px}
+h1{font-size:22px;margin-bottom:6px}
+h2{font-size:18px;margin-top:18px}
+pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+code{background:#f1f1f1;padding:2px 4px;border-radius:4px}
+.section{margin-bottom:18px}
+.followups li{margin-bottom:8px}
+small.meta{color:#666}
+</style>
+</head>
+<body>
+<h1>Explain in detail  flex in CSS?</h1>
+<div class="section"><p>Summary:<br>Flexbox is a CSS layout model designed for one-dimensional layouts (either row OR column). It simplifies distribution of space, alignment, and order of items inside a container. It&#x27;s excellent for building responsive toolbars, navs, and component layouts.</p></div>
+<div class="section"><p>Deep dive — key properties:<br>- Container: `display: flex` or `inline-flex`.<br>- Main axis vs cross axis: defined by `flex-direction` (row, row-reverse, column, column-reverse).<br>- Wrapping: `flex-wrap` allows items to wrap onto multiple lines.<br>- Justify &amp; align: `justify-content` aligns along main axis; `align-items` aligns along cross axis; `align-self` overrides per-item.<br>- Flex sizing: `flex` shorthand (`flex-grow flex-shrink flex-basis`) controls how items grow/shrink relative to each other.</p></div>
+<div class="section"><p>Common layout patterns:<br>- Centering: `display:flex; align-items:center; justify-content:center;` centers child both ways.<br>- Flexible sidebar: `container { display:flex; } main { flex: 1; } aside { width: 300px; }`<br>- Footer stick-to-bottom using column flex and `min-height:100vh`.</p></div>
+<div class="section"><p>Examples:<br>```css<br>.container { display:flex; gap: 16px; align-items:center; justify-content:space-between; }<br>.item { flex: 1 1 200px; } /* grow, shrink, basis */<br>```</p></div>
+<div class="section"><p>When to use Grid vs Flexbox:<br>- Flexbox: one-dimensional layouts and component-level alignment.<br>- CSS Grid: two-dimensional layouts (rows + columns) such as full page layouts or complex grids.<br>They are complementary and often used together.</p></div>
+<div class="section"><p>Interviewer follow-ups:<br>- Q: What is the default `flex` value?<br>  A: `0 1 auto` (no grow, can shrink, base size auto).<br>- Q: How to prevent flex items from shrinking?<br>  A: Use `flex: 0 0 auto` or set `min-width`/`min-height` to enforce size.</p></div>
+<hr>
+<p class="meta"><small>Generated on 2025-09-10T08:27:04.670906</small></p>
+</body>
+</html>

@@ -1,0 +1,73 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Ensuring Zero-Downtime Deployments</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:24px;color:#222;line-height:1.6}
+    h1{background:#0d6efd;color:#fff;padding:12px;border-radius:8px}
+    h2{color:#0d6efd;margin-top:18px}
+    pre{background:#f1f6ff;padding:12px;border-radius:6px;overflow:auto}
+    ul{margin:8px 0 8px 20px}
+  </style>
+</head>
+<body>
+  <h1>How to Ensure Zero-Downtime Deployments in a Pipeline</h1>
+
+  <h2>Core strategies</h2>
+  <ul>
+    <li><strong>Rolling updates:</strong> Gradually replace old instances/pods with new ones while respecting minimum healthy instances.</li>
+    <li><strong>Blue-green deployments:</strong> Provision a separate environment (green) and switch traffic once healthy.</li>
+    <li><strong>Canary releases:</strong> Route a small percentage of traffic to new version and gradually increase on success.</li>
+    <li><strong>Feature flags:</strong> Decouple code release from feature activation to quickly disable risky changes.</li>
+    <li><strong>Graceful draining:</strong> Ensure load balancers stop sending new traffic and allow existing connections to drain.</li>
+  </ul>
+
+  <h2>Deployment checklist</h2>
+  <ul>
+    <li>Use health checks (readiness & liveness) to control traffic routing.</li>
+    <li>Externalize session state (Redis, DynamoDB) so instances are interchangeable.</li>
+    <li>Use connection draining and set appropriate deregistration delays on ALB/NLB.</li>
+    <li>Make database migrations backward compatible; use phased migrations and feature flags.</li>
+    <li>Warm caches if necessary to avoid cold-start latency spikes.</li>
+  </ul>
+
+  <h2>Example: Kubernetes rolling update</h2>
+  <pre><code># Update image and wait for rollout
+kubectl set image deployment/myapp myapp=registry.example.com/myapp:sha-abcdef
+kubectl rollout status deployment/myapp --timeout=5m</code></pre>
+
+  <h2>Example: AWS ECS blue-green via CodeDeploy</h2>
+  <pre><code>// High level
+1. Create new task set (green) with new image and register in new target group.
+2. Run health checks and verification scripts.
+3. Shift ALB listener weights to green target group (gradually).
+4. If issues, shift back to blue; otherwise, finish and clean up blue.</code></pre>
+
+  <h2>Database migration patterns</h2>
+  <ul>
+    <li><strong>Additive changes:</strong> Schema changes should be additive (add columns) and default to safe values.</li>
+    <li><strong>Dual-write & backfill:</strong> Deploy code that writes both old and new fields, backfill data, then switch readers.</li>
+    <li><strong>Feature toggles:</strong> Control new schema usage with flags so a code rollback can disable features without a schema rollback.</li>
+  </ul>
+
+  <h2>Handling special cases</h2>
+  <h3>Websockets & long-lived connections</h3>
+  <p>Use sticky sessions with care or use a connection broker; plan maintenance windows if unavoidable. For graceful updates, signal clients to reconnect or route long-lived connections to a specific pool that is updated separately.</p>
+
+  <h3>Background jobs</h3>
+  <p>Drain queues before shutdown or pause workers gracefully. Use job deduplication and idempotency in job handlers to handle retries or replays.</p>
+
+  <h2>Subquestions & sample answers</h2>
+  <h3>Q: How long to keep the old environment in blue-green?</h3>
+  <p>A: Keep it warm for your rollback window (commonly 15–60 minutes for quick checks, longer if you need business metrics). Balance cost vs safety.</p>
+
+  <h3>Q: How do you validate rollout?</h3>
+  <p>A: Use smoke tests, synthetic transactions, and real-time metrics (error rate, latency, CPU) with automated thresholds to decide whether to proceed or rollback.</p>
+
+  <h2>Conclusion</h2>
+  <p>Zero-downtime deployments are achievable by combining proper traffic control, health checks, state externalization, careful DB migrations, and automated verification. Including these steps in CI/CD pipelines makes production releases predictable and safe.</p>
+</body>
+</html>

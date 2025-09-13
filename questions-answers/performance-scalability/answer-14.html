@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Scaling for High Concurrency and Throughput — Design Ideas</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Scaling for High Concurrency and Throughput — Design Ideas</h1>
+  <p>Scaling is about removing bottlenecks and making each layer horizontally scalable. Here's a practical checklist and patterns to get there.</p>
+
+  <h2>1. Make services stateless</h2>
+  <p>Store session state in Redis or client-side tokens. Stateless services scale horizontally behind a load balancer.</p>
+
+  <h2>2. Right tool for the job</h2>
+  <p>Separate workloads: transactional DB for OLTP, data warehouse for analytics, cache for hot reads, queuing for ingestion burst smoothing.</p>
+
+  <h2>3. Concurrency & connection management</h2>
+  <ul>
+    <li>Tune web server thread/worker counts (Puma).</li>
+    <li>Set DB pool sizes to match maximum concurrent threads: <code>db_pool >= threads * workers</code> preferably.</li>
+    <li>Use connection proxies (pgbouncer) in transaction pooling mode where appropriate.</li>
+  </ul>
+
+  <h2>4. Queue-driven architectures</h2>
+  <p>Offload heavy or variable work to queues (Sidekiq, Kafka). Use rate limiting and backpressure to protect downstream services.</p>
+
+  <h2>5. Caching and CDN</h2>
+  <p>Cache aggressively (Redis, CDN). Use stale-while-revalidate and conditional GET to reduce origin load.</p>
+
+  <h2>6. Partitioning and sharding</h2>
+  <p>Sharding the write surface reduces contention; partition reads by key or time to keep working set small.</p>
+
+  <h2>7. Autoscaling & Capacity Planning</h2>
+  <p>Autoscale based on latency and queue depth, not just CPU. Test autoscaling policies under load.</p>
+
+  <h2>8. Observability & throttling</h2>
+  <p>Instrument p50/p95/p99, queue length, DB active connections; add circuit-breakers and quotas to prevent overload.</p>
+
+  <h2>9. Edge optimizations</h2>
+  <p>Use HTTP/2, keep-alive, connection reuse, and multiplexing. For SPA frontends (Vue.js), enable code-splitting, SSR if needed, and efficient resource caching.</p>
+
+  <h2>10. Example: simple scalable architecture</h2>
+  <pre><code>Users -> CDN -> API LB -> app pool (Puma) -> Redis cache / read-replicas -> primary DB (writes)
+           \-> publish events -> Kafka -> worker pool -> analytics store / materialized views
+  </code></pre>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Techniques to Reduce Rails Boot Time in Large Applications</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Techniques to Reduce Rails Boot Time in Large Applications</h1>
+  <p>Fast boot time improves deploy speed, quick autoscaling, and developer productivity. Here are practical techniques and examples.</p>
+
+  <h2>1. Use bootsnap</h2>
+  <p><code>bootsnap</code> caches expensive file-system lookups and speeds up boot significantly.</p>
+  <pre><code># Gemfile
+gem 'bootsnap', require: false
+
+# config/boot.rb
+require 'bootsnap/setup' # Speed up boot time by caching expensive operations
+  </code></pre>
+
+  <h2>2. Preload app and use copy-on-write friendly forks</h2>
+  <p>With Puma's <code>preload_app!</code>, load the application before forking workers to take advantage of OS COW memory sharing.</p>
+  <pre><code># config/puma.rb
+preload_app!
+workers Integer(ENV['WEB_CONCURRENCY'] || 2)
+  </code></pre>
+
+  <h2>3. Reduce and optimize initializers</h2>
+  <p>Avoid heavy work in initializers (network calls, expensive computations). Move such work to lazy-loading or background tasks.</p>
+
+  <h2>4. Lazy-load rarely used gems</h2>
+  <p>Require costly gems only when needed. Use <code>require_dependency</code> or autoloading where appropriate.</p>
+
+  <h2>5. Use Zeitwerk autoloader and avoid eager loading unnecessary constants</h2>
+  <p>Rails' Zeitwerk handles autoloading efficiently. Avoid forcing eager_load for development unless necessary.</p>
+
+  <h2>6. Optimize gemset and remove unused gems</h2>
+  <p>Each gem increases boot time. Audit gems and remove or move heavy gems to optional groups.</p>
+
+  <h2>7. Cache expensive configuration and view compilation</h2>
+  <p>Precompile assets and view templates. Use config.cache_classes and config.eager_load properly in production.</p>
+
+  <h2>8. Use quick deploy strategies</h2>
+  <p>Blue-green deploys or pre-warmed instances help avoid cold start impact on live traffic.</p>
+
+  <h2>9. Monitor boot time and regressions</h2>
+  <p>Track boot time metrics in CI and production so regressions are visible early.</p>
+
+  <h2>Summary checklist</h2>
+  <ul>
+    <li>Add bootsnap.</li>
+    <li>Preload app and use Puma workers for COW.</li>
+    <li>Reduce expensive initializers and lazy-load where possible.</li>
+    <li>Audit gems and precompile assets/templates.</li>
+  </ul>
+</body>
+</html>

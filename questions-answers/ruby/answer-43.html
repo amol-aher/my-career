@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 43</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 43: What exactly is metaprogramming in Ruby?</h1>
+<h2>Concept</h2>
+<p>Metaprogramming is writing code that writes/changes code at runtime. Ruby's flexible object model (open classes, define_method, class_eval, method_missing) enables powerful metaprogramming used for DSLs, ORMs, and dynamic APIs.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Metaprogramming lets you create methods dynamically, delegate behavior, and build DSLs. Use it to reduce boilerplate (e.g., ActiveRecord) but keep it readable and safe.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>Common tools:</strong> <code>define_method</code>, <code>class_eval</code>, <code>method_missing</code>, <code>send</code>, <code>const_missing</code>.</li>
+<li><strong>Risks:</strong> harder to reason about, possible performance overhead, and security concerns when eval-ing dynamic strings.</li>
+</ul>
+
+<h2>Example</h2>
+<pre><code class="language-ruby">class AttrLogger
+  def self.attr_logged(*names)
+    names.each do |name|
+      define_method(name) do
+        puts "reading \#{name}"
+        instance_variable_get("@#{name}")
+      end
+      define_method("#{name}=") do |v|
+        puts "writing \#{name} = \#{v}"
+        instance_variable_set("@#{name}", v)
+      end
+    end
+  end
+end
+
+class User &lt; AttrLogger
+  attr_logged :name, :age
+end</code></pre>
+
+<h2>Best practices / Pitfalls</h2>
+<ul>
+<li>Prefer explicit code for clarity; use metaprogramming where it meaningfully reduces repetition.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 43</footer>
+</body></html>

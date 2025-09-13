@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 86</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 86: What’s the difference between fibers, threads, and processes in Ruby?</h1>
+<h2>Concept</h2>
+<p>Processes: OS-level isolation and parallelism. Threads: OS threads mapped by interpreter (but GVL may serialize execution). Fibers: lightweight user-space cooperatively-scheduled concurrency units (not preemptive).</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Use processes for isolation and full parallelism; threads for concurrent IO-bound tasks (on JRuby for CPU-bound); fibers for cooperative concurrency and async IO in Ruby 3's scheduler model.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>Fibers:</strong> resumed explicitly via <code>resume</code> or scheduled via Fiber scheduler APIs.</li>
+<li><strong>When to use each:</strong> Fibers for async IO, threads for lightweight concurrency (subject to GVL), processes for heavy CPU work or isolation.</li>
+</ul>
+
+<h2>Example</h2>
+<pre><code class="language-ruby"># fiber simple
+f = Fiber.new { |x| Fiber.yield x + 1; 3 }
+f.resume(1) # => 2
+f.resume    # => 3</code></pre>
+
+<h2>Best practices / Pitfalls</h2>
+<ul>
+<li>Understand scheduling model: fibers rely on cooperative yields; long-running operations must yield to allow other fibers to run.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 86</footer>
+</body></html>

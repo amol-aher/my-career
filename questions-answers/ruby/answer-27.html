@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"/><title>Answer 27</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6; color:#111 }
+pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto }
+code { font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace }
+h1,h2,h3 { color:#0b5394 }
+footer { color:#666; font-size:0.9em }
+</style></head><body>
+<h1>Question 27: What about helpers and how are they different from concerns?</h1>
+<h2>Concept</h2>
+<p>Helpers are view-layer modules (presentation logic). Concerns are for sharing behavior between models/controllers. They serve different layers of the MVC stack.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Helpers live in <code>app/helpers</code> and are mixed into views/controllers for presentation. Concerns live in <code>app/models/concerns</code> or <code>app/controllers/concerns</code> and encapsulate shared domain or controller logic.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>Can helpers be used in models?</strong> — Avoid it; it couples model to view concerns.</li>
+<li><strong>When to use concerns?</strong> — When multiple models/controllers share behavior that is domain or controller-level.</li>
+</ul>
+
+<h2>Best practices / Pitfalls</h2>
+<ul>
+<li>Keep presentation logic in helpers; keep business logic in models/services.</li>
+</ul>
+
+<hr/>
+<footer>Generated HTML for question 27</footer>
+</body></html>

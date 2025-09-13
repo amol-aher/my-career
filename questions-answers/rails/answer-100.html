@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Background Jobs — Tools, Patterns and Experience</title><style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.6; padding:28px; color:#111; background:#fff; }
+    .container{max-width:980px;margin:0 auto;}
+    header{border-bottom:1px solid #e6e6e6;margin-bottom:18px;padding-bottom:8px;}
+    h1{font-size:26px;margin:0 0 6px 0;}
+    h2{font-size:18px;margin-top:18px;color:#0b69ff;}
+    h3{font-size:15px;margin-top:14px;color:#0b69ff;}
+    p{margin:8px 0;}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:4px;}
+    ul{margin:8px 0 8px 20px;}
+    table{border-collapse:collapse;width:100%;margin:8px 0;}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+    .muted{color:#666;font-size:13px;}
+    footer{border-top:1px solid #e6e6e6;margin-top:22px;padding-top:12px;color:#666;font-size:13px;}
+    .kbd{background:#f4f4f4;padding:2px 6px;border-radius:4px;font-family:monospace;}
+    </style></head>
+<body>
+<div class="container">
+<header>
+<h1>Background Jobs — Tools, Patterns and Experience</h1>
+<p class="muted">Prepared by: Senior Software Engineer &amp; System Architect — Rails / AWS / SQL / Vue.js</p>
+<p class="muted">Date: 2025-09-10 (UTC)</p>
+</header>
+
+<p class="muted"><strong>Overview</strong></p>
+<p>Overview of background job systems I have used: Sidekiq, Shoryuken, Resque, Delayed Job, ActiveJob, AWS Lambda, Faktory; comparison and best practices.</p>
+
+<section><h2>Tools I've used</h2>
+<ul>
+<li><strong>Sidekiq:</strong> Primary choice for high-throughput Rails jobs (Redis-backed, multithreaded). Used with sidekiq-unique-jobs, sidekiq-scheduler, and Sidekiq Pro features.</li>
+<li><strong>Shoryuken:</strong> SQS-native worker for AWS-first architectures.</li>
+<li><strong>Resque & Delayed Job:</strong> Used in legacy systems; Resque for fork-per-job model, Delayed Job for simple DB-backed queuing.</li>
+<li><strong>ActiveJob:</strong> Rails abstraction to swap underlying adapters.</li>
+<li><strong>AWS Lambda / Step Functions:</strong> Used for serverless event-driven jobs and orchestrations.</li>
+<li><strong>Faktory:</strong> Language-agnostic job broker for polyglot systems.</li>
+</ul>
+</section>
+<section><h2>Patterns & practices</h2>
+<ul>
+<li><strong>Idempotency:</strong> Design jobs so reruns are safe; use DB constraints or idempotency tokens.</li>
+<li><strong>Job size:</strong> Keep payloads small; store large payloads in S3 and pass references.</li>
+<li><strong>Retries:</strong> Use exponential backoff and differentiate retryable vs non-retryable errors.</li>
+<li><strong>Queue sharding:</strong> Separate queues by priority and resource needs (IO-bound vs CPU-bound).</li>
+<li><strong>Monitoring:</strong> Track queue latency, retry sets, dead sets, and worker health.</li>
+</ul>
+</section>
+<section><h2>Operational considerations</h2>
+<ul>
+<li>Tune Redis: persistence, eviction policies, memory sizing.</li>
+<li>Set Sidekiq concurrency to match process CPU/IO characteristics and DB pool size.</li>
+<li>Protect Sidekiq Web UI with auth and only expose internally.</li>
+</ul>
+</section>
+<section><h2>When to choose each tool</h2>
+<ul>
+<li>Use Sidekiq for most Rails apps with Redis and high throughput needs.</li>
+<li>Use Shoryuken when SQS is preferred as the primary queueing system (e.g., cross-account messaging).</li>
+<li>Use Lambda for short-lived, event-driven tasks with automatic scaling and pay-per-use economics.</li>
+</ul>
+</section>
+<section><h2>Subquestions you should expect</h2>
+<ol>
+<li><strong>How to handle long-running jobs?</strong><br/>Break into smaller jobs, use orchestration (batches), or use dedicated machines with higher timeouts. For very long tasks, consider external workers or Step Functions.</li>
+<li><strong>How to prevent duplicate processing?</strong><br/>Use unique job middleware, idempotency keys stored in DB, and dedupe logic at the consumer level.</li>
+</ol>
+</section>
+
+
+<footer>I can produce a Sidekiq + Redis tuning guide or a Shoryuken sample consuming SQS with retries and DLQ wiring if you want.</footer>
+</div>
+</body>
+</html>

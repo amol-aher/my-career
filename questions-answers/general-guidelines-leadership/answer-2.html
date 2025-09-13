@@ -1,0 +1,61 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Ruby & Rails Versions — Experience</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {font-family: Arial, sans-serif; margin:24px; color:#111;}
+    h1 {font-size:24px;}
+    h2 {font-size:20px;}
+    pre {background:#f5f5f5; padding:12px; border-radius:6px; overflow:auto;}
+    ul {margin-left:20px;}
+  </style>
+</head>
+<body>
+  <h1>Ruby & Rails Versions — Experience</h1>
+  <section>
+    <h2>Summary</h2>
+    <p>I have worked across multiple Ruby and Rails versions from Ruby 1.9/2.0 era up to Ruby 3.x and Rails 3.x through Rails 7.x. I have experience upgrading apps, managing deprecations, and leveraging new features for performance and developer productivity.</p>
+  </section>
+
+  <section>
+    <h2>Specific Versions & Notable Work</h2>
+    <ul>
+      <li><strong>Ruby:</strong> 1.9.3, 2.0.x, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 3.0, 3.1, 3.2. Experience includes: performance tuning with MJIT/YJIT, leveraging pattern matching in Ruby 2.7/3.x, and using frozen string literals.</li>
+      <li><strong>Rails:</strong> Rails 3.2, 4.2, 5.0–5.2, 6.0–6.1, and Rails 7.0. Worked on upgrades: Rails 4→5, 5→6 (introduced Zeitwerk, parallel testing, Webpacker adoption), and 6→7 (hotwire integration, esbuild, and removing Webpacker in many cases).</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Upgrade Experience — Example Checklist</h2>
+    <pre><code>1. Run test-suite and fix failing tests
+2. Audit Gemfile for incompatible gems
+3. Replace deprecated APIs (e.g., before_filter -> before_action)
+4. Upgrade Ruby minor versions first (2.6 -> 2.7 -> 3.0)
+5. Address keyword arguments changes in Ruby 3.0
+6. Migrate autoloaders (classic -> Zeitwerk)
+7. Run security scanners (brakeman, bundler-audit)</code></pre>
+  </section>
+
+  <section>
+    <h2>Common Pitfalls & How I Address Them</h2>
+    <ul>
+      <li><strong>Gem incompatibilities:</strong> Fork or replace unmaintained gems; vendor small patches if necessary.</li>
+      <li><strong>Performance regressions:</strong> Benchmark before/after; optimize SQL, add indexes, or fix N+1 queries.</li>
+      <li><strong>Runtime changes:</strong> Run in staging with representative traffic and feature flags for safe rollouts.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Code Example — Rails 6 initializer for Zeitwerk compat</h2>
+    <pre><code># config/initializers/zeitwerk_compat.rb
+if Rails.autoloaders.zeitwerk_enabled?
+  Rails.autoloaders.each do |autoloader|
+    autoloader.push_dir(Rails.root.join('lib'))
+  end
+end
+</code></pre>
+</body>
+</html>

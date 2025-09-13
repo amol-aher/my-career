@@ -1,0 +1,74 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Blue-Green and Canary Deployments in CodeDeploy</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:24px;color:#222;line-height:1.6}
+    h1{background:#4a90e2;color:#fff;padding:12px;border-radius:8px}
+    h2{color:#4a90e2;margin-top:18px}
+    pre{background:#f2f8ff;padding:12px;border-radius:6px;overflow:auto}
+    ul{margin:8px 0 8px 20px}
+  </style>
+</head>
+<body>
+  <h1>Managing Blue-Green and Canary Deployments with AWS CodeDeploy</h1>
+
+  <h2>Key concepts</h2>
+  <p>CodeDeploy supports deployment to EC2/On-Prem, ECS, and Lambda. For ECS it supports blue-green via separate target groups and ALB weight shifting; for Lambda it supports traffic shifting between aliases (canary/linear).</p>
+
+  <h2>Blue-Green for ECS with CodeDeploy</h2>
+  <ol>
+    <li>Create two target groups: one (blue) for the current running tasks and one (green) for the new task set.</li>
+    <li>CodeDeploy registers the green task set in the green target group, runs lifecycle hooks (pre-traffic), and shifts traffic by changing ALB listener weights according to deployment configuration.</li>
+    <li>Run validation hooks (tests). If validation passes, continue to shift traffic fully to green. If it fails, CodeDeploy can rollback traffic to blue.</li>
+  </ol>
+
+  <h2>Example AppSpec for ECS (conceptual)</h2>
+  <pre><code>version: 0.0
+Resources:
+  - TargetService:
+      Type: AWS::ECS::Service
+      Properties:
+        TaskDefinition: "arn:aws:ecs:region:acct:task-definition/mytask:3"
+        LoadBalancerInfo:
+          ContainerName: web
+          ContainerPort: 80
+Hooks:
+  BeforeInstall: - location: scripts/pre_install.sh
+  AfterAllowTestTraffic: - location: scripts/run_smoke_tests.sh
+  AfterInstall: - location: scripts/post_install.sh</code></pre>
+
+  <h2>Canary & Linear traffic shifting (Lambda)</h2>
+  <p>CodeDeploy can shift traffic incrementally to a Lambda alias: canary (e.g., 10% then 100% after a wait) or linear (e.g., 10% every 5 minutes). You define deploymentConfig in CodeDeploy to control these steps.</p>
+
+  <h2>Automatic rollback integration</h2>
+  <p>CodeDeploy integrates with CloudWatch Alarms — if an alarm triggers during the verification window, CodeDeploy marks the deployment as failed and shifts traffic back to the original environment.</p>
+
+  <h2>Best practices</h2>
+  <ul>
+    <li>Define robust validation hooks (synthetic tests and smoke checks).</li>
+    <li>Use CloudWatch or Prometheus metrics as rollback triggers.</li>
+    <li>Keep the old environment warm to allow fast rollback.</li>
+    <li>For DB changes, use backward-compatible migrations and coordinate with deploys.</li>
+  </ul>
+
+  <h2>Subquestions & answers</h2>
+  <h3>How long should verification windows be?</h3>
+  <p>Depends on traffic and metrics — often 5–30 minutes. For critical flows, longer windows (hours) and staged promotions may be required.</p>
+
+  <h3>Can I run custom validation during shift?</h3>
+  <p>Yes — use AppSpec hooks (BeforeAllowTraffic, AfterAllowTraffic) to run tests and gate traffic shifting.</p>
+
+  <h2>Limitations</h2>
+  <ul>
+    <li>CodeDeploy manages traffic routing at ALB/target-group level for ECS; advanced traffic shaping may require service mesh or external proxies.</li>
+    <li>Complex multi-service orchestrated changes may need orchestration beyond single CodeDeploy deployment (coordinate via pipeline).</li>
+  </ul>
+
+  <h2>Conclusion</h2>
+  <p>CodeDeploy provides solid primitives for blue-green and canary deployments with automatic rollback and lifecycle hooks — a good fit when paired with ALB, ECS, or Lambda and appropriate validation strategies.</p>
+</body>
+</html>

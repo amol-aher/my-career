@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caching Mechanisms in Rails</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; margin-top: 30px; }
+        .section { background-color: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .code-block { background-color: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto; margin: 15px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<h1>Caching Mechanisms in Ruby on Rails</h1>
+
+<div class="section">
+    <h2>Layered Caching Strategy</h2>
+    
+    <h3>1. Fragment Caching</h3>
+    <p>Cache partial page segments:</p>
+    <div class="code-block"># app/views/products/show.html.erb
+<% cache product do %>
+  <%= render product %>
+<% end %></div>
+    
+    <h3>2. Russian Doll Caching</h3>
+    <p>Nested fragment caching:</p>
+    <div class="code-block"># app/views/orders/_line_item.html.erb
+<% cache line_item.product do %>
+  <%= render line_item %>
+<% end %></div>
+    
+    <h3>3. Low-Level Caching</h3>
+    <p>Direct Redis/Memcached usage:</p>
+    <div class="code-block"># app/services/product_service.rb
+def expensive_calculation
+  Rails.cache.fetch("product_#{id}", expires_in: 1.hour) do
+    # Complex calculation...
+  end
+end</div>
+    
+    <h3>4. Cache Digests</h3>
+    <p>Automatic invalidation when dependencies change:</p>
+    <div class="code-block"># app/views/products/index.html.erb
+<% cache products, skip_digest: true do %>
+  <% products.each do |product| %>
+    <%= render product %>
+  <% end %>
+<% end %></div>
+    
+    <h2>Memcached Data Store Configuration</h2>
+    <p>Typical memcached setup in Rails:</p>
+    <div class="code-block"># config/caches.yml
+memcached:
+  servers:
+    - localhost:11211
+  namespace: my_app_production
+  expires_in: 1.day</div>
+    
+    <h2>Best Practices</h2>
+    <ul>
+        <li>Use cache digests for automatic invalidation</li>
+        <li>Set appropriate expiration times</li>
+        <li>Handle cache misses gracefully</li>
+        <li>Monitor cache hit rates</li>
+    </ul>
+</div>
+
+</body>
+</html>

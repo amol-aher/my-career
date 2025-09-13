@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duck Typing in Ruby</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; margin-top: 30px; }
+        .section { background-color: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .code-block { background-color: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto; margin: 15px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<h1>Duck Typing in Ruby</h1>
+
+<div class="section">
+    <h2>Concept and Principles</h2>
+    
+    <h3>What is Duck Typing?</h3>
+    <p>"If it walks like a duck and quacks like a duck, then it probably is a duck."</p>
+    <p>An object-oriented programming principle where the suitability of an object for a particular purpose is determined by the presence of certain properties and methods, rather than the actual type of the object.</p>
+    
+    <h3>Core Principle</h3>
+    <div class="code-block"># Instead of checking class
+if obj.respond_to?(:quack)
+  obj.quack
+end</div>
+    
+    <h3>vs Static Typing</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Feature</th>
+                <th>Duck Typing</th>
+                <th>Static Typing</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Type Checking</td>
+                <td>Runtime</td>
+                <td>Compile-time</td>
+            </tr>
+            <tr>
+                <td>Flexibility</td>
+                <td>High</td>
+                <td>Low</td>
+            </tr>
+            <tr>
+                <td>Polymorphism</td>
+                <td>Natural</td>
+                <td>Explicit interfaces</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h3>Practical Examples</h3>
+    <div class="code-block"># Ruby Example
+module Quackable
+  def quack
+    puts "Quack!"
+  end
+end
+
+class Duck
+  include Quackable
+end
+
+class ToyDuck
+  include Quackable
+end
+
+duck = Duck.new
+toy_duck = ToyDuck.new
+
+[duck, toy_duck].each(&:quack)</div>
+    
+    <h3>Benefits in Ruby</h3>
+    <ul>
+        <li>Flexible design patterns</li>
+        <li>Easier polymorphism implementation</li>
+        <li>Natural fit for Ruby's dynamic nature</li>
+        <li>Reduced coupling between components</li>
+    </ul>
+    
+    <h3>Potential Pitfalls</h3>
+    <ul>
+        <li>Runtime errors if expected methods aren't present</li>
+        <li>Less explicit contracts can lead to confusion</li>
+        <li>Testing requires more thorough scenario coverage</li>
+    </ul>
+</div>
+
+</body>
+</html>

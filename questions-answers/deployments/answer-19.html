@@ -1,0 +1,70 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Handling Secrets and Credentials in CI/CD Pipelines</title>
+  <style>
+    body{font-family:Inter,Arial,Helvetica,sans-serif;margin:22px;color:#111;line-height:1.65}
+    h1{background:#ad1457;color:#fff;padding:14px;border-radius:8px}
+    h2{color:#ad1457;margin-top:18px}
+    ul{margin:8px 0 8px 20px}
+    .warning{background:#fff0f6;padding:10px;border-left:4px solid #ad1457;border-radius:6px;margin:10px 0}
+  </style>
+</head>
+<body>
+  <h1>How I Handle Secrets and Credentials in CI/CD Pipelines</h1>
+
+  <h2>Principles</h2>
+  <ul>
+    <li>Never store plaintext secrets in source control.</li>
+    <li>Prefer ephemeral credentials and least privilege.</li>
+    <li>Audit access and rotate secrets regularly.</li>
+  </ul>
+
+  <h2>Practical methods</h2>
+  <ul>
+    <li><strong>CI provider secrets:</strong> use encrypted secrets facilities (GitHub Secrets, GitLab CI variables) for small teams.</li>
+    <li><strong>OIDC for cloud credentials:</strong> configure provider OIDC (e.g., GitHub Actions OIDC) and allow the pipeline to assume an IAM role with short-lived credentials — avoids storing AWS keys in the CI provider.</li>
+    <li><strong>External vaults:</strong> integrate HashiCorp Vault or AWS Secrets Manager to fetch secrets at runtime in the job. Use short-lived tokens and inject secrets into build step environment only at execution.</li>
+    <li><strong>Ephemeral builders:</strong> use ephemeral runner instances or containers so secrets never persist long-term on runners.</li>
+    <li><strong>Masking & logging:</strong> ensure CI masks secrets in logs and prevent commands that echo env variables.</li>
+  </ul>
+
+  <h2>Example: GitHub Actions + AWS OIDC</h2>
+  <ol>
+    <li>Create IAM role with a trust policy for GitHub OIDC subject.</li>
+    <li>Grant minimal permissions to role (deploy only to specific resources).</li>
+    <li>In workflow, use <code>aws-actions/configure-aws-credentials</code> with OIDC to obtain temporary creds.</li>
+    <li>Use short-lived creds to push to ECR or run terraform apply.</li>
+  </ol>
+
+  <h2>Rotations, revocations & audits</h2>
+  <ul>
+    <li>Rotate service accounts and secrets on a schedule (Secrets Manager automated rotation).</li>
+    <li>Immediately revoke secrets tied to incidents and rebuild artifacts if necessary.</li>
+    <li>Monitor CI logs and CloudTrail for suspicious usage of pipeline roles.</li>
+  </ul>
+
+  <div class="warning"><strong>Warning:</strong> Avoid passing unescaped secrets to shell commands; prefer injecting as environment variables and use masking helpers provided by CI platforms.</div>
+
+  <h2>Subquestions</h2>
+  <h3>How to inject database credentials during deploy?</h3>
+  <p>Use Secrets Manager and configure the runtime to read secrets on startup. For migrations in pipelines, assume a short-lived role that can read the secret and perform migration, then discard the credential.</p>
+
+  <h3>How to test pipeline that uses secrets safely?</h3>
+  <p>Use test secrets in non-prod accounts and restrict test roles. Use feature flags to avoid accidental production-side effects during tests.</p>
+
+  <h2>Checklist</h2>
+  <ul>
+    <li>Use OIDC or short-lived STS creds for cloud providers.</li>
+    <li>Use vault-backed secrets for sensitive values.</li>
+    <li>Mask secrets and avoid logging sensitive data.</li>
+    <li>Use ephemeral runners and rotate secrets regularly.</li>
+    <li>Audit access and alerts on anomalous usage.</li>
+  </ul>
+
+  <p style="margin-top:18px">I can provide a sample GitHub Actions workflow and IAM trust policy showing OIDC usage if you want — say the target cloud and I’ll tailor it.</p>
+</body>
+</html>

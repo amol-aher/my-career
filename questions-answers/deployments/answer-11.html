@@ -1,0 +1,108 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Configuring Auto-Scaling for Deployed Applications</title>
+  <style>
+    body{font-family:Inter,Arial,Helvetica,sans-serif;margin:22px;color:#111;line-height:1.65}
+    h1{background:#0b74de;color:#fff;padding:14px;border-radius:8px}
+    h2{color:#0b74de;margin-top:18px}
+    pre{background:#f6f9ff;padding:12px;border-radius:6px;overflow:auto}
+    ul{margin:8px 0 8px 20px}
+    .callout{background:#eef6ff;border-left:4px solid #0b74de;padding:10px;border-radius:6px;margin:10px 0}
+  </style>
+</head>
+<body>
+  <h1>Configuring Auto-Scaling for Deployed Applications</h1>
+
+  <h2>Overview</h2>
+  <p>Auto-scaling is the automated adjustment of compute capacity (instances, tasks, pods, functions) in response to load. Properly configured auto-scaling reduces cost, improves availability and helps meet SLOs. The configuration approach depends on the runtime:</p>
+  <ul>
+    <li>Virtual machines (EC2 Auto Scaling Groups)</li>
+    <li>Containers (ECS Service Auto Scaling / EKS using HPA/VPA/KEDA)</li>
+    <li>Serverless (Lambda concurrency & provisioned concurrency)</li>
+  </ul>
+
+  <h2>Key concepts</h2>
+  <ul>
+    <li><strong>Scaling target:</strong> what you scale (instances, tasks, pods, function concurrency)</li>
+    <li><strong>Metric:</strong> the measurement that drives scaling (CPU, memory, request count, custom business metrics)</li>
+    <li><strong>Policies:</strong> target-tracking, step-scaling, scheduled scaling</li>
+    <li><strong>Cooldown & warm-up:</strong> windows to avoid oscillation</li>
+    <li><strong>Minimum/maximum capacity:</strong> safety boundaries</li>
+  </ul>
+
+  <h2>Step-by-step: EC2 Auto Scaling Group (ASG)</h2>
+  <ol>
+    <li>Create a launch template or launch configuration with the AMI, instance type and user data.</li>
+    <li>Create an Auto Scaling Group spanning multiple Availability Zones; set the desired, min and max capacity.</li>
+    <li>Define scaling policies:</li>
+      <ul>
+        <li><em>Target tracking:</em> keep average CPU at X% or maintain a custom metric (requests per instance).</li>
+        <li><em>Step scaling:</em> add/remove N instances when thresholds are crossed to react in larger steps.</li>
+        <li><em>Scheduled scaling:</em> scale predictably for known traffic patterns (business hours).</li>
+      </ul>
+    <li>Create CloudWatch Alarms on the metrics used by policies.</li>
+    <li>Configure health checks (EC2 & ELB) and graceful termination lifecycle hooks (draining)</li>
+    <li>Test with synthetic load and observe scaling behavior; tune cooldown and instance warm-up.</li>
+  </ol>
+
+  <h2>Step-by-step: ECS Service Auto Scaling (Fargate / EC2)</h2>
+  <ol>
+    <li>Deploy service with a task definition and create an Application Load Balancer target group.</li>
+    <li>Enable Service Auto Scaling and attach a scaling policy (target-tracking or step).</li>
+    <li>Choose metric: ALB request count per target, CPUUtilization, or a custom CloudWatch metric published by the app.</li>
+    <li>Set min/max task counts and define cooldown periods.</li>
+    <li>Enable health checks and deregistration delay on the ALB so in-flight requests drain.</li>
+  </ol>
+
+  <h2>Step-by-step: EKS / Kubernetes</h2>
+  <ul>
+    <li><strong>Horizontal Pod Autoscaler (HPA):</strong> scales pod count using CPU/memory or custom metrics via metrics-server / Prometheus adapter.</li>
+    <li><strong>Vertical Pod Autoscaler (VPA):</strong> adjusts pod resource requests/limits (use carefully for stateful workloads).</li>
+    <li><strong>Cluster Autoscaler:</strong> expands/shrinks node groups when pods cannot be scheduled.</li>
+    <li><strong>KEDA:</strong> event-driven autoscaling for workloads driven by queues, Kafka, or custom metrics.</li>
+  </ul>
+
+  <h2>Serverless scaling (Lambda)</h2>
+  <ul>
+    <li>Lambda scales automatically as requests arrive up to region concurrency limits.</li>
+    <li>Use <code>ReservedConcurrency</code> to guarantee capacity or limit function consumption.</li>
+    <li>Use <code>ProvisionedConcurrency</code> to avoid cold starts for latency-sensitive functions.</li>
+  </ul>
+
+  <h2>Advanced topics & best practices</h2>
+  <ul>
+    <li><strong>Use meaningful metrics:</strong> prefer business or request-based metrics (requests/sec, queue length) over raw CPU when available.</li>
+    <li><strong>Prevent thrashing:</strong> add cooldowns, warm-up periods, and use target tracking rather than tight thresholds.</li>
+    <li><strong>Scale stateful components carefully:</strong> databases often use read replicas and connection pooling; avoid auto-scaling primary database without careful plan.</li>
+    <li><strong>Warm pools / pre-provisioning:</strong> for critical apps, maintain warm instances or use provisioned concurrency to reduce scale-up latency.</li>
+    <li><strong>Spot instances:</strong> combine ASG with MixedInstancesPolicy (On-Demand + Spot) and capacity providers in ECS to optimize cost with fallbacks.</li>
+    <li><strong>Observability:</strong> plot scaled metrics, instance / task lifecycle events, and SLOs to detect misconfigurations.</li>
+  </ul>
+
+  <div class="callout"><strong>Testing & validation:</strong> perform load tests and chaos experiments to validate autoscaling behavior; verify capacity under AZ failure scenarios.</div>
+
+  <h2>Common interview subquestions and concise answers</h2>
+  <h3>How do you avoid autoscaling thrash?</h3>
+  <p>Use larger step sizes, target-tracking policies, reasonable cooldown and instance warm-up, and smooth noisy metrics with moving averages.</p>
+
+  <h3>How to autoscale databases?</h3>
+  <p>Prefer managed DB features: read replicas for scaling read traffic, RDS/Aurora Multi-AZ for HA, and vertical scaling for write-heavy workloads. For distributed DBs, use partitioning/sharding and autoscale the stateless layers in front.</p>
+
+  <h3>What metrics are best for web services?</h3>
+  <p>Request rate per instance, latency p95/p99, queue length, and CPU/memory if you lack request-level metrics.</p>
+
+  <h2>Checklist before enabling autoscaling</h2>
+  <ul>
+    <li>Health checks and graceful termination configured.</li>
+    <li>Monitoring dashboards & alarms in place.</li>
+    <li>Min/max capacity boundaries set.</li>
+    <li>Deployment strategies work with autoscaling (rolling updates, canary, blue/green).</li>
+  </ul>
+
+  <p style="margin-top:18px">If you want, I can include Terraform/CloudFormation/Helm snippets that show concrete autoscaling policies for your stack (ASG, ECS service auto scaling, HPA + Cluster Autoscaler). Tell me which target and I'll produce the snippet.</p>
+</body>
+</html>

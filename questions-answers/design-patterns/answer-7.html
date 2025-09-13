@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>API Gateway — components and responsibilities</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;line-height:1.6;color:#111;background:#f6f8fb;padding:28px}
+    .container{max-width:960px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px}
+    h2{font-size:18px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>API Gateway — components and responsibilities</h1>
+
+    <p><strong>Short summary</strong>: An API Gateway is a single entrypoint for clients to interact with backend services. It centralizes cross-cutting concerns: authentication, authorization, rate limiting, request routing, protocol translation, request/response transformation, telemetry, and caching.</p>
+
+    <h2>Key components</h2>
+    <ul>
+      <li><strong>Authentication & Authorization</strong> — validate tokens (JWT/OAuth), integrate with identity providers, enforce ACLs and scopes.</li>
+      <li><strong>Routing & Load Balancing</strong> — map incoming paths to backend services, support canary/blue-green routing, and weighted routes.</li>
+      <li><strong>Rate Limiting & Throttling</strong> — per-client/quota limits, burst controls, and quota tracking.</li>
+      <li><strong>Request/Response Transformation</strong> — modify headers, body, and protocol conversion (HTTP <-> gRPC), and composition of multiple backend responses.</li>
+      <li><strong>Caching</strong> — edge caching for public endpoints, configurable TTLs and cache invalidation hooks.</li>
+      <li><strong>Observability</strong> — structured logs, metrics, distributed tracing headers, and access logs.</li>
+      <li><strong>Security & WAF</strong> — protect against injection, bad payloads, and provide WAF integration and input validation.</li>
+      <li><strong>Rate plan / API monetization</strong> — API key management, usage plans, and billing hooks (for public APIs).</li>
+      <li><strong>Monitoring & Health checks</strong> — upstream health checks, circuit breaking, and failover strategies.</li>
+    </ul>
+
+    <h2>Advanced features</h2>
+    <ul>
+      <li><strong>Service composition / aggregation</strong> — combine multiple backend calls into a single response for clients.</li>
+      <li><strong>Protocol translation</strong> — frontend clients speak REST while backends use gRPC; the gateway translates.</li>
+      <li><strong>Edge A/B testing & canarying</strong> — route a portion of traffic to new service versions.</li>
+      <li><strong>Dynamic configuration</strong> — push routing and policy changes without restarts.</li>
+    </ul>
+
+    <h2>Interview subquestions</h2>
+    <ul>
+      <li><strong>Where to place the gateway?</strong> At the edge before internal network; often layered: external gateway for public clients and internal gateway for service-to-service communication.</li>
+      <li><strong>Do you put business logic there?</strong> Keep gateway thin: avoid business rules. Use it for orchestration and composition only when it reduces chattiness and does not duplicate domain logic.</li>
+      <li><strong>High availability?</strong> Run multiple gateway instances across AZs, use autoscaling, and externalize rate-limiter state to Redis or DB for consistency.</li>
+    </ul>
+
+    <p style="color:#666">In an interview, be ready to discuss trade-offs: security centralization vs single point of failure, performance overhead vs developer productivity, and how you handle scaling and failover for the gateway itself.</p>
+  </div>
+</body>
+</html>

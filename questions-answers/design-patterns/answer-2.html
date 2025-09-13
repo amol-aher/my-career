@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Report generation — recommended design pattern(s)</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;line-height:1.6;color:#111;background:#f6f8fb;padding:28px}
+    .container{max-width:900px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px}
+    h2{font-size:18px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Report generation — recommended design pattern(s)</h1>
+
+    <p><strong>Short answer</strong>: For report generation I usually combine multiple patterns: <strong>Builder</strong> (assemble complex report pieces), <strong>Strategy</strong> (different export/output formats), and optionally <strong>Template Method</strong> (if the report generation follows a common skeleton with variable steps). For layout or nested sections, <strong>Composite</strong> is useful.</p>
+
+    <h2>Why a combination?</h2>
+    <p>Reports often have multiple orthogonal concerns: data retrieval, business logic/aggregation, formatting/layout, and serialization (CSV/JSON/PDF). A single pattern rarely captures all of that cleanly. Combining patterns keeps each class focused, testable and replaceable.</p>
+
+    <h2>Pattern responsibilities</h2>
+    <ul>
+      <li><strong>Builder</strong>: incremental construction of complex report objects (header, sections, footers, page breaks). Use when the output is multi-part and you want a fluent API for assembly.</li>
+      <li><strong>Strategy</strong>: interchangeable exporters/renderers (CSV, JSON, XLSX, PDF). Each exporter implements a common interface.</li>
+      <li><strong>Template Method</strong>: an abstract base that defines steps: fetch -> aggregate -> format -> export; subclasses override specific steps. Use if you have many similar report types with consistent workflow.</li>
+      <li><strong>Composite</strong>: represent report sections and subsections as tree nodes so rendering can be recursive.</li>
+    </ul>
+
+    <h2>Idiomatic Ruby/Rails structure (recommended)</h2>
+    <p>Separate responsibilities across these components:</p>
+    <ol>
+      <li><strong>Fetcher / Query object</strong> — one class that encapsulates DB queries and filters (ActiveRecord scopes or raw SQL).</li>
+      <li><strong>Aggregator / Presenter</strong> — compute derived values, groupings and business rules (pure Ruby).</li>
+      <li><strong>Builder</strong> — assemble a Report PORO with sections and metadata.</li>
+      <li><strong>Export Strategy</strong> — implement CSV/JSON/PDF using libraries like Prawn, Axlsx, or custom serializers.</li>
+      <li><strong>Coordinator / Service</strong> — orchestrates the pipeline and kicks off background jobs for long-running exports.</li>
+    </ol>
+
+    <h3>Sample Ruby sketch (Builder + Strategy)</h3>
+    <pre><code># Report POJO
+class Report
+  attr_accessor :title, :meta, :sections
+  def initialize(title:)
+    @title = title
+    @sections = []
+    @meta = {}
+  end
+end
+
+# Builder
+class ReportBuilder
+  def initialize(title:)
+    @report = Report.new(title: title)
+  end
+
+  def add_section(name:, rows:)
+    @report.sections << {name: name, rows: rows}
+    self
+  end
+
+  def meta(k, v)
+    @report.meta[k] = v
+    self
+  end
+
+  def build
+    @report
+  end
+end
+
+# Strategy-like exporter
+class CsvExporter
+  def export(report)
+    # flatten sections into CSV
+  end
+end
+
+# Coordinator
+class ReportService
+  def initialize(builder:, exporter:)
+    @builder = builder
+    @exporter = exporter
+  end
+
+  def run
+    report = @builder.build
+    @exporter.export(report)
+  end
+end
+
+# usage
+builder = ReportBuilder.new(title: 'Monthly')
+  .add_section(name: 'Summary', rows: [[1,'a']])
+exporter = CsvExporter.new
+ReportService.new(builder: builder, exporter: exporter).run
+</code></pre>
+
+    <h2>Common interview subquestions and answers</h2>
+    <ul>
+      <li><strong>Q: Why not a single monolithic class?</strong> <br>Monoliths get hard to test and change. Splitting makes the pipeline composable and lets you run parts (like Fetcher) in isolation or reuse exporters.</li>
+      <li><strong>Q: How to handle long-running exports?</strong> <br>Offload to background jobs (Sidekiq). Store intermediate results in Redis or temp tables if needed. Provide a job ID and polling endpoint or webhooks for completion.</li>
+      <li><strong>Q: How to support vendor formats (Excel/PDF)?</strong> <br>Keep vendor-specific glue in exporter implementations. Use streams to avoid memory pressure for large exports (streaming CSV or using tempfile buffers for PDF).</li>
+      <li><strong>Q: How to version report schemas?</strong> <br>Include a version field in report meta and keep exporters backward-compatible. For breaking changes, provide migration code or a translation layer.</li>
+    </ul>
+
+    <h2>Trade-offs & pitfalls</h2>
+    <ul>
+      <li>Over-engineering: avoid premature abstraction for trivial reports.</li>
+      <li>Class explosion: group similar minor strategies if they share impl.</li>
+      <li>Memory & IO usage: streaming and batching are essential for large data sets.</li>
+    </ul>
+
+    <p style="margin-top:12px;color:#666">This structure balances testability, separation of concerns, and ease of extension — good talking points in an interview when you justify your choice.</p>
+  </div>
+</body>
+</html>

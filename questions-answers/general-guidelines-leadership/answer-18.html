@@ -1,0 +1,40 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Example of Communication Being a Challenge</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:24px;color:#111}h1{font-size:24px}h2{font-size:20px}pre{background:#f5f5f5;padding:12px;border-radius:6px;overflow:auto}ul{margin-left:18px}</style>
+</head>
+<body>
+  <h1>Example Where Communication Was a Challenge</h1>
+
+  <section>
+    <h2>Scenario</h2>
+    <p>During a cross‑functional launch, engineering built a minor but impactful change to an API response format. Product and customer success were not looped in, and some clients relied on the old response shape. The result: customer confusion and a couple of support tickets.</p>
+  </section>
+
+  <section>
+    <h2>Root causes</h2>
+    <ul>
+      <li>Assumption that the change was 'minor' and wouldn’t affect clients.</li>
+      <li>Lack of a change-notice process for API contract modifications.</li>
+      <li>Insufficient end-to-end stakeholder communication for client-facing changes.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Remediation</h2>
+    <ol>
+      <li>Rolled back the change quickly and prioritized a compatibility mode.</li>
+      <li>Introduced an API-change process: documentation, deprecation windows, and email/webhook notices to affected clients.</li>
+      <li>Added a checklist to the PR template: "Does this change client-facing contracts?" If yes, involve Product and CS before merge.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>What I learned</h2>
+    <p>Even small technical changes can have large business impacts. Always assume external dependencies and codify communication steps for contract changes.</p>
+</body>
+</html>

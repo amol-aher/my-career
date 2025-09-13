@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Scaling Read-Heavy Workloads in RDS</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Scaling Read-Heavy Workloads in RDS</h1>
+
+  <h2>Techniques</h2>
+  <ul>
+    <li><strong>Read replicas:</strong> Create read replicas in same or different AZs/regions and route read-only traffic to them.</li>
+    <li><strong>Caching:</strong> Add Redis/Memcached (ElastiCache) in front of DB for hot data and query results.</li>
+    <li><strong>Query optimization:</strong> Add indexes, denormalize where appropriate, use covering indexes and materialized views for aggregates.</li>
+    <li><strong>Connection pooling:</strong> Use RDS Proxy or pgbouncer to pool DB connections and avoid exhaustion.</li>
+    <li><strong>Scale-up:</strong> Increase instance size or IOPS (provisioned IOPS) if single-node resources are limiting.</li>
+    <li><strong>Read/write split:</strong> Architect app to separate read and write pathways, using read replicas and cache for reads.</li>
+  </ul>
+
+  <h2>Example: routing reads to replicas (Rails)</h2>
+  <pre><code># config/database.yml
+production:
+  primary:
+    adapter: postgresql
+    database: mydb
+    replica: false
+  replica:
+    adapter: postgresql
+    database: mydb
+    replica: true
+
+# Use octopus or Rails 6 multiple DB features to send reads to replica
+  </code></pre>
+
+  <h2>Monitoring & tuning</h2>
+  <ul>
+    <li>Monitor replica lag (rds.delay metric) and ensure it meets your staleness constraints.</li>
+    <li>Track slow queries and add appropriate indexes.</li>
+    <li>Measure cache hit ratio and tune TTLs.</li>
+  </ul>
+
+  <h2>When to move to read-optimized stores</h2>
+  <p>If analytical workloads overwhelm OLTP DB, offload to Redshift/BigQuery or a columnar store and use ETL/CDC to sync data.</p>
+</body>
+</html>

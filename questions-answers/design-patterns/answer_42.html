@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>State pattern for orders/tickets</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Implementing the State pattern (orders & tickets)</h1>
+
+    <p><strong>Goal</strong>: cleanly represent object states and their allowed transitions; encapsulate state-specific behavior.</p>
+
+    <h2>Options in Rails</h2>
+    <ol>
+      <li><strong>AASM / state_machine gems</strong> — simple DSLs to declare states, transitions, guards and callbacks.</li>
+      <li><strong>State objects (Strategy-like)</strong> — implement state classes that encapsulate behavior; model delegates to current state instance.</li>
+      <li><strong>Database state column + policy objects</strong> — persist state and use policy/query objects to handle allowed actions.</li>
+    </ol>
+
+    <h2>Example using AASM</h2>
+    <pre><code>class Order &lt; ApplicationRecord
+  include AASM
+
+  aasm column: 'status' do
+    state :pending, initial: true
+    state :paid
+    state :shipped
+    state :cancelled
+
+    event :pay do
+      transitions from: :pending, to: :paid, after: :capture_payment
+    end
+
+    event :ship do
+      transitions from: :paid, to: :shipped, guards: :inventory_available?
+    end
+
+    event :cancel do
+      transitions from: [:pending, :paid], to: :cancelled, after: :refund_if_paid
+    end
+  end
+end
+</code></pre>
+
+    <h2>Example using state objects (manual)</h2>
+    <pre><code># state interface
+class OrderState
+  def initialize(order); @order = order; end
+  def pay; raise NotImplementedError; end
+  def ship; raise NotImplementedError; end
+end
+
+class PendingState &lt; OrderState
+  def pay
+    @order.update!(status: 'paid')
+  end
+
+  def ship
+    raise 'cannot ship pending order'
+  end
+end
+
+# Order delegates
+class Order &lt; ApplicationRecord
+  def state
+    @state ||= case status
+    when 'pending' then PendingState.new(self)
+    when 'paid' then PaidState.new(self)
+    end
+  end
+
+  def pay; state.pay; end
+  def ship; state.ship; end
+end
+</code></pre>
+
+    <h2>Trade-offs</h2>
+    <ul>
+      <li>Gems like AASM are fast to adopt but can encourage callbacks in models — keep side effects in services.</li>
+      <li>State objects provide clearer separation and testability, but require more boilerplate.</li>
+      <li>Always persist state in DB and use <code>after_commit</code> for side effects (avoid running side effects inside transaction).</li>
+    </ul>
+
+    <h2>Interview follow-ups</h2>
+    <ul>
+      <li><strong>How to test state transitions?</strong> Unit test state classes or AASM events, assert guards, and verify callbacks are delegated to services (mock external calls).</li>
+      <li><strong>Handling concurrency?</strong> Use optimistic locking (<code>lock_version</code>) or DB transactions with SELECT ... FOR UPDATE when performing transitions that touch inventory or cross services.</li>
+    </ul>
+
+    <p style="color:#666">In interviews, present both quick AASM solution and a more architecturally-pure state object approach; explain how you handle side-effects, concurrency, and testing.</p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mediator pattern in Rails</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Mediator pattern with an example in Rails</h1>
+
+    <p><strong>Intent</strong>: encapsulate interactions between multiple objects (colleagues) within a mediator to reduce coupling between them. In Rails, a mediator often manifests as a coordinator or orchestration service that knows how to talk to multiple subsystems.</p>
+
+    <h2>Example scenario</h2>
+    <p>When an order is completed, several subsystems must act: payment capture, inventory update, shipment creation, and notifications. A mediator coordinates these steps.</p>
+
+    <pre><code>class OrderCompletionMediator
+  def initialize(order, services: {})
+    @order = order
+    @payment_service = services[:payment] || PaymentGateway.new
+    @inventory_service = services[:inventory] || InventoryAdapter.new
+    @shipping_service = services[:shipping] || ShippingProvider.new
+    @notifier = services[:notifier] || Notifier.new
+  end
+
+  def call
+    ActiveRecord::Base.transaction do
+      capture_payment
+      reserve_inventory
+      create_shipment
+      @order.update!(status: 'completed')
+    end
+    notify_parties
+  rescue => e
+    handle_failure(e)
+  end
+
+  private
+
+  def capture_payment
+    @payment_service.capture(@order)
+  end
+
+  def reserve_inventory
+    @inventory_service.reserve(@order.line_items)
+  end
+
+  def create_shipment
+    @shipping_service.create_shipment(@order)
+  end
+
+  def notify_parties
+    @notifier.order_completed(@order)
+  end
+
+  def handle_failure(e)
+    # compensation logic, logging, alerts
+    raise
+  end
+end
+
+# usage
+OrderCompletionMediator.new(order).call
+</code></pre>
+
+    <h2>Benefits</h2>
+    <ul>
+      <li>Reduces direct coupling between services.</li>
+      <li>Makes orchestration logic explicit and testable.</li>
+      <li>Mediator can implement retries, backoff, and compensation strategies.</li>
+    </ul>
+
+    <h2>When not to use</h2>
+    <ul>
+      <li>If interactions are trivial and can be expressed as simple service calls — mediator might add unnecessary indirection.</li>
+      <li>For extremely complex long-running flows, prefer a workflow engine (Temporal, Step Functions) rather than a monolithic mediator.</li>
+    </ul>
+
+    <h2>Interview tips</h2>
+    <p>Describe how the mediator improved maintainability and how you refactored direct service-to-service calls into a mediator to centralize error handling and compensation logic.</p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Caching in Rails and APIs — strategies and best practices</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;line-height:1.6;color:#111;background:#f6f8fb;padding:28px}
+    .container{max-width:1000px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px}
+    h2{font-size:18px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Caching in Rails and APIs — strategies and best practices</h1>
+
+    <p><strong>Summary</strong>: Use caching to reduce latency, database load, and operational cost. For Rails and HTTP APIs, apply multiple cache layers: browser/CDN, HTTP reverse proxies (CDN), application-level caches (fragment/page/action), low-level in-process caches, and distributed caches (Redis/Memcached). Cache responsibly: choose appropriate TTLs, handle invalidation, stay correct (cache consistency), and ensure observability.</p>
+
+    <h2>Cache layers and where they belong</h2>
+    <ol>
+      <li><strong>Client-side & CDN</strong> — Cache static assets and public API responses. Use Cache-Control, ETag, and vary headers. For public content use long TTLs with cache-busting for releases.</li>
+      <li><strong>Edge / Reverse proxy (CDN, Varnish)</strong> — Offload traffic; use cache keys and purge APIs for invalidation.</li>
+      <li><strong>Application-level</strong> — Rails fragment caching, page caching (rare), action caching (deprecated). Use Russian Doll caching for nested fragments.</li>
+      <li><strong>Distributed cache</strong> — Redis or Memcached for shared ephemeral data, heavy computations, session stores (if chosen), or rate-limiting counters.</li>
+      <li><strong>Database caching</strong> — Materialized views, read replicas, denormalized tables, or cache tables for expensive joins/aggregations.</li>
+    </ol>
+
+    <h2>Rails-specific techniques</h2>
+    <ul>
+      <li><strong>Fragment caching</strong> — <code>cache @product</code> in views. Use cache keys that include updated_at to auto-expire when the model changes.</li>
+      <li><strong>Russian doll caching</strong> — nest caches for parts of a page so changing an inner fragment only invalidates that fragment.</li>
+      <li><strong>Low-level cache API</strong> — <code>Rails.cache.fetch('key', expires_in: 5.minutes) { expensive_call }</code> backed by Redis/Memcached.</li>
+      <li><strong>HTTP caching helpers</strong> — <code>fresh_when</code>, <code>stale?</code>, ETags and conditional GETs to reduce payloads.</li>
+      <li><strong>Cache digests</strong> — asset fingerprinting and view fragment digesting to help invalidation on template changes.</li>
+    </ul>
+
+    <h2>API caching patterns</h2>
+    <ul>
+      <li><strong>Cache-Control</strong>: Public vs private. Use <code>max-age</code>, <code>s-maxage</code> (for CDNs), and <code>must-revalidate</code> as needed.</li>
+      <li><strong>ETag / Last-Modified</strong>: Support conditional GETs to let clients/CDNs avoid fetching unchanged responses.</li>
+      <li><strong>Stale-while-revalidate / stale-if-error</strong>: Useful to serve slightly stale responses while refreshing asynchronously.</li>
+      <li><strong>Cache busting</strong>: Use versioned endpoints or include resource version in cache keys when data changes in incompatible ways.</li>
+    </ul>
+
+    <h2>Cache invalidation strategies</h2>
+    <p>Invalidation is the hardest part — approaches:</p>
+    <ul>
+      <li><strong>Time-based TTL</strong> — simplest. Accept eventual consistency.</li>
+      <li><strong>Event-driven invalidation</strong> — emit events (e.g., via Redis pub/sub, SNS) when data changes and invalidate keys or purge CDN.</li>
+      <li><strong>Key-versioning</strong> — change version in key (e.g., <code>posts:v3:user:123</code>) so old keys naturally expire; suits complex dependencies.</li>
+      <li><strong>Explicit purge</strong> — call CDN/purge APIs and delete Redis keys synchronously after writes (works but may be slow).</li>
+    </ul>
+
+    <h2>Caching for scalability — examples</h2>
+    <pre><code># Rails low-level cache
+Rails.cache.fetch([user.cache_key, 'feed', page], expires_in: 2.minutes) do
+  FeedService.new(user).fetch(page: page)
+end
+
+# ETag example in controllers
+fresh_when(etag: current_user.cache_key_with_version, public: false)
+</code></pre>
+
+    <h2>Patterns for feeds & denormalization</h2>
+    <p>For high-read workloads like user feeds, denormalize and precompute feed timelines into Redis/Elastic or use fan-out strategies (push vs pull). Cache timelines per-user for quick reads and use event-driven invalidation on new posts.</p>
+
+    <h2>When not to cache</h2>
+    <ul>
+      <li>Highly dynamic personal data where correctness is critical (bank balance) — consider short TTLs or no caching.</li>
+      <li>When invalidation complexity outweighs benefits.</li>
+    </ul>
+
+    <h2>Monitoring & observability</h2>
+    <ul>
+      <li>Track cache hit rate, latency, and evictions.</li>
+      <li>Instrument downstream vs cache-served traffic to quantify savings.</li>
+      <li>Set alerts for increased miss rates or high eviction rates.</li>
+    </ul>
+
+    <h2>Common interview follow-ups</h2>
+    <ul>
+      <li><strong>How to avoid cache stampede?</strong> Use locking, request coalescing, or serve stale while recomputing (background refresh).</li>
+      <li><strong>How to avoid inconsistent reads?</strong> Use short TTLs, strong invalidation on writes, or adopt read-your-writes patterns for critical flows.</li>
+      <li><strong>How to choose Redis vs Memcached?</strong> Use Memcached for simple volatile caches (memory-only) and Redis for richer data structures, pub/sub and persistence.</li>
+    </ul>
+
+    <p style="color:#666">This document gives you a thorough set of approaches you can talk through in an interview: explain trade-offs, give examples from your experience (e.g., how you reduced DB load by X% with caching), and show metrics you’d monitor.</p>
+  </div>
+</body>
+</html>

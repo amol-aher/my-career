@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>before_action filters and Chain of Responsibility</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Rails before_action filters and the Chain of Responsibility pattern</h1>
+
+    <p><strong>Analogy</strong>: <code>before_action</code> filters form a chain where each filter gets a chance to handle or short-circuit the request (e.g., authenticate, authorize, set_locale). This resembles the Chain of Responsibility where handlers are linked and optionally pass processing to the next handler.</p>
+
+    <h2>Example controller filters</h2>
+    <pre><code>class ApplicationController &lt; ActionController::Base
+  before_action :authenticate_user!
+  before_action :set_current_tenant
+  before_action :authorize_resource
+
+  private
+
+  def authenticate_user!
+    head :unauthorized unless current_user
+  end
+
+  def set_current_tenant
+    # set tenant based on subdomain or header
+  end
+
+  def authorize_resource
+    # policy check, can render 403 and stop chain
+  end
+end
+</code></pre>
+
+    <h2>Chain of Responsibility characteristics</h2>
+    <ul>
+      <li>Handlers are ordered and can decide to handle or pass on.</li>
+      <li>Filters can short-circuit (render/redirect) to stop processing.</li>
+      <li>Filters are reusable and composable across controllers.</li>
+    </ul>
+
+    <h2>When to extract away from filters</h2>
+    <ul>
+      <li>If filter logic becomes complex, move it to services or middleware.</li>
+      <li>For cross-cutting HTTP concerns, Rack middleware is often a better fit than controller filters.</li>
+    </ul>
+
+    <h2>Interview tip</h2>
+    <p>Explain when controller filters are fine and when to prefer middleware or explicit handler chains (e.g., for auth across APIs with different requirements).</p>
+  </div>
+</body>
+</html>

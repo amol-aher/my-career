@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Defining Microservice Boundaries</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Defining Microservice Boundaries</h1>
+  <p>Deciding where to draw microservice boundaries is both a technical and organizational decision. The goal is to maximize cohesion within a service and minimize coupling between services.</p>
+
+  <h2>Primary principles</h2>
+  <ul>
+    <li><strong>Domain-Driven Design (DDD) — Bounded Contexts:</strong> Services should align to business capabilities (billing, user-auth, catalog).</li>
+    <li><strong>Single Responsibility / Cohesion:</strong> A service should own a single business capability end-to-end — API, data, and logic.</li>
+    <li><strong>Data ownership:</strong> Each service should have its own data store to avoid cross-service coupling at DB level.</li>
+    <li><strong>Team per service:</strong> Organize teams around services (Conway's law) so a service maps to a small, autonomous team.</li>
+    <li><strong>Independent deployability:</strong> Services must be deployable independently without coordinated releases.</li>
+  </ul>
+
+  <h2>Practical heuristics (questions to ask)</h2>
+  <ol>
+    <li>Does this capability change at different rates than others?</li>
+    <li>Can we test and deploy it independently?</li>
+    <li>Does it have its own data lifecycle and privacy/regulatory needs?</li>
+    <li>Is it composed of synchronous transactions across many other capabilities?</li>
+  </ol>
+
+  <h2>Example boundaries</h2>
+  <p>For an e-commerce system, reasonable services: <em>catalog service</em>, <em>pricing</em>, <em>cart</em>, <em>checkout/payment</em>, <em>user/auth</em>, <em>fulfillment</em>. Each owns its DB and emits events for other services to react.</p>
+
+  <h2>Subquestions you may be asked</h2>
+  <p><strong>How big should a service be?</strong> Small enough to be understood by a small team (2–8 engineers), large enough to avoid chatty network calls.</p>
+  <p><strong>When to split or merge?</strong> Split when a service becomes hard to understand or scale differently. Merge when operations/complexity overhead outweighs benefits.</p>
+
+  <h2>Checklist for boundary decision</h2>
+  <ul>
+    <li>Align with business capability</li>
+    <li>Independent data and lifecycle</li>
+    <li>Minimal synchronous cross-service calls</li>
+    <li>Automated tests and CI for independent deploys</li>
+  </ul>
+</body>
+</html>

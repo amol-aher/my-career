@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 135</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 135: Explain Ruby’s memory model wrt threads. Which operations are atomic? Which are not?</h1>
+<h2>Concept</h2>
+<p>Ruby's memory model behavior depends on the VM. On MRI the GVL gives some atomicity for certain operations (like fixing object_id updates) but higher-level race conditions still exist. Some primitive operations may be atomic (assignment of a reference on MRI under GVL), while compound operations are not.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Simple assignments and certain VM-level operations may appear atomic on MRI due to GVL, but you should not rely on atomicity for compound operations like counter increment (read-modify-write). Use Mutex or atomic types for correctness.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>Atomic on MRI?</strong> — reference assignment is atomic because of GVL, but increments (a += 1) are not atomic.</li>
+<li><strong>On JRuby?</strong> — rely on JVM memory model; use synchronization or atomics.</li>
+</ul>
+
+<h2>Example</h2>
+<pre><code class="language-ruby"># not atomic
+x = 0
+threads = 10.times.map { Thread.new { 1000.times { x += 1 } } }
+threads.each(&:join)
+puts x # likely less than 10000 without mutex or atomic</code></pre>
+
+<h2>Best practices / Pitfalls</h2>
+<ul>
+<li>Always use synchronization for compound updates and shared state mutations.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 135</footer>
+</body></html>

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Managing Dependencies and Avoiding Tight Coupling</title>
+<style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.6; padding:28px; color:#111; background:#fff; }
+    .container{max-width:980px;margin:0 auto;}
+    header{border-bottom:1px solid #e6e6e6;margin-bottom:18px;padding-bottom:8px;}
+    h1{font-size:26px;margin:0 0 6px 0;}
+    h2{font-size:18px;margin-top:18px;color:#0b69ff;}
+    h3{font-size:15px;margin-top:14px;color:#0b69ff;}
+    p{margin:8px 0;}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:4px;}
+    ul{margin:8px 0 8px 20px;}
+    table{border-collapse:collapse;width:100%;margin:8px 0;}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+    .muted{color:#666;font-size:13px;}
+    footer{border-top:1px solid #e6e6e6;margin-top:22px;padding-top:12px;color:#666;font-size:13px;}
+    </style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>Managing Dependencies and Avoiding Tight Coupling</h1>
+<p class="muted">Prepared by: Senior Software Engineer &amp; System Architect — Rails / AWS / SQL / Vue.js</p>
+<p class="muted">Date: 2025-09-10 (UTC)</p>
+</header>
+
+<p class="muted"><strong>Overview</strong></p>
+<p>Techniques to keep code modular: dependency inversion, interfaces/abstractions, hexagonal architecture, and test doubles.</p>
+
+<section><h2>Principles</h2>
+<p>Favor loose coupling: depend on abstractions, not concrete implementations. Apply SOLID principles and separation of concerns.</p>
+</section>
+<section><h2>Techniques & patterns</h2>
+<ul>
+<li><strong>Dependency Injection:</strong> Inject collaborators (via constructor or method) rather than instantiating them inside classes.</li>
+<li><strong>Interfaces &amp; adapters:</strong> Define a small interface (duck-typing in Ruby) and implement adapters for external systems (HTTP client, payment gateway).</li>
+<li><strong>Hexagonal (Ports &amp; Adapters):</strong> Keep core domain pure and adapt external systems at the edges.</li>
+<li><strong>Service boundaries:</strong> Use well-defined service objects or modules with minimal public surface.</li>
+<li><strong>Use gems for shared infra:</strong> Extract non-domain shared concerns into internal gems or engine packages to enforce boundaries.</li>
+</ul>
+</section>
+<section><h2>Practical examples</h2>
+<pre><code># Bad (tight coupling)
+class OrderProcessor
+  def call
+    gateway = Stripe::Client.new(ENV['STRIPE_KEY'])
+    gateway.charge(...)
+  end
+end
+
+# Better (injected)
+class OrderProcessor
+  def initialize(payment_gateway)
+    @gateway = payment_gateway
+  end
+
+  def call
+    @gateway.charge(...)
+  end
+end
+</code></pre>
+</section>
+<section><h2>Testing & CI</h2>
+<p>Use test doubles and contract tests for external collaborators. Consumer-driven contract testing (PACT) helps prevent coupling surprises between services.</p>
+</section>
+<section><h2>Subquestions you should expect</h2>
+<ol>
+<li><strong>How to manage gem dependencies?</strong><br/>Pin versions in Gemfile.lock, run dependency scanning, and use security update bots (Dependabot). Use group(:development, :test) to exclude dev-only gems from production.</li>
+<li><strong>When to extract modules into gems?</strong><br/>When multiple services or apps share the same code and you want a single source of truth for infra code, but balance with the overhead of maintaining a gem.</li>
+</ol>
+</section>
+
+
+<footer>
+I can help refactor a small coupling example into a hexagonal design and provide tests and adapters.
+</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTTP Status Codes 400 Series</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1, h2, h3 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .code-block { margin: 20px 0; }
+        .subquestion { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>HTTP Status Codes in the 400 Series</h1>
+    
+    <p>The 400 series indicates client-side errors where the request contains bad syntax or cannot be fulfilled. These are crucial for providing meaningful feedback to API consumers.</p>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Status Code</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Typical Usage</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>400</td>
+                <td>Bad Request</td>
+                <td>Malformed request syntax or invalid parameters</td>
+                <td>Missing required parameters, invalid JSON</td>
+            </tr>
+            <tr>
+                <td>401</td>
+                <td>Unauthorized</td>
+                <td>Authentication required but failed or missing</td>
+                <td>Missing/invalid token, expired session</td>
+            </tr>
+            <tr>
+                <td>403</td>
+                <td>Forbidden</td>
+                <td>Authenticated but lacks permission</td>
+                <td>Insufficient privileges, IP blocked</td>
+            </tr>
+            <tr>
+                <td>404</td>
+                <td>Not Found</td>
+                <td>Requested resource doesn't exist</td>
+                <td>Invalid endpoint, deleted resource</td>
+            </tr>
+            <tr>
+                <td>405</td>
+                <td>Method Not Allowed</td>
+                <td>HTTP method not supported for resource</td>
+                <td>Using POST on read-only endpoint</td>
+            </tr>
+            <tr>
+                <td>406</td>
+                <td>Not Acceptable</td>
+                <td>Client requested unsupported content type</td>
+                <td>Requesting XML when only JSON available</td>
+            </tr>
+            <tr>
+                <td>409</td>
+                <td>Conflict</td>
+                <td>Request conflicts with current state</td>
+                <td>Concurrent updates, duplicate creation</td>
+            </tr>
+            <tr>
+                <td>422</td>
+                <td>Unprocessable Entity</td>
+                <td>Semantically valid but syntactically incorrect</td>
+                <td>Validation failures, business rule violations</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h2>Best Practices for 400 Series Responses</h2>
+    <ol>
+        <li><strong>Provide Detailed Error Messages:</strong> Include field-specific validation errors</li>
+        <li><strong>Consistent Response Structure:</strong> Standardize error payload format across APIs</li>
+        <li><strong>Human-readable Descriptions:</strong> Avoid cryptic messages in production</li>
+        <li><strong>Include Request IDs:</strong> Help debugging with unique identifiers</li>
+    </ol>
+    
+    <h2>Implementation Examples</h2>
+    <pre class="code-block"># Bad Request (400)
+render json: { error: "Missing required parameter: email" }, status: :bad_request
+
+# Unauthorized (401)
+render json: { error: "Authentication required" }, status: :unauthorized
+
+# Forbidden (403)
+render json: { error: "Insufficient privileges" }, status: :forbidden
+
+# Unprocessable Entity (422)
+render json: @user.errors.full_messages, status: :unprocessable_entity</pre>
+    
+    <div class="subquestion">
+        <h3>Common Subquestions:</h3>
+        
+        <h4>Q: When should you use 422 vs 400?</h4>
+        <p>Use 400 for malformed requests (missing headers, invalid JSON), 422 for semantically invalid but well-formed requests (validation errors).</p>
+        
+        <h4>Q: How do you handle concurrent update conflicts?</h4>
+        <p>Return 409 Conflict with retry-after guidance. Implement optimistic locking with ETags or version numbers.</p>
+        
+        <h4>Q: Should you ever return 200 OK for errors?</h4>
+        <p>No. Always use appropriate status codes even for successful operations with warnings. Reserve 200 for truly successful responses.</p>
+    </div>
+</body>
+</html>

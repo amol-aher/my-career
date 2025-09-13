@@ -1,0 +1,75 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Designing a Multi-Region Deployment Pipeline</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:24px;color:#222;line-height:1.6}
+    h1{background:#20c997;color:#fff;padding:12px;border-radius:8px}
+    h2{color:#20c997;margin-top:18px}
+    pre{background:#f1fff7;padding:12px;border-radius:6px;overflow:auto}
+    ul{margin:8px 0 8px 20px}
+  </style>
+</head>
+<body>
+  <h1>Designing a Multi-Region Deployment Pipeline</h1>
+
+  <h2>Goals and constraints</h2>
+  <p>Multi-region deployments aim to improve availability, reduce latency for global users, and enable disaster recovery. Key constraints are data replication, consistency, and cost.</p>
+
+  <h2>Architectural patterns</h2>
+  <ul>
+    <li><strong>Active-passive (Pilot Light / Warm Standby):</strong> Primary region active, secondary region ready to scale up when needed.</li>
+    <li><strong>Active-active:</strong> Serve traffic from multiple regions with data replication and conflict resolution.</li>
+    <li><strong>Geo-routing:</strong> Use Route53 latency-based or Geo DNS to direct users to nearest region.</li>
+  </ul>
+
+  <h2>Pipeline approaches</h2>
+  <h3>Centralized pipeline with cross-region promotion</h3>
+  <ol>
+    <li>Build artifact once in central region (or CI region).</li>
+    <li>Push image/artifact to a multi-region registry (ECR replication) or push copies to regional ECR repos.</li>
+    <li>Trigger deployments in each region (parallel or staged) via cross-region CodePipeline actions, regional pipelines, or orchestration Lambda that starts deployments per region.</li>
+  </ol>
+
+  <h3>Distributed pipelines</h3>
+  <p>Maintain per-region pipelines that are triggered by a central pipeline or by replication events. Useful for compliance and corporate separation.</p>
+
+  <h2>Data replication</h2>
+  <ul>
+    <li>Use Aurora Global Database, DynamoDB global tables, or S3 cross-region replication for data synchronization.</li>
+    <li>Design for eventual consistency or implement conflict resolution where needed.</li>
+  </ul>
+
+  <h2>Example flow (centralized)</h2>
+  <pre><code>1. CI builds image and tags with SHA.
+2. Push to ECR and replicate cross-region.
+3. For each target region, trigger regional deploy pipeline:
+   - Pull image from regional ECR
+   - Deploy to ECS/EKS in that region
+   - Run smoke tests and health checks
+4. Update Route53 records if new region becomes active (for DR) or gradually shift traffic.</code></pre>
+
+  <h2>Operational considerations</h2>
+  <ul>
+    <li>Ensure IAM cross-account/region roles are configured for pipelines to operate across regions/accounts.</li>
+    <li>Implement automated rollback per region on failures and circuit-breakers to avoid cascading failures.</li>
+    <li>Manage secrets per region (Secrets Manager replication or cross-account access).</li>
+  </ul>
+
+  <h2>Testing & DR</h2>
+  <p>Regularly run failover drills and validate RTO/RPO. Test data replication latency and reconcile mechanisms.</p>
+
+  <h2>Subquestions</h2>
+  <h3>How to handle DB schema changes in multi-region?</h3>
+  <p>A: Use global-aware DB features (Aurora Global DB) and phased, backward-compatible migrations. For active-active, consider multi-master patterns or application-level conflict resolution.</p>
+
+  <h3>How to keep pipelines consistent across regions?</h3>
+  <p>A: Template pipelines via CloudFormation/CDK and store pipeline-as-code in a central repo; deploy pipeline stacks to each region to ensure parity.</p>
+
+  <h2>Conclusion</h2>
+  <p>Multi-region pipelines require careful artifact replication, regional orchestration, data replication strategy, and extensive testing. A centralized build and regional deploy model is often a pragmatic starting point.</p>
+</body>
+</html>

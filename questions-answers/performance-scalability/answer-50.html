@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Implementing Circuit Breakers in Microservices</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Implementing Circuit Breakers in Microservices</h1>
+
+  <h2>What a circuit breaker does</h2>
+  <p>Prevents repeated calls to a failing service by opening the circuit after thresholds are hit, allowing it to recover.</p>
+
+  <h2>Libraries & approaches</h2>
+  <ul>
+    <li><strong>Java:</strong> Resilience4j</li>
+    <li><strong>Ruby:</strong> circuitbox (uses Redis)</li>
+    <li><strong>Service mesh:</strong> Istio provides circuit breaking policies at the sidecar level</li>
+  </ul>
+
+  <h2>Simple Circuitbox example (Ruby)</h2>
+  <pre><code>require 'circuitbox'
+
+cb = Circuitbox.circuit(:users_service,
+  exceptions: [Timeout::Error, Errno::ECONNREFUSED],
+  sleep_window: 30, # seconds to try again
+  volume_threshold: 5,
+  error_threshold: 50 # percent
+)
+
+cb.run do
+  RestClient.get('https://users.example/api/v1/profile')
+end
+  </code></pre>
+
+  <h2>Best practices</h2>
+  <ul>
+    <li>Combine timeouts + retries + circuit breakers</li>
+    <li>Expose circuit state metrics and alerts</li>
+    <li>Use bulkheads and throttles alongside circuit breakers</li>
+  </ul>
+</body>
+</html>

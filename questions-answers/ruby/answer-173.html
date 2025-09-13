@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 173</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 173: Implement an asynchronous HTTP fetcher using Fibers or async/nio4r (production recommendation)</h1>
+<h2>Concept</h2>
+<p>For production, use battle-tested async HTTP clients that integrate with the Ruby scheduler (e.g., httpx, async/http). They handle connection pooling, timeouts, TLS, and concurrency correctly.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Use httpx (or async) which supports the Ruby fiber scheduler, provides HTTP/2, timeouts, and robust error handling. Avoid homegrown non-blocking implementations in production.</p>
+
+<h2>Example (httpx usage)</h2>
+<pre><code class="language-ruby"># gem 'httpx'
+require 'httpx'
+HTTPX.get('https://example.com').to_s</code></pre>
+
+<h2>Notes</h2>
+<p>Leverage existing libraries for security, correctness, and performance. Configure timeouts, connection pools, and integrate with your fiber scheduler when using async IO.</p>
+
+<hr/><footer>Generated HTML for question 173</footer>
+</body></html>

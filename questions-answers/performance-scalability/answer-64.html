@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Partitioning and Sharding in DynamoDB</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Partitioning and Sharding in DynamoDB</h1>
+
+  <h2>Core concepts</h2>
+  <p>DynamoDB distributes data across partitions using the partition key. Each partition has capacity limits; good partition key design is essential to avoid hot partitions.</p>
+
+  <h2>Design considerations</h2>
+  <ul>
+    <li><strong>Choose high-cardinality partition key:</strong> Avoid low-cardinality keys (e.g., 'status'). Use user_id, order_id, or hashed keys.</li>
+    <li><strong>Write sharding:</strong> If a hot key is unavoidable (e.g., leaderboard), add a random suffix or time-based shard (userId#0..N).</li>
+    <li><strong>Adaptive capacity:</strong> DynamoDB can auto-allocate extra throughput to hot keys, but avoid relying on it for high sustained loads.</li>
+    <li><strong>GSIs/LSIs:</strong> Global Secondary Indexes increase flexibility but also consume additional capacity and can create hotspots if not planned.</li>
+    <li><strong>On-demand vs provisioned:</strong> On-demand handles traffic spikes smoothly but may cost more at scale; provisioned with autoscaling gives more control.</li>
+  </ul>
+
+  <h2>Example: write sharding pattern</h2>
+  <pre><code># Instead of key = "leaderboard"
+# Use key = "leaderboard#<shard>"
+shard = (user_id.hash % 10).to_s
+partition_key = "leaderboard#" + shard
+  </code></pre>
+
+  <h2>Streaming & scaling</h2>
+  <p>Use DynamoDB Streams for downstream processing and to populate aggregated read models or other stores.</p>
+
+  <h2>Monitoring</h2>
+  <p>Monitor ConsumedCapacity, ThrottledRequests, Provisioned/OnDemand usage, and latency metrics. Tune partition key, increase capacity or add sharding accordingly.</p>
+</body>
+</html>

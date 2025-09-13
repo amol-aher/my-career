@@ -1,0 +1,48 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Knowledge Sharing Across Large Engineering Teams</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>body{font-family:Arial, sans-serif;margin:24px;color:#111}h1{font-size:24px}h2{font-size:20px}ul{margin-left:20px}pre{background:#f5f5f5;padding:12px;border-radius:6px;overflow:auto}</style>
+</head>
+<body>
+  <h1>Ensuring Knowledge Sharing Across a Large Engineering Team</h1>
+
+  <section>
+    <h2>Core practices</h2>
+    <ul>
+      <li>Centralized documentation: ADRs, runbooks, onboarding guides in Notion/Confluence/Git repos.</li>
+      <li>Regular tech talks and brown-bags.</li>
+      <li>Guilds/chapters by domain (e.g., frontend guild, infra guild).</li>
+      <li>Rotation programs: temporary cross-team rotations for learning.</li>
+      <li>Pairing and code reviews with mentorship focus.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Artifacts and structure</h2>
+    <ul>
+      <li>Architecture Decision Records (ADRs) for major decisions.</li>
+      <li>Runbooks accessible from the incident channel.</li>
+      <li>Tagged documentation and a discovery onboarding checklist.</li>
+    </ul>
+
+    <pre><code># Example ADR title: Use Kafka for ingestion pipeline
+Status: Accepted
+Context: Need high-throughput, durable messaging with consumer groups
+Decision: Adopt Kafka with partitioning per tenant
+Consequences: Operational overhead; easier horizontal scaling</code></pre>
+  </section>
+
+  <section>
+    <h2>Measuring effectiveness</h2>
+    <ul>
+      <li>Onboarding time for new hires (ramp time metric).</li>
+      <li>Number of incidents attributable to knowledge gaps.</li>
+      <li>Participation in tech talks and internal surveys.</li>
+    </ul>
+  </section>
+</body>
+</html>

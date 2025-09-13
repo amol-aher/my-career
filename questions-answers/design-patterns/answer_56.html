@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Common anti-patterns in Rails and how to refactor them</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:28px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Anti-patterns in Rails apps and refactoring strategies</h1>
+
+    <h2>1. Fat Models</h2>
+    <p><strong>Symptom</strong>: models mix validation, persistence, business logic, API calls and notifications.</p>
+    <p><strong>Refactor</strong>: Extract Service Objects, Repositories, and Domain classes. Move presentation logic to Presenters and side effects to background jobs.</p>
+
+    <h2>2. Fat Controllers</h2>
+    <p><strong>Symptom</strong>: controllers orchestration of business logic, heavy param manipulation and DB operations.</p>
+    <p><strong>Refactor</strong>: Move orchestration to Services or Interactors and strong params parsing into Form Objects.</p>
+
+    <h2>3. N+1 Queries</h2>
+    <p><strong>Symptom</strong>: slow pages caused by lazy-loading associations in loops.</p>
+    <p><strong>Refactor</strong>: Use <code>.includes</code>, batch queries, or Query Objects; add bullet and monitoring to catch regressions.</p>
+
+    <h2>4. Global State and Singletons</h2>
+    <p><strong>Symptom</strong>: use of global mutable objects (CONFIG globals, $variables).</p>
+    <p><strong>Refactor</strong>: Use dependency injection and configuration objects; wrap state in thread-safe classes; avoid process-global mutation.</p>
+
+    <h2>5. Business Logic in Views</h2>
+    <p><strong>Symptom</strong>: complex conditionals and formatting directly in ERB/HAML.</p>
+    <p><strong>Refactor</strong>: Use Presenters/Decorators, ViewComponent or helpers to centralize and test presentation logic.</p>
+
+    <h2>6. Overuse of Metaprogramming</h2>
+    <p><strong>Symptom</strong>: dynamic methods obscure behavior and confound IDEs and tests.</p>
+    <p><strong>Refactor</strong>: Replace with explicit methods where clarity is more important; document generated behavior and keep metaprogramming small and well-tested.</p>
+
+    <h2>7. Blocking IO in Request Cycle</h2>
+    <p><strong>Symptom</strong>: HTTP calls, heavy computation or mailing done inline in controllers.</p>
+    <p><strong>Refactor</strong>: Move to background jobs (Sidekiq/ActiveJob), adopt async APIs, and return early responses when suitable.</p>
+
+    <h2>8. Big Monolithic Schema for Read-heavy Data</h2>
+    <p><strong>Symptom</strong>: a single normalized table used for both write and read-optimized queries causing slow analytics.</p>
+    <p><strong>Refactor</strong>: Create read models, denormalize, use materialized views, or introduce a separate analytics store.</p>
+
+    <h2>Refactor workflow and tips</h2>
+    <ol>
+      <li>Write tests that describe current behavior before doing big refactors.</li>
+      <li>Extract small pieces incrementally (services, presenters, queries).</li>
+      <li>Use feature flags if behavior must change gradually.</li>
+      <li>Monitor performance and error rates after each change.</li>
+    </ol>
+
+    <h2>Interview tip</h2>
+    <p>Prepare a before/after example of a refactor (e.g., splitting a big model into service + presenter + query). Quantify improvements (test coverage, response time, maintenance time reduced).</p>
+  </div>
+</body>
+</html>

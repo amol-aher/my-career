@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 177</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 177: Write tests that reliably reproduce a race condition, then fix the underlying code. (Advanced: include CI strategies)</h1>
+<h2>Concept</h2>
+<p>Include race-detection tests in CI with stress runs, flakiness detection, and optional gated nightly jobs. Use tagging to run heavy concurrency tests outside fast unit suites.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Add deterministic unit tests plus randomized stress tests to CI pipelines (nightly or on-demand). Fail fast for reproducible races and track flaky test trends to prioritize fixes.</p>
+
+<h2>CI strategy</h2>
+<ol>
+<li>Fast unit tests in every PR.</li>
+<li>Concurrency stress tests on merge or nightly runners.</li>
+<li>Record and upload logs/heap dumps when tests fail for analysis.</li>
+</ol>
+
+<h2>Notes</h2>
+<p>Keep CI cost under control by running heavy tests selectively and adding retries with investigation for flaky failures.</p>
+
+<hr/><footer>Generated HTML for question 177</footer>
+</body></html>

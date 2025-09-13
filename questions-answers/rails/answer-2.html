@@ -1,0 +1,253 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ActiveRecord Query Methods Comparison</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; }
+        h2 { color: #34495e; border-bottom: 2px solid #ecf0f1; padding-bottom: 5px; }
+        .method-box { 
+            background-color: #f8f9fa; 
+            border-left: 4px solid #3498db; 
+            padding: 15px; 
+            margin: 15px 0; 
+            border-radius: 4px;
+        }
+        .example-code {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .comparison-table th,
+        .comparison-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .comparison-table th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+<h1>ActiveRecord Query Methods: find, find_by, where, and find_each</h1>
+
+<h2>Introduction</h2>
+<p>These four methods represent core querying capabilities in Rails ActiveRecord. Each serves distinct purposes with different behaviors regarding result handling, performance, and error management.</p>
+
+<div class="method-box">
+    <h2>1. find</h2>
+    <p><strong>Purpose:</strong> Retrieve a single record by primary key or multiple records by an array of keys.</p>
+    
+    <h3>Parameters:</h3>
+    <ul>
+        <li>Single integer: Primary key value</li>
+        <li>Array of integers: Multiple primary key values</li>
+    </ul>
+    
+    <h3>Return Value:</h3>
+    <ul>
+        <li>Single record object when passed a single ID</li>
+        <li>Array of record objects when passed multiple IDs</li>
+    </ul>
+    
+    <h3>Behavior:</h3>
+    <ul>
+        <li>Raises <code>ActiveRecord::RecordNotFound</code> exception if no record exists</li>
+        <li>Uses primary key column (default "id")</li>
+        <li>Equivalent to <code>where(id: ...).take!</code></li>
+    </ul>
+    
+    <h3>Examples:</h3>
+    <div class="example-code"># Single record
+Book.find(123)  # => Returns Book with id=123
+
+# Multiple records
+Book.find([123, 456])  # => Returns [Book(id=123), Book(id=456)]
+
+# Record not found
+Book.find(999)  # Raises ActiveRecord::RecordNotFound</div>
+</div>
+
+<div class="method-box">
+    <h2>2. find_by</h2>
+    <p><strong>Purpose:</strong> Find first record matching specified conditions.</p>
+    
+    <h3>Parameters:</h3>
+    <ul>
+        <li>Hash of conditions (column-value pairs)</li>
+        <li>SQL fragment string (less common)</li>
+    </ul>
+    
+    <h3>Return Value:</h3>
+    <ul>
+        <li>Single record object if found</li>
+        <li><code>nil</code> if no record matches</li>
+    </ul>
+    
+    <h3>Behavior:</h3>
+    <ul>
+        <li>Returns <code>nil</code> instead of raising exception</li>
+        <li>Can search by any attribute(s)</li>
+        <li>Equivalent to <code>where(...).first</code></li>
+    </ul>
+    
+    <h3>Examples:</h3>
+    <div class="example-code"># By single attribute
+Book.find_by(title: "Rails Guide")
+
+# By multiple attributes
+Book.find_by(author: "David", published_year: 2020)
+
+# No match returns nil
+Book.find_by(isbn: "nonexistent")  # => nil</div>
+</div>
+
+<div class="method-box">
+    <h2>3. where</h2>
+    <p><strong>Purpose:</strong> Filter records based on conditions, returning zero or more records.</p>
+    
+    <h3>Parameters:</h3>
+    <ul>
+        <li>Hash of conditions</li>
+        <li>String with placeholders</li>
+        <li>Raw SQL fragments</li>
+    </ul>
+    
+    <h3>Return Value:</h3>
+    <ul>
+        <li><code>ActiveRecord::Relation</code> object (lazy-loaded collection)</li>
+        <li>Empty relation if no matches</li>
+    </ul>
+    
+    <h3>Behavior:</h3>
+    <ul>
+        <li>Doesn't execute query until needed (chainable)</li>
+        <li>Returns empty relation instead of <code>nil</code></li>
+        <li>Supports complex conditions and joins</li>
+    </ul>
+    
+    <h3>Examples:</h3>
+    <div class="example-code"># Simple condition
+Book.where(published_year: 2023)
+
+# Multiple conditions
+Book.where("price > ? AND genre = ?", 25, "Science Fiction")
+
+# Chaining
+Book.where(genre: "Fantasy").order(title: :desc).limit(10)</div>
+</div>
+
+<div class="method-box">
+    <h2>4. find_each</h2>
+    <p><strong>Purpose:</strong> Efficiently iterate through large datasets in batches.</p>
+    
+    <h3>Parameters:</h3>
+    <ul>
+        <li><code>:batch_size</code> - Number of records per batch (default 1000)</li>
+        <li><code>:start</code> - Starting offset</li>
+        <li><code>:finish</code> - Ending offset</li>
+    </ul>
+    
+    <h3>Return Value:</h3>
+    <ul>
+        <li>Yields each record individually</li>
+        <li>No return value (used for side effects)</li>
+    </ul>
+    
+    <h3>Behavior:</h3>
+    <ul>
+        <li>Loads records in batches to avoid memory overload</li>
+        <li>Automatically orders by primary key</li>
+        <li>Ideal for large dataset processing</li>
+    </ul>
+    
+    <h3>Examples:</h3>
+    <div class="example-code"># Default batch processing
+Book.find_each do |book|
+  puts book.title
+end
+
+# Custom batch size
+Book.find_each(batch_size: 500) do |book|
+  # Process book
+end
+
+# With conditions
+Book.where(genre: "History").find_each do |book|
+  # Update historical books
+end</div>
+</div>
+
+<h2>Comparison Summary</h2>
+<table class="comparison-table">
+    <thead>
+        <tr>
+            <th>Method</th>
+            <th>Primary Use Case</th>
+            <th>Return Type</th>
+            <th>Not Found Behavior</th>
+            <th>Performance</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>find</code></td>
+            <td>Retrieve by primary key</td>
+            <td>Object or Array</td>
+            <td>Raises exception</td>
+            <td>Fast (single lookup)</td>
+        </tr>
+        <tr>
+            <td><code>find_by</code></td>
+            <td>Find first matching record</td>
+            <td>Object or <code>nil</code></td>
+            <td>Returns <code>nil</code></td>
+            <td>Moderate</td>
+        </tr>
+        <tr>
+            <td><code>where</code></td>
+            <td>Filter multiple records</td>
+            <td><code>ActiveRecord::Relation</code></td>
+            <td>Empty relation</td>
+            <td>Varies (lazy-loaded)</td>
+        </tr>
+        <tr>
+            <td><code>find_each</code></td>
+            <td>Process large datasets</td>
+            <td>None (yields records)</td>
+            <td>N/A</td>
+            <td>Memory-efficient</td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>When to Use Which Method</h2>
+<ul>
+    <li><strong>find:</strong> When you know the exact primary key and expect the record to exist</li>
+    <li><strong>find_by:</strong> When searching by non-primary key attributes and expecting possibly missing records</li>
+    <li><strong>where:</strong> When needing filtered collections, especially for display or further chaining</li>
+    <li><strong>find_each:</strong> When processing thousands/millions of records where memory efficiency is critical</li>
+</ul>
+
+<h2>Common Pitfalls</h2>
+<ul>
+    <li>Using <code>find</code> with non-existent IDs causing unhandled exceptions</li>
+    <li>Expecting <code>where</code> to return <code>nil</code> instead of an empty relation</li>
+    <li>Forgetting that <code>find_each</code> requires a block</li>
+    <li>Overusing <code>find_by</code> in loops instead of bulk loading</li>
+</ul>
+
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Factors to Consider Before Using Ruby on Rails for Large-Scale Applications</title><style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.6; padding:28px; color:#111; background:#fff; }
+    .container{max-width:980px;margin:0 auto;}
+    header{border-bottom:1px solid #e6e6e6;margin-bottom:18px;padding-bottom:8px;}
+    h1{font-size:26px;margin:0 0 6px 0;}
+    h2{font-size:18px;margin-top:18px;color:#0b69ff;}
+    h3{font-size:15px;margin-top:14px;color:#0b69ff;}
+    p{margin:8px 0;}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:4px;}
+    ul{margin:8px 0 8px 20px;}
+    table{border-collapse:collapse;width:100%;margin:8px 0;}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+    .muted{color:#666;font-size:13px;}
+    footer{border-top:1px solid #e6e6e6;margin-top:22px;padding-top:12px;color:#666;font-size:13px;}
+    .kbd{background:#f4f4f4;padding:2px 6px;border-radius:4px;font-family:monospace;}
+    </style></head>
+<body>
+<div class="container">
+<header>
+<h1>Factors to Consider Before Using Ruby on Rails for Large-Scale Applications</h1>
+<p class="muted">Prepared by: Senior Software Engineer &amp; System Architect — Rails / AWS / SQL / Vue.js</p>
+<p class="muted">Date: 2025-09-10 (UTC)</p>
+</header>
+
+<p class="muted"><strong>Overview</strong></p>
+<p>Questions to evaluate: team expertise, operational model, performance needs, ecosystem, maturity, and integration footprint.</p>
+
+<section><h2>Team and expertise</h2>
+<ul>
+<li>Do you have engineers experienced in Rails, Ruby performance tuning, and ops? Team skill matters more than framework choice.</li>
+<li>Rails accelerates development but requires experienced infra engineers for scale.</li>
+</ul>
+</section>
+<section><h2>Performance & scalability needs</h2>
+<ul>
+<li>Estimate expected RPS, concurrency, and latency SLOs. Rails can scale with horizontal app servers, caching, and read replicas, but design choices (DB, caching, background processing) are critical.</li>
+<li>Consider using JRuby or alternative runtimes for certain threading models, but be aware of gem compatibility.</li>
+</ul>
+</section>
+<section><h2>Ecosystem & dependencies</h2>
+<ul>
+<li>Rails has a mature set of gems, but vet each gem for maintenance and performance.</li>
+<li>Avoid gems that hide complex behavior or create tight coupling.</li>
+</ul>
+</section>
+<section><h2>Operational complexity and cost</h2>
+<ul>
+<li>Plan for Redis/DB clusters, monitoring, and CI/CD. Managed services (RDS, ElastiCache, EKS) reduce ops burden but increase cost.</li>
+<li>Estimate costs for scaling (compute, memory, DB IOPS, caching).</li>
+</ul>
+</section>
+<section><h2>Architecture & microservices</h2>
+<ul>
+<li>Decide early whether a monolith-first approach with clear module boundaries or microservices is right.</li>
+<li>Monoliths can be very productive initially and then selectively extract services (strangler pattern).</li>
+</ul>
+</section>
+<section><h2>Operational patterns to adopt if choosing Rails</h2>
+<ul>
+<li>Invest in observability, automated deployments, and runbooks from day one.</li>
+<li>Adopt CI/CD, feature flags, and performance budgets.</li>
+<li>Use good DB practices (indexes, partitioning) and caching layers to reduce load.</li>
+</ul>
+</section>
+<section><h2>Subquestions you should expect</h2>
+<ol>
+<li><strong>Would you use Rails for a high-throughput API-only service?</strong><br/>Possibly, but consider using lighter frameworks for extreme throughput. Rails is fine for many use cases; pair with caching, load balancers, and efficient DB design.</li>
+<li><strong>When to choose microservices vs monolith?</strong><br/>Start monolith for speed of development; extract services when ownership or scaling boundaries are clear.</li>
+</ol>
+</section>
+
+
+<footer>I can run a short assessment if you provide expected traffic patterns and feature set and recommend a Rails-based architecture or alternatives.</footer>
+</div>
+</body>
+</html>

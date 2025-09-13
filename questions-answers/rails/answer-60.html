@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rack: The Foundation of Ruby Web Servers</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px; }
+        .rack-component { background-color: #f0f8ff; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .code-example { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0; font-family: monospace; }
+        .middleware-stack { display: flex; flex-direction: column; align-items: center; margin: 20px 0; }
+        .stack-layer { background-color: #e8f4fd; padding: 10px; margin: 5px 0; width: 80%; text-align: center; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Rack: The Core of Ruby Web Applications</h1>
+
+    <div class="rack-component">
+        <h2>What is Rack?</h2>
+        <p>Rack is a minimal, modular interface for developing web applications in Ruby. It provides a standard way for web servers to communicate with Ruby applications, acting as the foundation for frameworks like Sinatra, Rails, and many others.</p>
+        
+        <div class="code-example">
+            <pre># Minimal Rack application (config.ru)
+require 'rack'
+
+app = Proc.new do |env|
+  [200, {'Content-Type' => 'text/html'}, ['Hello World']]
+end
+
+run app</pre>
+        </div>
+    </div>
+
+    <div class="rack-component">
+        <h2>Rack's Core Components</h2>
+        
+        <h3>1. The Environment Hash (env)</h3>
+        <p>A hash containing all information about the HTTP request:</p>
+        <div class="code-example">
+            <pre>{
+  "REQUEST_METHOD" => "GET",
+  "PATH_INFO" => "/users",
+  "QUERY_STRING" => "",
+  "SERVER_NAME" => "localhost",
+  "CONTENT_TYPE" => "application/json",
+  "rack.input" => #&lt;Rack::Lint::InputWrapper ...&gt;
+}</pre>
+        </div>
+        
+        <h3>2. The Response Array</h3>
+        <p>A three-element array representing the HTTP response:</p>
+        <div class="code-example">
+            <pre>[
+  200,                  # Status code
+  {"Content-Type" => "text/plain"}, # Headers
+  ["Hello, world!"]     # Body
+]</pre>
+        </div>
+        
+        <h3>3. Middleware</h3>
+        <p>Components that wrap around applications to modify requests/responses:</p>
+        <div class="code-example">
+            <pre># Example middleware (adds timestamp to response)
+class TimestampMiddleware
+  def initialize(app)
+    @app = app
+  end
+
+  def call(env)
+    status, headers, body = @app.call(env)
+    body << "\nGenerated at: #{Time.now}"
+    [status, headers, body]
+  end
+end</pre>
+        </div>
+    </div>
+
+    <div class="rack-component">
+        <h2>How Rack Works</h2>
+        <div class="middleware-stack">
+            <div class="stack-layer">Your Application</div>
+            <div class="stack-layer">Rack Middleware (Logging, Session, etc.)</div>
+            <div class="stack-layer">Rack Handler (Webrick, Puma, Unicorn)</div>
+            <div class="stack-layer">Web Server (Nginx, Apache)</div>
+        </div>
+        
+        <p>When a request comes in:</p>
+        <ol>
+            <li>Web server passes environment hash to Rack handler</li>
+            <li>Rack handler wraps application in configured middleware</li>
+            <li>Middleware processes request and calls next component</li>
+            <li>Application generates response</li>
+            <li>Middleware modifies response if needed</li>
+            <li>Rack handler returns final response to web server</li>
+        </ol>
+    </div>
+
+    <div class="rack-component">
+        <h2>Rack in Rails</h2>
+        <p>Rails uses Rack extensively:</p>
+        <ul>
+            <li><strong>Rack Middleware Stack:</strong> Defined in config/application.rb</li>
+            <li><strong>Action Controller:</strong> Implements Rack interface</li>
+            <li><strong>Railties:</strong> Uses Rack to serve assets and handle routes</li>
+        </ul>
+        
+        <div class="code-example">
+            <pre># config/application.rb
+module MyApp
+  class Application &lt; Rails::Application
+    config.middleware.use Rack::SSL
+    config.middleware.insert_before ActionDispatch::Static, Rack::Cache
+  end
+end</pre>
+        </div>
+    </div>
+
+    <div class="rack-component">
+        <h2>Key Functionalities</h2>
+        <ul>
+            <li><strong>Standard Interface:</strong> Unified way to build web apps</li>
+            <li><strong>Middleware Architecture:</strong> Chainable components for cross-cutting concerns</li>
+            <li><strong>Streaming Support:</strong> Efficient body handling for large responses</li>
+            <li><strong>Multi-server Compatibility:</strong> Works with Webrick, Puma, Unicorn, Passenger</li>
+            <li><strong>Framework Agnostic:</strong> Used beyond Rails (Sinatra, Hanami, etc.)</li>
+        </ul>
+    </div>
+
+    <div class="solution">
+        <h2>Practical Applications</h2>
+        <ul>
+            <li><strong>Custom Middleware:</strong> Add authentication, rate limiting, CORS handling</li>
+            <li><strong>Microframeworks:</strong> Build lightweight APIs with minimal dependencies</li>
+            <li><strong>Performance Monitoring:</strong> Instrument request/response times</li>
+            <li><strong>Request Validation:</strong> Sanitize input parameters</li>
+            <li><strong>Session Management:</strong> Custom session stores (Redis, Memcached)</li>
+        </ul>
+    </div>
+</body>
+</html>

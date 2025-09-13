@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Adapter pattern for external API integration in Ruby</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Adapter pattern to integrate with external APIs in Ruby</h1>
+
+    <p><strong>Intent</strong>: convert the interface of a class into another interface clients expect. For API integrations, adapters normalize different provider APIs to your canonical interface.</p>
+
+    <h2>Example scenario</h2>
+    <p>You have an internal <code>InventoryService</code> with method <code>update_stock(sku, delta)</code>. Different providers (Shopify, Amazon) have different endpoints and auth. Implement adapters that conform to the internal interface.</p>
+
+    <pre><code>module InventoryProvider
+  def update_stock(sku, delta)
+    raise NotImplementedError
+  end
+end
+
+class ShopifyAdapter
+  include InventoryProvider
+
+  def initialize(client)
+    @client = client
+  end
+
+  def update_stock(sku, delta)
+    @client.post('/inventory_levels/adjust', {sku: sku, available_adjustment: delta})
+  end
+end
+
+class AmazonAdapter
+  include InventoryProvider
+
+  def initialize(client)
+    @client = client
+  end
+
+  def update_stock(sku, delta)
+    # Amazon SP-API call with SigV4 signed request
+  end
+end
+
+# usage
+provider = ShopifyAdapter.new(shopify_client)
+InventoryService.update_stock('SKU123', -1) # delegates to provider
+</code></pre>
+
+    <h2>Benefits</h2>
+    <ul>
+      <li>Decouples business logic from vendor APIs</li>
+      <li>Centralizes provider-specific logic (auth, retries, transformations)</li>
+      <li>Makes testing easier — stub adapters rather than external HTTP calls</li>
+    </ul>
+
+    <h2>Design considerations</h2>
+    <ul>
+      <li>Use a factory or registry to construct adapter instances based on config.</li>
+      <li>Keep adapters thin — heavy logic (mapping, rate-limiting) belongs in shared components.</li>
+      <li>Wrap network calls with retry/backoff and translate provider errors to domain errors.</li>
+    </ul>
+
+    <h2>Interview tip</h2>
+    <p>Explain how adapters let you add new providers without changing core services; show how you'd test with recorded HTTP interactions and contract tests.</p>
+  </div>
+</body>
+</html>

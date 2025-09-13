@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Designing a Rails App to Expose RESTful and GraphQL APIs</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Designing a Rails App to Expose RESTful and GraphQL APIs</h1>
+  <p>Design decisions include resource modeling, versioning, authentication, rate limits, pagination, and tooling. Below are pragmatic guidelines and examples for both REST and GraphQL.</p>
+
+  <h2>REST API design</h2>
+  <ul>
+    <li>Use resourceful routes (<code>resources :users</code>) and standard HTTP verbs (GET, POST, PUT/PATCH, DELETE).</li>
+    <li>Design JSON representations via serializers (fast_jsonapi, ActiveModel::Serializers, Blueprinter).</li>
+    <li>Use status codes properly (200,201,204,400,404,422,500).</li>
+    <li>Include HATEOAS links when helpful.</li>
+  </ul>
+
+  <h3>Example controller</h3>
+  <pre><code>class Api::V1::UsersController &lt; ApplicationController
+  def index
+    users = User.order(:created_at).page(params[:page]).per(25)
+    render json: UserSerializer.new(users).serializable_hash
+  end
+
+  def show
+    user = User.find(params[:id])
+    render json: UserSerializer.new(user).serializable_hash
+  end
+end
+  </code></pre>
+
+  <h2>GraphQL design</h2>
+  <ul>
+    <li>Use <code>graphql-ruby</code> to define schema, types, and mutations.</li>
+    <li>Implement batching solutions (DataLoader) to avoid N+1 in GraphQL queries.</li>
+    <li>Limit query complexity and depth to protect the server.</li>
+  </ul>
+
+  <h3>Example GraphQL type (graphql-ruby)</h3>
+  <pre><code>Types::UserType = GraphQL::ObjectType.define do
+  name "User"
+  field :id, !types.ID
+  field :name, types.String
+end
+  </code></pre>
+
+  <h2>Authentication & Authorization</h2>
+  <p>Use token-based auth (JWT or OAuth2 bearer tokens) for API clients. Use Pundit or Cancancan for authorization checks in controllers/resolvers.</p>
+
+  <h2>Performance & caching</h2>
+  <ul>
+    <li>Cache serialized responses for public endpoints.</li>
+    <li>For GraphQL, consider persisted queries and response caching for repeated queries.</li>
+  </ul>
+
+  <h2>Versioning</h2>
+  <p>For REST, namespace routes or use headers (see question on versioning). For GraphQL, maintain backward-compatible schema changes or introduce a new endpoint/version if needed.</p>
+
+  <h2>Observability</h2>
+  <p>Log request IDs, timings, and errors. Use tracing for distributed systems and track API usage metrics for throttling and billing.</p>
+
+  <h2>Summary</h2>
+  <p>Design REST for resource-oriented APIs and GraphQL for flexible client-driven queries. Use serializers, auth, throttling, and caching to make APIs production-ready.</p>
+</body>
+</html>

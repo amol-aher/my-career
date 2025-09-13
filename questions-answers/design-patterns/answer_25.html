@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Template Method vs Strategy in Ruby</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Difference between Template Method and Strategy patterns in Ruby</h1>
+
+    <h2>Template Method</h2>
+    <p>Defines the skeleton of an algorithm in a base class, allowing subclasses to implement specific steps. Uses inheritance; base class orchestrates the flow.</p>
+    <pre><code>class Report
+  def generate
+    fetch_data
+    process
+    export
+  end
+
+  def fetch_data
+    raise NotImplementedError
+  end
+
+  def process
+    raise NotImplementedError
+  end
+
+  def export
+    raise NotImplementedError
+  end
+end
+
+class SalesReport &lt; Report
+  def fetch_data; end
+  def process; end
+  def export; end
+end
+</code></pre>
+
+    <h2>Strategy</h2>
+    <p>Encapsulates interchangeable algorithms in separate classes and composes them into a context. Uses composition and allows runtime swapping.</p>
+    <pre><code>class ExportCsv
+  def export(report); end
+end
+
+class ExportJson
+  def export(report); end
+end
+
+class ReportService
+  def initialize(exporter)
+    @exporter = exporter
+  end
+
+  def generate(report)
+    @exporter.export(report)
+  end
+end
+</code></pre>
+
+    <h2>Key differences</h2>
+    <ul>
+      <li><strong>Inheritance vs Composition</strong>: Template Method relies on subclassing; Strategy uses composition.</li>
+      <li><strong>Runtime flexibility</strong>: Strategy allows swapping behaviors at runtime; Template Method fixes the skeleton at compile/design time.</li>
+      <li><strong>When to use</strong>: Template Method when algorithm steps are fixed but implementations vary; Strategy when you need interchangeable behaviors (e.g., different export formats, payment processors).</li>
+    </ul>
+
+    <h2>Interview tip</h2>
+    <p>Explain both with short code and justify the choice depending on need for runtime flexibility and complexity. Mention that in Ruby, duck typing blurs the lines—both are easy to implement idiomatically.</p>
+  </div>
+</body>
+</html>

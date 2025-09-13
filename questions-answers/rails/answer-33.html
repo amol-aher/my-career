@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTTP Status Codes 300 Series</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1, h2, h3 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .code-block { margin: 20px 0; }
+        .subquestion { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>HTTP Status Codes in the 300 Series</h1>
+    
+    <p>The 300 series HTTP status codes indicate redirection. They inform clients that the requested resource has moved or needs additional information to fulfill the request.</p>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Status Code</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Usage Example</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>300</td>
+                <td>Multiple Choices</td>
+                <td>Indicates multiple options for the resource that the client may choose from</td>
+                <td>Content negotiation where multiple formats exist</td>
+            </tr>
+            <tr>
+                <td>301</td>
+                <td>Moved Permanently</td>
+                <td>Resource has been permanently moved to a new URL</td>
+                <td>Domain migration or URL restructuring</td>
+            </tr>
+            <tr>
+                <td>302</td>
+                <td>Found / Moved Temporarily</td>
+                <td>Resource is temporarily located at another URL</td>
+                <td>Session-based redirects or temporary maintenance pages</td>
+            </tr>
+            <tr>
+                <td>303</td>
+                <td>See Other</td>
+                <td>Response to POST request directing to a GET resource</td>
+                <td>Form submission redirecting to confirmation page</td>
+            </tr>
+            <tr>
+                <td>304</td>
+                <td>Not Modified</td>
+                <td>Resource hasn't changed since last request (cache hit)</td>
+                <td>Conditional GET requests with ETag/Last-Modified</td>
+            </tr>
+            <tr>
+                <td>305</td>
+                <td>Use Proxy</td>
+                <td>Client must access resource through specified proxy</td>
+                <td>Legacy proxy configuration (rarely used today)</td>
+            </tr>
+            <tr>
+                <td>307</td>
+                <td>Temporary Redirect</td>
+                <td>Similar to 302 but preserves original HTTP method</td>
+                <td>POST request redirected to maintain method integrity</td>
+            </tr>
+            <tr>
+                <td>308</td>
+                <td>Permanent Redirect</td>
+                <td>Similar to 301 but preserves original HTTP method</td>
+                <td>Permanent redirects maintaining POST semantics</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h2>Implementation in Rails</h2>
+    <p>Rails provides convenient helpers for redirects:</p>
+    <pre class="code-block"># Permanent redirect (301)
+redirect_to users_path, status: :moved_permanently
+
+# Temporary redirect (302)
+redirect_to login_path, status: :found
+
+# See other (303)
+redirect_to confirmation_url, status: :see_other
+
+# Not modified (304)
+if stale?(last_modified: @article.updated_at)
+  head :not_modified
+end</pre>
+    
+    <div class="subquestion">
+        <h3>Common Subquestions:</h3>
+        
+        <h4>Q: When should you use 301 vs 302 redirects?</h4>
+        <p>Use 301 for permanent moves (SEO benefits), 302 for temporary situations. Search engines treat 301 as permanent and update indexes accordingly.</p>
+        
+        <h4>Q: How do browsers cache 304 responses?</h4>
+        <p>Browsers cache 304 responses based on Cache-Control headers. Proper ETag/Last-Modified headers enable efficient conditional requests reducing bandwidth.</p>
+        
+        <h4>Q: What's the difference between 307 and 308?</h4>
+        <p>Both preserve the original HTTP method, but 307 is temporary while 308 is permanent. This distinction affects caching behavior and search engine indexing.</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Load balancing techniques — types and when to use them</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;line-height:1.6;color:#111;background:#f6f8fb;padding:28px}
+    .container{max-width:900px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px}
+    h2{font-size:18px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Load balancing techniques — types and when to use them</h1>
+
+    <p><strong>Summary</strong>: Load balancing distributes network or application traffic across multiple servers to improve reliability and performance. Techniques vary by layer (L4 vs L7), algorithm, and capability (stateful vs stateless). Choose based on session needs, routing complexity, and observability requirements.</p>
+
+    <h2>Layer types</h2>
+    <ul>
+      <li><strong>L4 (Transport layer)</strong> — route based on IP/port (fast, low overhead), e.g., AWS ELB Classic, Nginx stream, IPVS.</li>
+      <li><strong>L7 (Application layer)</strong> — route based on HTTP attributes (headers, paths, cookies), supports advanced features like A/B testing, JWT-based routing, and request rewriting (e.g., Nginx, Envoy, Kong).</li>
+    </ul>
+
+    <h2>Common algorithms</h2>
+    <ul>
+      <li><strong>Round Robin</strong> — cycle through servers evenly. Good for equal capacity servers and stateless workloads.</li>
+      <li><strong>Least Connections</strong> — send to the server with the fewest active connections. Helps with uneven request durations.</li>
+      <li><strong>IP Hash / Source Hash</strong> — sticky routing by client IP. Useful for session affinity without cookies, but affected by proxying and NAT.</li>
+      <li><strong>Weighted Round Robin / Weighted Least Connections</strong> — account for server capacity differences.</li>
+      <li><strong>Random</strong> — low overhead; sometimes combined with weights.</li>
+      <li><strong>Consistent Hashing</strong> — used for caching layers to reduce key remapping when nodes change (e.g., memcached ring).</li>
+    </ul>
+
+    <h2>Advanced techniques</h2>
+    <ul>
+      <li><strong>Health checks</strong> — active/passive checks to remove unhealthy nodes.</li>
+      <li><strong>Connection draining</strong> — allow in-flight requests to complete during node removal.</li>
+      <li><strong>Global load balancing</strong> — DNS-based or geo-routing (Route53 latency-based, geo proximity). Combine with Anycast for global edge services.</li>
+      <li><strong>Canary / traffic shifting</strong> — gradually route fraction of traffic to new deployments (weighted routing).</li>
+      <li><strong>Proxy-based client-side load balancing</strong> — service mesh sidecars (Envoy) or client SDKs (Ribbon) where client decides endpoint based on discovery.</li>
+    </ul>
+
+    <h2>Stateful vs stateless balancing</h2>
+    <p>For stateful applications (sticky sessions), use cookie-based affinity or session stores. For stateless apps, prefer round robin or least connections. Externalize session state to Redis if possible to maintain statelessness.</p>
+
+    <h2>When to use which</h2>
+    <ul>
+      <li>Simple web apps: L4 or L7 round robin.</li>
+      <li>Long-lived connections (websockets): least-connections or sticky sessions with connection draining.</li>
+      <li>Caching clusters: consistent hashing to minimize redistribution on node changes.</li>
+      <li>Microservices: use service discovery + client-side or L7 proxy with health checks for fine-grained control.</li>
+    </ul>
+
+    <h2>Interview follow-ups</h2>
+    <ul>
+      <li><strong>How to handle sudden traffic spikes?</strong> Autoscale, use rate limiting, queue work, and employ CDN for static content.</li>
+      <li><strong>How to debug routing problems?</strong> Trace requests across LB, enable access logs, and correlate with health checks and metrics.</li>
+      <li><strong>How to ensure consistency for sticky sessions?</strong> Prefer external session store in Redis instead of affinity where possible.</li>
+    </ul>
+
+    <p style="color:#666">Use examples from your experience: e.g., switched from round robin to least-connections and reduced tail latency by X ms; or used consistent hashing for memcached to keep cache hit rate high during node churn.</p>
+  </div>
+</body>
+</html>

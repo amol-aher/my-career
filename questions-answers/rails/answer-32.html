@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS in Rails</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; margin-top: 30px; }
+        .section { background-color: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .code-block { background-color: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto; margin: 15px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<h1>CORS in Rails</h1>
+
+<div class="section">
+    <h2>What is CORS?</h2>
+    <p>Cross-Origin Resource Sharing (CORS) is a mechanism that allows restricted resources on a web page to be requested from another domain outside the domain from which the resource originated.</p>
+    
+    <h2>Why Use CORS?</h2>
+    <ul>
+        <li>Enable secure cross-domain data transfers</li>
+        <li>Support modern web applications with API integrations</li>
+        <li>Facilitate mashups and widget embedding</li>
+    </ul>
+    
+    <h2>Configuring CORS in Rails</h2>
+    
+    <h3>1. Using rack-cors Gem</h3>
+    <div class="code-block"># Gemfile
+gem 'rack-cors'</div>
+    
+    <h3>2. Basic Configuration</h3>
+    <div class="code-block"># config.ru
+use Rack::Cors do
+  allow do
+    origins 'https://trusted-client.com'
+    resource '*', headers: ['X-Requested-With']
+  end
+end</div>
+    
+    <h3>3. Fine-grained Control</h3>
+    <div class="code-block"># Advanced configuration
+use Rack::Cors do
+  allow do
+    origins '*'
+    resource '*', headers: ['Content-Type', 'Expires', 'Cache-Control', 'Content-Encoding']
+    methods ['GET', 'POST', 'PUT', 'DELETE', 'PATCH']
+  end
+end</div>
+    
+    <h2>Security Considerations</h2>
+    
+    <h3>1. Restrict Origins</h3>
+    <p>Never use `'*'` wildcard for production applications. Specify trusted domains only.</p>
+    
+    <h3>2. Protect Sensitive Endpoints</h3>
+    <p>Exclude sensitive routes from CORS policy:</p>
+    <div class="code-block"># Excluding specific routes
+use Rack::Cors do
+  allow do
+    origins 'https://public-api.com'
+    resource '/', headers: ['Content-Type'], methods: ['GET']
+  end
+end</div>
+    
+    <h3>3. Handle Preflight Requests</h3>
+    <p>Respond appropriately to OPTIONS requests:</p>
+    <div class="code-block"># Handling preflight requests
+map = Rack::Cors::Map.new
+map.preflight(true)
+map.run(Rack::Lint.new(Rack::Lint::DEFAULT_OPTIONS))</div>
+    
+    <h2>Testing CORS Configuration</h2>
+    <ul>
+        <li>Use tools like curl or Postman to test CORS headers</li>
+        <div class="code-block">$ curl -I https://your-app.com -H Origin:http://localhost:3000</div>
+        <li>Write integration tests for cross-origin requests</li>
+    </ul>
+    
+    <h2>Common Pitfalls</h2>
+    <ul>
+        <li>Over-permissive CORS policies exposing sensitive data</li>
+        <li>Ignoring preflight requests leading to errors</li>
+        <li>Not accounting for browser-specific quirks</li>
+    </ul>
+</div>
+
+</body>
+</html>

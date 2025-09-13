@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CORS and Reverse Proxy Setups — Handling Cross-Origin and Proxy Config</title>
+<style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.6; padding:28px; color:#111; background:#fff; }
+    .container{max-width:980px;margin:0 auto;}
+    header{border-bottom:1px solid #e6e6e6;margin-bottom:18px;padding-bottom:8px;}
+    h1{font-size:26px;margin:0 0 6px 0;}
+    h2{font-size:18px;margin-top:18px;color:#0b69ff;}
+    h3{font-size:15px;margin-top:14px;color:#0b69ff;}
+    p{margin:8px 0;}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:4px;}
+    ul{margin:8px 0 8px 20px;}
+    table{border-collapse:collapse;width:100%;margin:8px 0;}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+    .muted{color:#666;font-size:13px;}
+    footer{border-top:1px solid #e6e6e6;margin-top:22px;padding-top:12px;color:#666;font-size:13px;}
+    </style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>CORS and Reverse Proxy Setups — Handling Cross-Origin and Proxy Config</h1>
+<p class="muted">Prepared by: Senior Software Engineer &amp; System Architect — Rails / AWS / SQL / Vue.js</p>
+<p class="muted">Date: 2025-09-10 (UTC)</p>
+</header>
+
+<p class="muted"><strong>Overview</strong></p>
+<p>How to configure CORS for Rails and how reverse proxies (Nginx, ALB) affect headers and routing. Includes debugging tips.</p>
+
+<section><h2>Basics of CORS</h2>
+<p>CORS is a browser-enforced mechanism. Servers must respond with the proper Access-Control-* headers for cross-origin requests.</p>
+</section>
+<section><h2>Configuring rack-cors in Rails</h2>
+<pre><code># config/initializers/cors.rb
+Rails.application.config.middleware.insert_before 0, Rack::Cors do
+  allow do
+    origins ENV.fetch('CORS_ALLOWED_ORIGINS', 'https://app.example.com')
+    resource '/api/*', headers: :any, methods: [:get, :post, :put, :patch, :delete, :options, :head], credentials: true, max_age: 600
+  end
+end
+</code></pre>
+<p>Remember not to use <code>origins '*'</code> with <code>credentials: true</code>.</p>
+</section>
+<section><h2>Reverse proxy implications</h2>
+<ul>
+<li>Reverse proxies can strip or add headers. Ensure they forward <code>Origin</code> to backend if you're using dynamic origin validation.</li>
+<li>For TLS termination at ALB/Nginx, forward <code>X-Forwarded-Proto</code> and <code>X-Forwarded-For</code> so Rails can detect the original scheme and IP.</li>
+<li>Set <code>config.action_dispatch.trusted_proxies</code> and <code>config.force_ssl = true</code> appropriately.</li>
+</ul>
+</section>
+<section><h2>Common pitfalls & debugging</h2>
+<ul>
+<li>OPTIONS preflight returning 404 — make sure middleware responds to OPTIONS.</li>
+<li>Credentials issues — ensure <code>Access-Control-Allow-Credentials</code> is present and the client sends <code>withCredentials</code>.</li>
+<li>Header rewriting — ensure proxies don't remove access-control headers set by backend.</li>
+</ul>
+<p>Use browser devtools network tab and curl (curl doesn't enforce CORS but shows headers) to debug.</p>
+</section>
+<section><h2>Subquestions you should expect</h2>
+<ol>
+<li><strong>How to handle dynamic origins?</strong><br/>Whitelist origins server-side and echo back the incoming origin only if allowed. Don't return '*' for credentialed requests.</li>
+<li><strong>How to configure Nginx to pass Origin?</strong><br/>Nginx forwards headers by default — ensure no proxy_hide_header or other directives strip them. Use <code>proxy_set_header</code> to forward <code>Origin</code> and other headers.</li>
+</ol>
+</section>
+
+
+<footer>
+If you want, I can generate an Nginx config snippet and a rack-cors initializer tailored to your domain list.
+</footer>
+</div>
+</body>
+</html>

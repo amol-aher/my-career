@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>send, public_send, and __send__ in Ruby</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:18px;color:#111}
+    h1{color:#1a56db} h2{color:#0b5a78}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <h1>Difference between <code>send</code>, <code>public_send</code>, and <code>__send__</code></h1>
+
+  <p>Ruby provides multiple message-sending helpers. They are crucial in metaprogramming when you need to invoke methods by name.</p>
+
+  <h2><code>send</code></h2>
+  <p><code>send(method_name, *args, &block)</code> calls the method (even if it is private or protected). It bypasses Ruby visibility checks.</p>
+  <pre><code class="language-ruby">class Foo
+  private
+  def secret; "shh" end
+end
+
+f = Foo.new
+f.send(:secret) # => "shh"</code></pre>
+
+  <h2><code>public_send</code></h2>
+  <p><code>public_send</code> respects Ruby's public visibility — it raises <code>NoMethodError</code> if the method is private or protected.</p>
+  <pre><code class="language-ruby">f.public_send(:secret) # => NoMethodError</code></pre>
+
+  <h2><code>__send__</code></h2>
+  <p><code>__send__</code> is an alias for <code>send</code>. It's used to avoid clashing with objects that define their own <code>send</code> method. It behaves the same as <code>send</code>.</p>
+  <pre><code class="language-ruby"># If an object defines a custom send method:
+class Bar
+  def send; :custom end
+end
+
+b = Bar.new
+b.send        # => :custom (calls the custom method)
+b.__send__(:to_s) # invokes Kernel#__send__ to call :to_s</code></pre>
+
+  <h2>When to use which</h2>
+  <ul>
+    <li>Prefer <code>public_send</code> when calling methods by name from user input or external data to avoid invoking private methods accidentally.</li>
+    <li>Use <code>send</code> / <code>__send__</code> when you intentionally need to access private/protected methods (rare, internal tools, or tests).</li>
+    <li>Use <code>__send__</code> if objects might define their own <code>send</code> method to avoid ambiguity.</li>
+  </ul>
+
+  <h2>Security & safety tips</h2>
+  <ul>
+    <li>Never <code>send</code> user-supplied method names without validation — attackers could call sensitive private methods.</li>
+    <li>Prefer static dispatch when possible; using <code>send</code> widely reduces clarity and static analysis value.</li>
+  </ul>
+
+  <h2>Subquestion: relation to respond_to?</h2>
+  <p>Before using <code>public_send</code>/<code>send</code> based on a method name, check <code>respond_to?</code> (or <code>respond_to_missing?</code>) to ensure the object claims to implement the method. Use the <code>include_private</code> flag if you plan to call private methods.</p>
+
+  <h2>Conclusion</h2>
+  <p><code>public_send</code> for safe public dispatch, <code>send</code> (or <code>__send__</code>) for internal or reflective needs. Use the less permissive option when you can.</p>
+</body>
+</html>

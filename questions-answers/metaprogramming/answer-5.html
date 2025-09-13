@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>What is metaprogramming?</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:18px;color:#111}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{font-family:monospace}
+    h1{color:#1a56db}
+    h2{color:#0b5a78}
+  </style>
+</head>
+<body>
+  <h1>What is metaprogramming, and how it differs from reflection, code generation, and dynamic typing?</h1>
+
+  <p><strong>Metaprogramming:</strong> writing programs that write or manipulate other programs (or themselves) — usually at runtime, sometimes at compile-time. In practice it includes creating methods, classes, or behaviors dynamically, intercepting calls, generating code, or altering program structure.</p>
+
+  <h2>Short definitions & differences</h2>
+  <table>
+    <tr><th>Term</th><th>Definition</th><th>Typical mechanisms</th></tr>
+    <tr><td><strong>Metaprogramming</strong></td><td>Programmatic modification or generation of program structure/behavior (methods, classes) at runtime or compile-time.</td><td>define_method, method_missing, macros, templates, code-gen, AST transforms</td></tr>
+    <tr><td><strong>Reflection</strong></td><td>Introspection: examining program structure at runtime (what methods exist, types, fields).</td><td>Object#methods, introspection APIs, type metadata</td></tr>
+    <tr><td><strong>Code generation</strong></td><td>Producing source code or bytecode as output, typically before runtime or at build time.</td><td>Template engines, compilers, annotation processors</td></tr>
+    <tr><td><strong>Dynamic typing</strong></td><td>A language property: types checked at runtime. Easier to write metaprogramming, but distinct concept.</td><td>duck typing, runtime method dispatch</td></tr>
+  </table>
+
+  <h2>Examples to clarify</h2>
+  <ul>
+    <li><strong>Metaprogramming:</strong> Ruby's <code>define_method</code> creates methods at runtime; C++ template metaprogramming generates code at compile time.</li>
+    <li><strong>Reflection:</strong> Querying <code>object.methods</code> or Java's <code>Class.getDeclaredMethods()</code>.</li>
+    <li><strong>Code generation:</strong> Running an annotation processor that writes Java source files during build; using <code>erb</code> to produce a class file.</li>
+    <li><strong>Dynamic typing:</strong> Ruby allows you to call <code>foo.bar</code> without declaring types; this makes metaprogramming easier but is not metaprogramming itself.</li>
+  </ul>
+
+  <h2>How they relate</h2>
+  <p>Reflection is often a tool used inside metaprogramming (you reflect on the structure to decide what to generate). Code generation is one way to implement metaprogramming but is usually an offline step. Dynamic typing removes some obstacles but languages that are statically typed (C++ templates, Rust macros) still provide very powerful metaprogramming.</p>
+
+  <h2>When you see each</h2>
+  <ul>
+    <li>Use <strong>reflection</strong> to inspect objects for debugging, logging, or serialization.</li>
+    <li>Use <strong>metaprogramming</strong> for DRY DSLs, ORMs, proxies, or removing repetitive boilerplate.</li>
+    <li>Use <strong>code generation</strong> when runtime costs are too high or language limitations force you to generate static artifacts.</li>
+    <li>Remember: dynamic typing makes metaprogramming easier but isn't the same thing.</li>
+  </ul>
+</body>
+</html>

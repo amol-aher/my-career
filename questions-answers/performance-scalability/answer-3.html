@@ -1,0 +1,56 @@
+
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Code-Level Performance Improvements</title>
+  <style>
+    body {font-family: Arial, sans-serif; margin:40px;}
+    h1 {color:#1f4e79;}
+    pre {background:#f6f8fa;padding:12px;border-radius:6px;}
+  </style>
+</head>
+<body>
+  <h1>Code-Level Performance Improvements</h1>
+  <p>Beyond database and infra changes, code-level interventions often yield low-effort, high-impact gains.</p>
+
+  <h2>1. Algorithmic Optimization</h2>
+  <p>Replace O(n^2) loops with O(n log n) or O(n) algorithms; avoid repeated computations, memoize results where appropriate.</p>
+
+  <h2>2. Reducing Allocations and GC Pressure</h2>
+  <p>In Ruby, avoid creating unnecessary objects in hot paths — reuse strings, use symbols for static keys, use <code>Enumerator</code> and streaming to process large datasets.</p>
+
+  <h2>3. Avoiding N+1</h2>
+  <pre><code># Bad
+orders.each do |o|
+  puts o.user.name
+end
+
+# Good
+orders.includes(:user).each do |o|
+  puts o.user.name
+end
+  </code></pre>
+
+  <h2>4. Use Background Jobs</h2>
+  <p>Shift synchronous work to async workers and return quickly to the caller. Ensure idempotency and retries with exponential backoff.</p>
+
+  <h2>5. Efficient Serialization</h2>
+  <p>When returning JSON, avoid serializing entire AR objects. Select fields and use fast serializers (Oj, fast_jsonapi).</p>
+
+  <h2>6. Example: Batch Processing and Bulk Upsert</h2>
+  <pre><code># Using activerecord-import
+items = []
+rows.each do |r|
+  items << Item.new(r)
+end
+Item.import(items, on_duplicate_key_update: {conflict_target: [:external_id], columns: [:status, :updated_at]})
+  </code></pre>
+
+  <h2>7. Circuit Breakers and Throttling</h2>
+  <p>Protect critical resources with circuit breakers (e.g., GitHub's resilience4j or custom) and employ token-bucket throttling to smooth bursts.</p>
+
+  <h2>8. Benchmarking Locally</h2>
+  <p>Use benchmark-ips, ruby-prof, and memory_profiler to measure improvements and regressions.</p>
+</body>
+</html>

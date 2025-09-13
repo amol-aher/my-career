@@ -1,0 +1,86 @@
+
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Improving Application Performance — Mitigations and Techniques</title>
+  <style>
+    body {font-family: Arial, sans-serif; line-height:1.6; margin: 40px;}
+    h1 {color:#1f4e79;}
+    h2 {color:#2b7a4b;}
+    pre {background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}
+    code {background:#eef;font-size:95%;padding:2px 4px;border-radius:4px;}
+    ul {margin-bottom:16px;}
+  </style>
+</head>
+<body>
+  <h1>Improving Application Performance — Mitigations and Techniques</h1>
+  <p>This document lists mitigations and tactics used (or that could be used) beyond the headline "improved performance by 30%". It covers infrastructure, application, data, algorithmic, and process changes with concrete examples and code snippets where appropriate.</p>
+
+  <h2>1. Profiling and Measurement First</h2>
+  <p>Before any change, measure baseline using APM (NewRelic / Datadog / AppSignal), database slow query logs, flamegraphs, and p95/p99 latency metrics. Capture load tests using tools such as k6 or Gatling to reproduce issues.</p>
+
+  <h2>2. Database-level Mitigations</h2>
+  <ul>
+    <li><strong>Indexing:</strong> Add composite and partial indexes for common query patterns. Use <code>EXPLAIN ANALYZE</code> to validate.</li>
+    <li><strong>Query optimization:</strong> Replace N+1 queries with joins or batch queries. Use 'pluck' to avoid ActiveRecord object allocation when not needed.</li>
+    <li><strong>Read replicas:</strong> Offload heavy read traffic to replicas with a replica-aware connection pool.</li>
+    <li><strong>Partitioning:</strong> Time or hash partition large tables to reduce scan time.</li>
+    <li><strong>Materialized views:</strong> Precompute heavy aggregations and refresh them on a schedule or via triggers.</li>
+  </ul>
+
+  <h2>3. Application / Code-Level Mitigations</h2>
+  <ul>
+    <li><strong>Caching layers:</strong> Add in-memory caches (Redis/Memcached) and HTTP caches (CDN). Cache query results, computed reports, and expensive serializations.</li>
+    <li><strong>Batching & Bulk Operations:</strong> Batch writes/reads instead of per-item operations. Use ActiveRecord import or bulk upsert.</li>
+    <li><strong>Async processing:</strong> Move heavy computations to background jobs (Sidekiq/Resque). Throttle and rate-limit jobs to avoid db spikes.</li>
+    <li><strong>Connection pooling:</strong> Tune DB pool sizes and Sidekiq concurrency to match RDS connections and CPU.</li>
+  </ul>
+
+  <h2>4. Infrastructure & Deployment Changes</h2>
+  <ul>
+    <li><strong>Horizontal scaling:</strong> Add app servers behind a load balancer for stateless services.</li>
+    <li><strong>Autoscaling policies:</strong> Configure CPU/latency-based scaling and graceful draining during deploys.</li>
+    <li><strong>Right-sized RDS instance/storage:</strong> Upgrade IOPS or switch to provisioned IOPS when necessary.</li>
+    <li><strong>Use of CDN:</strong> Offload static assets, API gateway caching for public endpoints.</li>
+  </ul>
+
+  <h2>5. Architectural Changes</h2>
+  <ul>
+    <li><strong>CQRS:</strong> Separate read and write models so analytical/reporting reads don't affect transactional writes.</li>
+    <li><strong>Event-driven architecture:</strong> Emit events to Kafka/SNS and process them in separate consumers to decouple ingestion from processing.</li>
+    <li><strong>Denormalization:</strong> Precompute join-heavy aggregates into read-optimized tables/documents.</li>
+  </ul>
+
+  <h2>6. Frontend & API Optimizations</h2>
+  <ul>
+    <li><strong>Pagination and streaming:</strong> Use cursor pagination and server-side streaming for large datasets.</li>
+    <li><strong>Compress responses:</strong> Gzip/Brotli and minimize payloads via selective fields.</li>
+    <li><strong>HTTP caching headers:</strong> Use ETag / Cache-Control and stale-while-revalidate where appropriate.</li>
+  </ul>
+
+  <h2>7. Specific Rails Examples</h2>
+  <p>Common code-level changes in Rails:</p>
+  <pre><code># Replace N+1 with eager loading
+users = User.includes(:posts).where(active: true)
+# Use pluck when you don't need objects
+emails = User.where(active: true).pluck(:email)
+# Bulk insert using activerecord-import (gem)
+users = [User.new(...), User.new(...)]
+User.import users
+  </code></pre>
+
+  <h2>8. Operational Mitigations</h2>
+  <ul>
+    <li>Implement circuit breakers and bulkheads to isolate failing subsystems.</li>
+    <li>Use rate-limiting at API gateway to protect backend.</li>
+    <li>Run canary releases and monitor key metrics before full rollout.</li>
+  </ul>
+
+  <h2>9. Example: Combined Mitigation that Yields 30%+</h2>
+  <p>In a real case, combining cache for common queries (Redis), adding an index for a hot JOIN, and moving report computation to Sidekiq workers with batched DB access can yield 30% or more reduction in tail-latency and CPU usage.</p>
+
+  <h2>10. Summary</h2>
+  <p>Treat performance as a systems problem: measure first, then apply targeted mitigation across database, code, infra, and architecture. Use automation and observability to validate gains.</p>
+</body>
+</html>

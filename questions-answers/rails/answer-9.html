@@ -1,0 +1,316 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Writing Test Cases in Ruby on Rails</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #2980b9;
+            margin-top: 30px;
+        }
+        .section {
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .code-block {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        .feature-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .feature-list li {
+            margin: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Writing Test Cases in Ruby on Rails</h1>
+
+<div class="section">
+    <h2>Introduction</h2>
+    <p>Testing is a crucial aspect of Rails development ensuring code reliability, preventing regressions, and facilitating collaboration. Rails provides a comprehensive testing framework with three main categories: unit tests, integration tests, and system tests.</p>
+</div>
+
+<div class="section">
+    <h2>1. Unit Tests</h2>
+    <p>Unit tests verify the correctness of individual components like models, helpers, and mailers in isolation.</p>
+    
+    <h3>Model Testing (RSpec Example):</h3>
+    <div class="code-block"># spec/models/user_spec.rb
+require 'rails_helper'
+
+RSpec.describe User, type: :model do
+  describe 'validations' do
+    it 'is valid with valid attributes' do
+      user = User.new(name: 'John Doe', email: 'john@example.com')
+      expect(user).to be_valid
+    end
+    
+    it 'requires presence of name' do
+      user = User.new(email: 'john@example.com')
+      expect(user).not_to be_valid
+      expect(user.errors[:name]).to include("can't be blank")
+    end
+  end
+  
+  describe 'associations' do
+    it 'has many posts' do
+      association = described_class.reflect_on_association(:posts)
+      expect(association.macro).to eq(:has_many)
+    end
+  end
+end</div>
+    
+    <h3>Key Characteristics:</h3>
+    <ul class="feature-list">
+        <li>Tests individual objects in isolation</li>
+        <li>Fast execution time</li>
+        <li>Focuses on business logic and validations</li>
+        <li>Uses fixtures or factories for test data</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>2. Integration Tests</h2>
+    <p>Integration tests verify interactions between multiple components like controllers, models, and views.</p>
+    
+    <h3>Controller Testing (RSpec Example):</h3>
+    <div class="code-block"># spec/controllers/users_controller_spec.rb
+require 'rails_helper'
+
+RSpec.describe UsersController, type: :controller do
+  describe 'GET #index' do
+    it 'returns a successful response' do
+      get :index
+      expect(response).to be_successful
+    end
+    
+    it 'assigns @users' do
+      user = create(:user)
+      get :index
+      expect(assigns(:users)).to eq([user])
+    end
+  end
+  
+  describe 'POST #create' do
+    context 'with valid parameters' do
+      it 'creates a new User' do
+        expect {
+          post :create, params: { user: { name: 'Jane Doe', email: 'jane@example.com' } }
+        }.to change(User, :count).by(1)
+      end
+      
+      it 'redirects to the created user' do
+        post :create, params: { user: { name: 'Jane Doe', email: 'jane@example.com' } }
+        expect(response).to redirect_to(user_path(User.last))
+      end
+    end
+    
+    context 'with invalid parameters' do
+      it 'does not save the user' do
+        expect {
+          post :create, params: { user: { name: '', email: '' } }
+        }.not_to change(User, :count)
+      end
+      
+      it 'renders the new template' do
+        post :create, params: { user: { name: '', email: '' } }
+        expect(response).to render_template('new')
+      end
+    end
+  end
+end</div>
+    
+    <h3>Key Characteristics:</h3>
+    <ul class="feature-list">
+        <li>Tests controller actions and routing</li>
+        <li>Simulates HTTP requests and responses</li>
+        <li>Verifies view rendering and redirects</li>
+        <li>Tests controller-specific logic</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>3. System Tests</h2>
+    <p>System tests simulate user interaction with the application through a browser interface.</p>
+    
+    <h3>System Test Example (Capybara):</h3>
+    <div class="code-block"># spec/system/user_creation_spec.rb
+require 'rails_helper'
+
+RSpec.feature 'User creation', type: :system do
+  scenario 'successful user creation' do
+    visit new_user_path
+    
+    fill_in 'Name', with: 'Alice Smith'
+    fill_in 'Email', with: 'alice@example.com'
+    click_button 'Create User'
+    
+    expect(page).to have_content('User was successfully created.')
+    expect(page).to have_current_path(user_path(User.last))
+  end
+  
+  scenario 'validation errors displayed' do
+    visit new_user_path
+    
+    fill_in 'Name', with: ''
+    fill_in 'Email', with: 'invalid-email'
+    click_button 'Create User'
+    
+    expect(page).to have_content("Name can't be blank")
+    expect(page).to have_content("Email is invalid")
+  end
+end</div>
+    
+    <h3>Key Characteristics:</h3>
+    <ul class="feature-list">
+        <li>End-to-end testing with browser simulation</li>
+        <li>Tests complete user workflows</li>
+        <li>Uses Capybara for browser automation</li>
+        <li>Slower than unit/integration tests</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>4. Other Test Types</h2>
+    
+    <h3>Feature Tests (BDD Style):</h3>
+    <p>Higher-level tests describing business requirements using Gherkin syntax.</p>
+    <div class="code-block"># features/user_registration.feature
+Feature: User Registration
+  Scenario: Successful registration
+    Given I am on the sign-up page
+    When I fill in "Name" with "Bob Wilson"
+    And I fill in "Email" with "bob@example.com"
+    And I click "Sign Up"
+    Then I should see "Welcome, Bob!"</div>
+    
+    <h3>Service Object Tests:</h3>
+    <p>Tests business logic encapsulated outside models.</p>
+    <div class="code-block"># spec/services/payment_processor_spec.rb
+require 'rails_helper'
+
+RSpec.describe PaymentProcessor do
+  describe '#charge_card' do
+    it 'processes payment successfully' do
+      processor = PaymentProcessor.new(amount: 100, card_token: 'tok_visa')
+      result = processor.charge_card
+      
+      expect(result).to be_success
+      expect(Payment.count).to eq(1)
+    end
+  end
+end</div>
+    
+    <h3>Mailer Tests:</h3>
+    <p>Verifies email delivery and content.</p>
+    <div class="code-block"># spec/mailers/user_mailer_spec.rb
+require 'rails_helper'
+
+RSpec.describe UserMailer, type: :mailer do
+  describe 'welcome_email' do
+    let(:user) { create(:user) }
+    
+    it 'renders the subject' do
+      mail = UserMailer.welcome_email(user)
+      expect(mail.subject).to eq('Welcome to Our Platform!')
+    end
+    
+    it 'renders the receiver email' do
+      mail = UserMailer.welcome_email(user)
+      expect(mail.to).eq([user.email])
+    end
+    
+    it 'renders the body' do
+      mail = UserMailer.welcome_email(user)
+      expect(mail.body.encoded).to include("Hi #{user.name}")
+    end
+  end
+end</div>
+</div>
+
+<div class="section">
+    <h2>Best Practices</h2>
+    
+    <h3>Test Coverage Strategy:</h3>
+    <ul class="feature-list">
+        <li>Focus on critical paths and high-risk areas</li>
+        <li>Follow the testing pyramid: more unit tests, fewer system tests</li>
+        <li>Aim for 80-90% coverage for critical business logic</li>
+    </ul>
+    
+    <h3>Organizing Tests:</h3>
+    <ul class="feature-list">
+        <li>Group related tests in descriptive files</li>
+        <li>Use shared contexts for common setup</li>
+        <li>Name tests clearly indicating expected behavior</li>
+    </ul>
+    
+    <h3>Tools & Techniques:</h3>
+    <ul class="feature-list">
+        <li>Factories (FactoryBot) for test data generation</li>
+        <li>Fixtures for reusable test data</li>
+        <li>Mocks and stubs for external dependencies</li>
+        <li>Continuous Integration for automated testing</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>Conclusion</h2>
+    <p>A balanced testing strategy combines all three test types to ensure comprehensive coverage:</p>
+    <ul class="feature-list">
+        <li><strong>Unit tests:</strong> Foundation for verifying individual components</li>
+        <li><strong>Integration tests:</strong> Ensuring components work together correctly</li>
+        <li><strong>System tests:</strong> Validating end-to-end user experiences</li>
+    </ul>
+    <p>By implementing these test types effectively, Rails applications achieve greater stability, easier maintenance, and faster development cycles.</p>
+</div>
+
+</body>
+</html>

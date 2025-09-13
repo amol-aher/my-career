@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Largest Scale Application I've Worked On — Architecture and Learnings</title><style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.6; padding:28px; color:#111; background:#fff; }
+    .container{max-width:980px;margin:0 auto;}
+    header{border-bottom:1px solid #e6e6e6;margin-bottom:18px;padding-bottom:8px;}
+    h1{font-size:26px;margin:0 0 6px 0;}
+    h2{font-size:18px;margin-top:18px;color:#0b69ff;}
+    h3{font-size:15px;margin-top:14px;color:#0b69ff;}
+    p{margin:8px 0;}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:4px;}
+    ul{margin:8px 0 8px 20px;}
+    table{border-collapse:collapse;width:100%;margin:8px 0;}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+    .muted{color:#666;font-size:13px;}
+    footer{border-top:1px solid #e6e6e6;margin-top:22px;padding-top:12px;color:#666;font-size:13px;}
+    .kbd{background:#f4f4f4;padding:2px 6px;border-radius:4px;font-family:monospace;}
+    </style></head>
+<body>
+<div class="container">
+<header>
+<h1>Largest Scale Application I've Worked On — Architecture and Learnings</h1>
+<p class="muted">Prepared by: Senior Software Engineer &amp; System Architect — Rails / AWS / SQL / Vue.js</p>
+<p class="muted">Date: 2025-09-10 (UTC)</p>
+</header>
+
+<p class="muted"><strong>Overview</strong></p>
+<p>A representative large-scale Rails-based system I led: traffic profile, architecture components, scaling, resilience, and lessons learned.</p>
+
+<section><h2>Overview & scale</h2>
+<p>Representative system: consumer web and mobile product with microservices for core domains. Key stats (example ranges):</p>
+<ul>
+<li>Monthly active users: ~3–5 million</li>
+<li>Peak RPS on API tier: ~500–1,000 requests/sec (spiky, regional)</li>
+<li>Background jobs: hundreds of thousands/day processed via Sidekiq with multiple worker pools</li>
+<li>Data size: TBs in object storage, hundreds of GBs in relational DBs, trillions of analytical events</li>
+</ul>
+</section>
+<section><h2>Core architecture</h2>
+<ul>
+<li>API layer: multiple Rails apps (monolith slices & microservices) behind an API Gateway / ALB and CloudFront for edge caching.</li>
+<li>Data layer: Aurora (primary + read replicas), Redis clusters (ElastiCache) for caching and Sidekiq backend, S3 for assets, and Kafka for event streaming.</li>
+<li>Compute: EKS for microservices and ECS/Fargate for some worker fleets; Autoscaling at multiple layers.</li>
+<li>Observability: centralized logging (ELK/Opensearch), metrics (Prometheus/Grafana + CloudWatch), distributed tracing (OpenTelemetry) and SLO-based alerting.</li>
+</ul>
+</section>
+<section><h2>Operational practices</h2>
+<ul>
+<li>CI/CD via GitHub Actions and ArgoCD for GitOps-based deploys to clusters.</li>
+<li>Rollback capability via immutable images and quick redeploy.</li>
+<li>Feature flags for progressive rollouts and kill switches for risky features.</li>
+<li>Dedicated platform team for shared infra and developer self-service (templates, CI images).</li>
+</ul>
+</section>
+<section><h2>Scaling & performance tactics</h2>
+<ul>
+<li>Shard read traffic to replicas and cache hot items with Redis + CDN.</li>
+<li>Use queue partitioning and separate worker classes for latency-sensitive jobs.</li>
+<li>Pre-warm caches during deploys and use canary releases monitored by synthetic checks.</li>
+</ul>
+</section>
+<section><h2>Challenges & lessons learned</h2>
+<ul>
+<li>Operational complexity — invest in automation and runbooks early.</li>
+<li>Observability is essential — correlate logs/traces with user sessions using correlation IDs.</li>
+<li>Gradual decomposition of monolith to bounded contexts helped reduce deployment blast radius.</li>
+<li>Design for eventual consistency — embrace idempotency and sagas for multi-step operations.</li>
+</ul>
+</section>
+<section><h2>Subquestions you should expect</h2>
+<ol>
+<li><strong>How to handle data migrations?</strong><br/>Use non-blocking migrations, backfills, and dual-write strategies. Test migration performance in staging with production-sized datasets.</li>
+<li><strong>How to ensure availability?</strong><br/>Multi-AZ, read replicas, autoscaling, circuit breakers, and chaos testing to validate assumptions.</li>
+</ol>
+</section>
+
+
+<footer>If you'd like, I can diagram this architecture into a one-page diagram and produce a shortlist of technology choices for each layer.</footer>
+</div>
+</body>
+</html>

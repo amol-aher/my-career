@@ -1,0 +1,63 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Benefits of AWS CodeDeploy vs Manual Deployments</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:22px;color:#222;line-height:1.6}
+    h1{background:#9c27b0;color:#fff;padding:12px;border-radius:8px}
+    h2{color:#9c27b0}
+    ul{margin:8px 0 8px 20px}
+    pre{background:#f7f4fb;padding:12px;border-radius:6px;overflow:auto}
+  </style>
+</head>
+<body>
+  <h1>Benefits of AWS CodeDeploy vs Manual Deployments</h1>
+  <h2>Executive summary</h2>
+  <p>AWS CodeDeploy automates deployments to EC2, Lambda and ECS and provides repeatability, safety, monitoring and rollback capabilities that are hard to achieve with ad-hoc manual deployments. Automation reduces human error and enables consistent, auditable releases.</p>
+
+  <h2>Key benefits of CodeDeploy</h2>
+  <ul>
+    <li><strong>Automation & repeatability:</strong> Deployments run the same every time via application specifications (AppSpec) and lifecycle hooks.</li>
+    <li><strong>Rollback support:</strong> Automate rollbacks if deployment health checks fail.</li>
+    <li><strong>Deployment strategies:</strong> Supports in-place, blue-green and canary-like traffic shifting (especially when integrated with ALB and CodePipeline).</li>
+    <li><strong>Visibility & auditing:</strong> Deployment history, logs, and events are recorded in the console and CloudWatch.</li>
+    <li><strong>Integration:</strong> Integrates with CodePipeline, CloudWatch alarms, SNS, and third-party tools.</li>
+    <li><strong>Lifecycle hooks:</strong> Run scripts before/after installations, before/after traffic shift, enabling prechecks and post-deploy validation.</li>
+  </ul>
+
+  <h2>Downsides compared to manual</h2>
+  <ul>
+    <li><strong>Learning curve:</strong> Need to learn AppSpec and CodeDeploy constructs.</li>
+    <li><strong>Complexity for unusual setups:</strong> Very custom deployment workflows may require creative lifecycle scripts.</li>
+    <li><strong>Cost:</strong> Slightly more operational complexity but generally worth the reliability benefits.</li>
+  </ul>
+
+  <h2>AppSpec example (EC2 deployment)</h2>
+  <pre><code>version: 0.0
+os: linux
+files:
+  - source: /
+    destination: /var/www/myapp
+hooks:
+  BeforeInstall:
+    - location: scripts/stop_old_service.sh
+      timeout: 300
+  AfterInstall:
+    - location: scripts/install_dependencies.sh
+  ApplicationStart:
+    - location: scripts/start_service.sh</code></pre>
+
+  <h2>Interview style follow-ups</h2>
+  <h3>How does CodeDeploy implement blue-green?</h3>
+  <p>CodeDeploy integrates with ALB and can shift traffic between an old and a new target group, executing lifecycle hooks and running validation tests during the shift. If validation fails, it shifts traffic back.</p>
+
+  <h3>When is manual deployment acceptable?</h3>
+  <p>Manual deployments can be accepted for tiny teams or one-off systems but are risky for production systems. Use automation for reliability, compliance and scale.</p>
+
+  <h2>Conclusion</h2>
+  <p>Use CodeDeploy / CodePipeline for production-grade automation — it reduces human error, provides rollback and observability, and integrates with other AWS monitoring and notification services.</p>
+</body>
+</html>

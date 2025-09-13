@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"/><title>Answer 1</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6; color:#111 }
+pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto }
+code { font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace }
+h1,h2,h3 { color:#0b5394 }
+footer { color:#666; font-size:0.9em }
+</style></head><body>
+<h1>Question 1: What’s the use of ensure in exception handling? When does it execute?</h1>
+<h2>Concept</h2>
+<p><strong>ensure</strong> is part of Ruby's exception handling construct (<code>begin/rescue/ensure</code>). Conceptually, it is a finally-block: code placed inside <code>ensure</code> is guaranteed to run after the <code>begin</code> body and any <code>rescue</code> handlers, regardless of whether an exception occurred or not.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p><code>ensure</code> is used for cleanup that must always run (closing files, releasing locks). It executes after <code>begin</code> and <code>rescue</code> blocks complete — even if the method returns or an exception is re-raised — but it won't run if the process is killed by the OS (SIGKILL).</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>Does ensure run on return?</strong> — Yes. If you return inside <code>begin</code> or <code>rescue</code>, <code>ensure</code> runs before the method actually returns.</li>
+<li><strong>Can ensure suppress the original exception?</strong> — Not by itself. But if <code>ensure</code> raises a new exception, it will replace the original one.</li>
+<li><strong>When won't ensure run?</strong> — When the process is abruptly terminated (SIGKILL), or the machine crashes; normal <code>exit</code> will still run <code>ensure</code>.</li>
+</ul>
+
+<h2>Example</h2>
+<pre><code class="language-ruby">def with_file(path)
+  f = File.open(path, "r")
+  begin
+    yield f
+  rescue => e
+    warn "error: \#{e.class}: \#{e.message}"
+    raise
+  ensure
+    f.close if f && !f.closed?
+  end
+end</code></pre>
+
+<h2>Best practices / Pitfalls</h2>
+<ul>
+<li>Keep <code>ensure</code> short and avoid raising exceptions inside it.</li>
+<li>Don't rely on <code>ensure</code> for critical external side-effects that must survive process kills — use transactional/atomic persistence where required.</li>
+</ul>
+
+<hr/>
+<footer>Generated HTML for question 1</footer>
+</body></html>

@@ -1,0 +1,237 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Flow: jombe.com/employees</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #2980b9;
+            margin-top: 30px;
+        }
+        .section {
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .code-block {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        .network-diagram {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f0f8ff;
+            border-radius: 4px;
+        }
+        .component {
+            text-align: center;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            width: 30%;
+        }
+        .arrow {
+            font-size: 24px;
+            color: #3498db;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Request Flow: jombe.com/employees</h1>
+
+<div class="section">
+    <h2>Overview</h2>
+    <p>This diagram illustrates the complete lifecycle of an HTTP request to the `/employees` endpoint in a typical Rails application deployed on a cloud platform.</p>
+</div>
+
+<div class="section">
+    <h2>Network Diagram</h2>
+    <div class="network-diagram">
+        <div class="component">
+            <div>User Browser</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="component">
+            <div>Internet</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="component">
+            <div>Load Balancer</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="component">
+            <div>Web Server</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="component">
+            <div>Rails Application</div>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Detailed Request Lifecycle</h2>
+    
+    <h3>1. Client Request Initiation</h3>
+    <p>The user enters `jombe.com/employees` in their browser, initiating an HTTP GET request.</p>
+    
+    <h3>2. DNS Resolution & Routing</h3>
+    <p>The browser resolves the domain name to an IP address via DNS servers, establishing a TCP connection to the target server.</p>
+    
+    <h3>3. Load Balancer Distribution</h3>
+    <p>The request reaches the load balancer, which distributes traffic across multiple web server instances based on configured rules.</p>
+    
+    <h3>4. Web Server Processing</h3>
+    <p>The web server (typically Nginx or Apache) receives the request and forwards it to the Rails application server (Puma, Unicorn, etc.).</p>
+    
+    <h3>5. Rails Router Handling</h3>
+    <div class="code-block"># config/routes.rb
+Rails.application.routes.draw do
+  resources :employees
+  # GET /employees → EmployeesController#index
+end</div>
+    <p>The router matches the request path to the appropriate controller action.</p>
+    
+    <h3>6. Controller Action Execution</h3>
+    <div class="code-block"># app/controllers/employees_controller.rb
+class EmployeesController < ApplicationController
+  def index
+    @employees = Employee.all.includes(:department)
+    respond_to do |format|
+      format.html # Renders index.html.erb
+      format.json { render json: @employees }
+    end
+  end
+end</div>
+    <p>The controller fetches data from the database and prepares the response.</p>
+    
+    <h3>7. Model Interaction</h3>
+    <div class="code-block"># app/models/employee.rb
+class Employee < ApplicationRecord
+  belongs_to :department
+end</div>
+    <p>The model interacts with the database using ActiveRecord ORM.</p>
+    
+    <h3>8. View Rendering</h3>
+    <p>The corresponding view template (`app/views/employees/index.html.erb`) is rendered with embedded Ruby code.</p>
+    
+    <h3>9. Response Generation</h3>
+    <p>Rails generates the HTTP response with appropriate headers and content (HTML, JSON, etc.).</p>
+    
+    <h3>10. Response Transmission</h3>
+    <p>The response travels back through the same network path:
+    <ul>
+        <li>Rails application → Web server → Load balancer → Internet → User browser</li>
+    </ul>
+    
+    <h3>11. Browser Rendering</h3>
+    <p>The browser receives the response, renders the HTML/CSS/JS, and displays the employees page to the user.</p>
+</div>
+
+<div class="section">
+    <h2>Component Roles</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Component</th>
+                <th>Role in Request Lifecycle</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>User Browser</td>
+                <td>Initiates request, renders response</td>
+            </tr>
+            <tr>
+                <td>Internet</td>
+                <td>Transports packets between client and server</td>
+            </tr>
+            <tr>
+                <td>Load Balancer</td>
+                <td>Distributes incoming requests across servers</td>
+            </tr>
+            <tr>
+                <td>Web Server</td>
+                <td>Receives HTTP requests, passes to application server</td>
+            </tr>
+            <tr>
+                <td>Rails Application</td>
+                <td>Processes request, interacts with database, generates response</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="section">
+    <h2>Response Structure</h2>
+    <p>The final HTTP response contains:</p>
+    <ul>
+        <li>Status code (200 OK for success)</li>
+        <li>Headers (content-type, cache-control, etc.)</li>
+        <li>Body (HTML content generated by Rails view)</li>
+    </ul>
+    
+    <h3>Sample Response Headers:</h3>
+    <div class="code-block">HTTP/1.1 200 OK
+Content-Type: text/html; charset=utf-8
+Cache-Control: public, max-age=300
+ETag: "abcd1234"
+Content-Length: 24567</div>
+</div>
+
+<div class="section">
+    <h2>Performance Considerations</h2>
+    <ul>
+        <li><strong>Caching:</strong> Implement CDN caching for static assets</li>
+        <li><strong>Database Optimization:</strong> Use eager loading to minimize queries</li>
+        <li><strong>Asset Compression:</strong> Minify CSS/JS files</li>
+        <li><strong>Response Time Monitoring:</h5>
+        <li><strong>Connection Keep-Alive:</strong> Reuse connections for subsequent requests</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>Conclusion</h2>
+    <p>This end-to-end flow demonstrates the power of Rails' convention-over-configuration approach, abstracting away much of the low-level networking details while providing powerful abstractions for building web applications. The separation of concerns between routing, controllers, models, and views enables developers to focus on business logic rather than infrastructure concerns.</p>
+</div>
+
+</body>
+</html>

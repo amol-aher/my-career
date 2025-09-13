@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CI Configuration — GitHub Actions and Jenkins Examples</title>
+<style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.6; padding:28px; color:#111; background:#fff; }
+    .container{max-width:980px;margin:0 auto;}
+    header{border-bottom:1px solid #e6e6e6;margin-bottom:18px;padding-bottom:8px;}
+    h1{font-size:26px;margin:0 0 6px 0;}
+    h2{font-size:18px;margin-top:18px;color:#0b69ff;}
+    h3{font-size:15px;margin-top:14px;color:#0b69ff;}
+    p{margin:8px 0;}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:4px;}
+    ul{margin:8px 0 8px 20px;}
+    table{border-collapse:collapse;width:100%;margin:8px 0;}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+    .muted{color:#666;font-size:13px;}
+    footer{border-top:1px solid #e6e6e6;margin-top:22px;padding-top:12px;color:#666;font-size:13px;}
+    .kbd{background:#f4f4f4;padding:2px 6px;border-radius:4px;font-family:monospace;}
+    </style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>CI Configuration — GitHub Actions and Jenkins Examples</h1>
+<p class="muted">Prepared by: Senior Software Engineer &amp; System Architect — Rails / AWS / SQL / Vue.js</p>
+<p class="muted">Date: 2025-09-10 (UTC)</p>
+</header>
+
+<p class="muted"><strong>Overview</strong></p>
+<p>Concrete examples of CI configuration for GitHub Actions and Jenkins with explanations and best practices. Includes sample YAML for a Rails app (build, test, scan, publish, deploy) and a Jenkins declarative pipeline.</p>
+
+<section><h2>GitHub Actions — sample CI/CD workflow (.github/workflows/ci.yml)</h2>
+<p>This example demonstrates PR checks, build, test, image build, scan, and push to ECR, then trigger a deploy job.</p>
+<pre><code>name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  RUBY_VERSION: 3.2.2
+  RAILS_ENV: test
+  AWS_REGION: us-east-1
+  ECR_REGISTRY: 123456789012.dkr.ecr.us-east-1.amazonaws.com
+  IMAGE_NAME: myapp
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ env.RUBY_VERSION }}
+      - name: Cache gems
+        uses: actions/cache@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+      - name: Install dependencies
+        run: |
+          bundle config set --local path 'vendor/bundle'
+          bundle install --jobs 4 --retry 3
+      - name: Set up DB
+        run: |
+          cp config/database.ci.yml config/database.yml
+          bundle exec rails db:create db:schema:load
+      - name: Run tests
+        run: bundle exec rspec
+  build-and-push:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v1
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ env.ECR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger deploy (example: call your deployment endpoint or invoke ArgoCD)
+        run: |
+          curl -X POST https://deploy-api.example.com/deploy -d '{"image":"'"${{ env.ECR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"}'
+</code></pre>
+
+<p>Notes:</p>
+<ul>
+<li>Store AWS credentials and other secrets in GitHub Secrets and use least-privilege IAM credentials.</li>
+<li>Use environments and required reviewers for production deployments.</li>
+</ul>
+</section>
+<section><h2>Jenkins — Declarative Pipeline (Jenkinsfile) example</h2>
+<p>Example Jenkinsfile using declarative pipeline with stages and credentials binding.</p>
+<pre><code>pipeline {
+  agent { label 'docker' }
+  environment {
+    ECR_REGISTRY = '123456789012.dkr.ecr.us-east-1.amazonaws.com'
+    IMAGE_NAME = 'myapp'
+  }
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+    stage('Build & Test') {
+      agent { docker { image 'ruby:3.2.2' } }
+      steps {
+        sh 'bundle config set --local path vendor/bundle'
+        sh 'bundle install --jobs 4 --retry 3'
+        sh 'bundle exec rspec'
+      }
+    }
+    stage('Build Image') {
+      steps {
+        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-deployer']]) {
+          sh '''
+            $(aws ecr get-login --no-include-email --region $AWS_REGION)
+            docker build -t $ECR_REGISTRY/$IMAGE_NAME:$GIT_COMMIT .
+            docker push $ECR_REGISTRY/$IMAGE_NAME:$GIT_COMMIT
+          '''
+        }
+      }
+    }
+    stage('Deploy') {
+      steps {
+        input message: 'Approve production deploy?', ok: 'Deploy'
+        sh "curl -X POST https://deploy-api.example.com/deploy -d '{"image":"$ECR_REGISTRY/$IMAGE_NAME:$GIT_COMMIT"}'"
+      }
+    }
+  }
+  post {
+    always {
+      archiveArtifacts artifacts: 'log/test-results/**', allowEmptyArchive: true
+    }
+  }
+}
+</code></pre>
+
+<p>Notes:</p>
+<ul>
+<li>Jenkins allows flexible agent orchestration and integration with Kubernetes plugin to spin up ephemeral agents.</li>
+<li>Use credentials binding and secret text for tokens and AWS keys.</li>
+</ul>
+</section>
+<section><h2>CI Best Practices & Tips</h2>
+<ul>
+<li><strong>Cache dependencies:</strong> Use caching for bundler, node_modules, and build artifacts to speed up pipelines.</li>
+<li><strong>Parallelize tests:</strong> Use test splitting (knapsack, parallel_tests) to reduce latency.</li>
+<li><strong>Fail fast:</strong> Quickly run lint and fast unit tests first to avoid wasted work.</li>
+<li><strong>Immutable artifacts:</strong> Build once and promote the artifact between environments rather than rebuilding for each env.</li>
+<li><strong>Artifact signing:</strong> Sign releases or images and verify during deploy.</li>
+<li><strong>Branch protection &amp; gates:</strong> Require CI green and PR reviews before merging to protected branches.</li>
+</ul>
+</section>
+<section><h2>Subquestions you should expect</h2>
+<ol>
+<li><strong>How to handle secrets?</strong><br/>Use the platform's secret store (GitHub Secrets, Jenkins Credentials) and integrate with external stores (AWS Secrets Manager or Vault) for dynamic secrets.</li>
+<li><strong>How to create preview environments?</strong><br/>Create ephemeral namespaces and deploy PR images automatically; tear them down when PR closes. Use the branch name or PR number in image tags and K8s namespace names.</li>
+<li><strong>How to speed up pipelines?</strong><br/>Cache, parallelize, run only affected tests via changed file detection, and use job matrices sparingly.</li>
+</ol>
+</section>
+
+
+<footer>
+If you want, I can generate a ready-to-use .github/workflows/ci.yml tailored to your repo and a Jenkinsfile configured for Kubernetes agents.
+</footer>
+</div>
+</body>
+</html>

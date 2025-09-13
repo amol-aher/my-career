@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Refinements vs monkey patching in Ruby</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:18px;color:#111}
+    h1{color:#1a56db} h2{color:#0b5a78}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <h1>How refinements work and what problem they solve vs monkey patching</h1>
+
+  <p><strong>Problem:</strong> Monkey-patching alters global behavior and can cause conflicts across gems and app code. Refinements were introduced to allow scoped modifications without global side-effects.</p>
+
+  <h2>How to declare and use refinements</h2>
+  <pre><code class="language-ruby">module StringExtras
+  refine String do
+    def shout
+      upcase + "!"
+    end
+  end
+end
+
+using StringExtras
+puts "hello".shout  # => "HELLO!"
+
+# Outside the file/module that called `using`, the method is not visible:
+# Another file without `using StringExtras` won't see String#shout</code></pre>
+
+  <h2>Key properties</h2>
+  <ul>
+    <li><strong>Lexical scope:</strong> Refinements are active only where you call <code>using</code> (at the top-level of a file or inside a module/class body).</li>
+    <li><strong>Non-invasive:</strong> They do not alter the global class table; other code is unaffected unless it explicitly opts in.</li>
+    <li><strong>Call-site based:</strong> The method call is resolved with refined semantics depending on where the call appears in source, not where the refined module is defined.</li>
+  </ul>
+
+  <h2>Limitations & caveats</h2>
+  <ul>
+    <li>Refinements can be surprising — behavior differs depending on the call-site file/module.</li>
+    <li>They do not apply inside some forms of <code>eval</code> or foreign contexts unless that code lexically used the refinement.</li>
+    <li>Adoption has been limited; many gems don't expect refinements and behavior can be inconsistent across versions.</li>
+  </ul>
+
+  <h2>When to prefer refinements</h2>
+  <ul>
+    <li>When you need to tweak behavior for a local area (tests, a specific library) without affecting global state.</li>
+    <li>When you want to avoid namespace collisions and global side effects.</li>
+  </ul>
+
+  <h2>When monkey patching may still be used</h2>
+  <ul>
+    <li>Polyfills or platform shims that must be globally available.</li>
+    <li>During a controlled migration with strict test coverage and a short-lived patch.</li>
+  </ul>
+
+  <h2>Best practices</h2>
+  <ul>
+    <li>Prefer composition, wrappers, or refinements over direct monkey-patching.</li>
+    <li>If monkey-patching is unavoidable, scope it and document it clearly; consider using feature flags to toggle.</li>
+    <li>Use tests to detect interactions and regressions.</li>
+  </ul>
+
+  <h2>Conclusion</h2>
+  <p>Refinements solve the core risk of monkey-patching — global, unpredictable changes — by providing a scoped alternative. Use them when you need local modifications; otherwise favor non-invasive approaches.</p>
+</body>
+</html>

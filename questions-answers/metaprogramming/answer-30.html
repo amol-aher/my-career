@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Safely adding behavior to core classes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:18px;color:#111}
+    h1{color:#1a56db} h2{color:#0b5a78}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <h1>Safely adding behavior to core classes (String, Array, etc.)</h1>
+
+  <p>Adding behavior to core classes can be risky. Here are safe strategies and examples.</p>
+
+  <h2>Avoid global monkey-patching</h2>
+  <p>Prefer alternatives that limit scope:</p>
+  <ul>
+    <li><strong>Refinements:</strong> Lexical, non-invasive (use <code>using</code>).</li>
+    <li><strong>Wrapper classes / utility modules:</strong> Compose behaviors instead of altering core classes.</li>
+    <li><strong>Sub-classing:</strong> Create a subclass when appropriate (less common for String/Array).</li>
+    <li><strong>Explicit namespacing:</strong> Add helper modules with namespaced methods (e.g., <code>StringHelpers.palindrome?(s)</code>).</li>
+    <li><strong>Extending single objects:</strong> Use <code>obj.extend(Module)</code> to add behavior to one instance only.</li>
+  </ul>
+
+  <h2>Example: refinement (safe)</h2>
+  <pre><code class="language-ruby">module MyStringRefinements
+  refine String do
+    def reverse_words
+      split(/\s+/).reverse.join(' ')
+    end
+  end
+end
+
+using MyStringRefinements
+"hello world".reverse_words # => "world hello"</code></pre>
+
+  <h2>Example: wrapper helper (safe)</h2>
+  <pre><code class="language-ruby">module StringHelpers
+  def self.reverse_words(s)
+    s.split(/\s+/).reverse.join(' ')
+  end
+end
+
+StringHelpers.reverse_words("a b c") # => "c b a"</code></pre>
+
+  <h2>Example: extend a single object</h2>
+  <pre><code class="language-ruby">s = "hello world"
+s.extend(Module.new { def shout; upcase + '!' end })
+s.shout # => "HELLO WORLD!"</code></pre>
+
+  <h2>When monkey-patching may be acceptable</h2>
+  <ul>
+    <li>Polyfills for missing language features across platforms (documented and minimal).</li>
+    <li>Short-lived migration shims with a clear removal plan.</li>
+    <li>Tests covering interactions and a controlled release.</li>
+  </ul>
+
+  <h2>Mitigation and governance</h2>
+  <ol>
+    <li>Code review policy prohibits undocumented core changes.</li>
+    <li>CI tests include full regression tests to detect breakages across gems.</li>
+    <li>Use linters to detect reopenings of core classes.</li>
+    <li>Document any additions and provide a deprecation/migration plan.</li>
+  </ol>
+
+  <h2>Summary checklist</h2>
+  <ul>
+    <li>Can we implement this as a wrapper/refinement/subclass? Prefer that.</li>
+    <li>If we must patch, scope it tightly and add tests.</li>
+    <li>Use semantic names to avoid collisions (eg. namespacing).</li>
+  </ul>
+
+  <h2>Conclusion</h2>
+  <p>Prefer non-invasive approaches (refinements, wrappers, extend single objects). When global patches are unavoidable, govern them with strict tests, documentation, and a migration plan.</p>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Replacing conditionals with polymorphism in Rails</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:28px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Example: replacing conditionals with polymorphism in Rails</h1>
+
+    <p>Conditionals that switch behavior by type (payment method, user role, product type) are a common maintenance headache. Replace them with polymorphism (Strategy / subclasses / delegates) to follow the open/closed principle.</p>
+
+    <h2>Problem — conditional-heavy code</h2>
+    <pre><code>def charge_payment(order)
+  case order.payment_method
+  when 'stripe'
+    StripeGateway.charge(order)
+  when 'paypal'
+    PaypalGateway.charge(order)
+  else
+    raise 'unsupported'
+  end
+end
+</code></pre>
+
+    <h2>Polymorphic solution — Strategy pattern</h2>
+    <pre><code>module Payment
+  class Base
+    def charge(order); raise NotImplementedError; end
+  end
+
+  class Stripe &lt; Base
+    def charge(order)
+      # stripe logic
+    end
+  end
+
+  class Paypal &lt; Base
+    def charge(order)
+      # paypal logic
+    end
+  end
+end
+
+# factory
+class PaymentFactory
+  def self.build(method)
+    case method
+    when 'stripe' then Payment::Stripe.new
+    when 'paypal' then Payment::Paypal.new
+    else raise 'unsupported'
+    end
+  end
+end
+
+# usage
+gateway = PaymentFactory.build(order.payment_method)
+gateway.charge(order)
+</code></pre>
+
+    <h2>Alternative: polymorphic association or subclassing</h2>
+    <pre><code># single-table inheritance (STI) example
+class Payment &lt; ApplicationRecord; end
+class StripePayment &lt; Payment
+  def charge; # stripe; end
+end
+class PaypalPayment &lt; Payment
+  def charge; # paypal; end
+end
+
+# usage
+payment = order.payment
+payment.charge
+</code></pre>
+
+    <h2>Benefits</h2>
+    <ul>
+      <li>No spread of type-checking logic—each implementation encapsulates its behavior.</li>
+      <li>Easy to add new implementations without touching existing code.</li>
+      <li>Improves testability — test each strategy in isolation.</li>
+    </ul>
+
+    <h2>Interview tip</h2>
+    <p>Bring a concrete example from your work where you replaced a long conditional with a polymorphic design and explain how it simplified adding new cases and reduced bugs.</p>
+  </div>
+</body>
+</html>

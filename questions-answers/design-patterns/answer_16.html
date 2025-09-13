@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scheduling jobs — patterns and implementations</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px}
+    h2{font-size:18px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Scheduling user jobs (e.g., daily at 3 p.m.)</h1>
+
+    <p>Scheduling in multi-tenant distributed systems introduces challenges: timezone handling, reliability, idempotency, and scalability. Below are design options and recommended practices.</p>
+
+    <h2>Common scheduling options</h2>
+    <ul>
+      <li><strong>Central scheduler (single source)</strong> — a leader process (Kubernetes CronJob, scheduler service) scans scheduled tasks and enqueues jobs. Use leader election (Redis lock/etcd) to avoid duplication.</li>
+      <li><strong>Distributed scheduling</strong> — store schedule metadata in DB and let multiple workers claim due jobs using atomic DB operations (select ... for update / row locks) or Redis sorted set pop by score (timestamp).</li>
+      <li><strong>Managed schedulers</strong> — AWS EventBridge, CloudWatch Events, or GCP Cloud Scheduler to trigger API endpoints or push messages; good for low operational overhead.</li>
+      <li><strong>Workflow engines</strong> — Temporal / Step Functions provide durable timers and long-running scheduled workflows with built-in retry & visibility.</li>
+    </ul>
+
+    <h2>Key design requirements and how to meet them</h2>
+    <ul>
+      <li><strong>Timezone awareness</strong> — store schedule with timezone or normalize to UTC plus user's timezone offset; when computing next run, apply timezone/dst rules (IANA tz database).</li>
+      <li><strong>Idempotency</strong> — scheduled actions must be safe to run multiple times; include run_id and use dedup keys or distributed locks.</li>
+      <li><strong>Retry & backoff</strong> — configurable retry policy for failures with exponential backoff and a dead-letter queue for manual inspection.</li>
+      <li><strong>Scalability</strong> — partition scheduled jobs by tenant or time window and process in parallel; use sharded queues for throughput.</li>
+      <li><strong>Visibility & control</strong> — UI for users to see upcoming runs, last run status, and to pause/cancel schedules.</li>
+    </ul>
+
+    <h2>Implementation patterns</h2>
+    <ol>
+      <li><strong>DB-backed schedule + worker claim</strong>
+        <pre><code># pseudo SQL
+WITH due AS (
+  SELECT id FROM schedules WHERE next_run_at &lt;= now() AND enabled = true LIMIT 100 FOR UPDATE SKIP LOCKED
+)
+UPDATE schedules SET next_run_at = compute_next() WHERE id IN (SELECT id FROM due) RETURNING id;
+-- enqueue jobs for returned ids
+</code></pre>
+      </li>
+      <li><strong>Redis sorted set (ZSET)</strong> — add schedules with score=timestamp; workers atomic pop by score and run; use locks to avoid races.</li>
+      <li><strong>Use managed EventBridge</strong> — create per-tenant scheduled rules or publish a single rule that triggers a service which filters and enqueues tenant jobs (cost/scale trade-offs).</li>
+      <li><strong>Sidekiq + sidekiq-cron / whenever</strong> — good for Rails apps; for user-configurable schedules, store schedule definitions in DB and a scheduler process updates Sidekiq Cron or enqueues jobs dynamically.
+      </li>
+    </ol>
+
+    <h2>User-facing scheduling model</h2>
+    <ul>
+      <li>Allow cron expressions for power users or human-friendly options like "daily at 15:00" with timezone selection.</li>
+      <li>Validate schedules at creation and provide preview of next N run times in user's timezone.</li>
+      <li>Quota scheduled jobs per tenant and provide throttling to protect system resources.</li>
+    </ul>
+
+    <h2>Edge cases & operational tips</h2>
+    <ul>
+      <li><strong>Clock skew</strong> — synchronize clocks with NTP; prefer timestamp-based queues over relying on local clocks.</li>
+      <li><strong>DST transitions</strong> — compute next_run using timezone libraries (tzinfo) to avoid running twice or skipping runs.</li>
+      <li><strong>Backfill and missed runs</strong> — provide options to backfill missed runs for offline windows or grace periods.</li>
+      <li><strong>Testability</strong> — simulate schedules in staging and support test hooks to fast-forward timers.
+      </li>
+    </ul>
+
+    <h2>Example: Rails + Sidekiq approach</h2>
+    <pre><code># Scheduler service runs periodically (once per minute) and claims due schedules
+class Scheduler
+  def run
+    due = Schedule.due.limit(100)
+    due.each do |s|
+      next unless s.claim! # atomic claim: update status if still due
+      PerformScheduledJobWorker.perform_async(s.id)
+      s.update(next_run_at: s.compute_next)
+    end
+  end
+end
+</code></pre>
+
+    <h2>Interview follow-ups</h2>
+    <ul>
+      <li><strong>How to scale to millions of schedules?</strong> Partition by tenant, use sharded queues, and event-driven triggers. Consider a streaming scheduler (Kafka) and multiple consumer groups.</li>
+      <li><strong>How to support user cancellation?</strong> Provide APIs to pause/cancel and ensure workers check cancellation before executing a job.</li>
+    </ul>
+
+    <p style="color:#666;margin-top:12px">For interview: explain your choice (managed vs DIY) based on operational constraints, cost, and feature needs (durability, long-running timers, auditability). Show sample code for the approach you pref

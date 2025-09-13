@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monolith to Microservices Transition</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1, h2, h3 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .code-block { margin: 20px 0; }
+        .subquestion { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Transitioning from Monolith to Microservices</h1>
+    
+    <h2>Strategic Planning Phase</h2>
+    <ol>
+        <li><strong>Define Boundaries:</strong> Identify logical boundaries using Domain-Driven Design (DDD)</li>
+        <li><strong>Create a Migration Roadmap:</strong> Prioritize services based on business value and technical debt</li>
+        <li><strong>Establish Governance:</strong> Define standards for service contracts, deployment, and monitoring</li>
+    </ol>
+    
+    <h2>Incremental Decomposition Approach</h2>
+    <h3>Step 1: Strangler Pattern</h3>
+    <p>Gradually replace monolith functionality with new microservices while keeping the old system running:</p>
+    <pre class="code-block"># Route new functionality to microservice
+get '/new-feature', to: 'microservice#handle'
+
+# Fallback to monolith
+unless feature_available?
+  redirect_to monolith_feature_path
+end</pre>
+    
+    <h3>Step 2: Extract Services</h3>
+    <ul>
+        <li>Start with independent modules (e.g., payment processing, notification service)</li>
+        <li>Decouple using message queues (RabbitMQ, Kafka)</li>
+        <li>Implement eventual consistency where needed</li>
+    </ul>
+    
+    <h3>Step 3: Refactor Shared Functionality</h3>
+    <p>Convert shared libraries into independent services:</p>
+    <ul>
+        <li>Authentication service</li>
+        <li>Logging service</li>
+        <li>Configuration service</li>
+    </ul>
+    
+    <h2>Technical Considerations</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Challenge</th>
+                <th>Solution</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Inter-service Communication</td>
+                <td>gRPC for high-performance needs, REST for simplicity, async messaging for decoupling</td>
+            </tr>
+            <tr>
+                <td>Service Discovery</td>
+                <td>Consul, Eureka, or Kubernetes DNS</td>
+            </tr>
+            <tr>
+                <td>Configuration Management</td>
+                <td>Centralized config service with encrypted secrets</td>
+            </tr>
+            <tr>
+                <td>Monitoring</td>
+                <td>Distributed tracing (Jaeger, Zipkin), centralized logging (ELK)</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h2>Deployment Strategy</h2>
+    <ul>
+        <li>Blue-green deployments for zero-downtime releases</li>
+        <li>Canary releases to test in production safely</li>
+        <li>Automated CI/CD pipelines with service mesh support</li>
+    </ul>
+    
+    <div class="subquestion">
+        <h3>Common Subquestions:</h3>
+        
+        <h4>Q: How do you manage data consistency across services?</h4>
+        <p>Use Saga pattern for distributed transactions, CQRS for read/write separation, and event sourcing for audit trails. Accept eventual consistency where appropriate.</p>
+        
+        <h4>Q: What's your approach to service discovery?</h4>
+        <p>Combine service registry (Consul) with DNS-based discovery. Use health checks and circuit breakers to handle service failures gracefully.</p>
+        
+        <h4>Q: How do you handle inter-service communication failures?</h4>
+        <p>Implement retry mechanisms with exponential backoff, circuit breakers (Hystrix), and dead-letter queues for failed messages.</p>
+    </div>
+</body>
+</html>

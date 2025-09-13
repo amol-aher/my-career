@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Explain in detail Promise?</title>
+<style>
+body{font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; max-width:900px; margin:24px auto; line-height:1.6; padding:20px}
+h1{font-size:22px;margin-bottom:6px}
+h2{font-size:18px;margin-top:18px}
+pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+code{background:#f1f1f1;padding:2px 4px;border-radius:4px}
+.section{margin-bottom:18px}
+.followups li{margin-bottom:8px}
+small.meta{color:#666}
+</style>
+</head>
+<body>
+<h1>Explain in detail Promise?</h1>
+<div class="section"><p>Summary:<br>A Promise represents the eventual result (fulfillment or rejection) of an asynchronous operation. It provides a composable abstraction for async control flow, avoiding deeply nested callbacks (callback hell) and enabling techniques like chaining and concurrency with Promise utilities.</p></div>
+<div class="section"><p>Deep dive — states and methods:<br>- States: `pending` -&gt; `fulfilled` or `rejected`. Once settled, state is immutable.<br>- API: `new Promise((resolve, reject) =&gt; { /* async work */ })`.<br>- Methods: `.then(onFulfilled, onRejected)`, `.catch(onRejected)`, `.finally(fn)`.<br>- Static helpers: `Promise.all`, `Promise.race`, `Promise.allSettled`, `Promise.any` — each has distinct semantics for combining multiple promises.<br>- Error handling: Unhandled Promise rejections should be caught; in Node they can crash processes depending on settings. Use `.catch` or `try/catch` with `async/await`.</p></div>
+<div class="section"><p>Promise chaining and composition:<br>- Returning a value in `then` passes the value down the chain.<br>- Returning a Promise in `then` waits for it to settle before continuing.<br>- Use `async/await` syntax to make async flows read like synchronous code, but handle errors with try/catch.</p></div>
+<div class="section"><p>Common pitfalls and patterns:<br>- Ignoring returned Promises (not returning inside .then) leads to unexpected behavior.<br>- Race conditions with `Promise.race` — the first settled promise (fulfill or reject) wins.<br>- Use timeouts/AbortController to avoid hanging Promises for network calls.</p></div>
+<div class="section"><p>Examples:<br>```js<br>// Creating a promise<br>function fetchJson(url) {<br>  return fetch(url).then(res =&gt; {<br>    if (!res.ok) throw new Error(res.statusText);<br>    return res.json();<br>  });<br>}</p></div>
+<div class="section"><p>// Using async/await<br>async function getData() {<br>  try {<br>    const data = await fetchJson(&#x27;/api/data&#x27;);<br>    return data;<br>  } catch (err) {<br>    console.error(err);<br>  }<br>}</p></div>
+<div class="section"><p>// Promise.all usage<br>const [a,b] = await Promise.all([fetchJson(&#x27;/a&#x27;), fetchJson(&#x27;/b&#x27;)]);<br>```</p></div>
+<div class="section"><p>Interviewer follow-ups:<br>- Q: When to use Promise.all vs Promise.allSettled?<br>  A: Use `all` when all must succeed; use `allSettled` when you want results regardless of individual failures.<br>- Q: How to avoid unhandled promise rejections?<br>  A: Always return promises, chain `.catch`, or use process-level handlers for logging and safe shutdown in Node apps.</p></div>
+<hr>
+<p class="meta"><small>Generated on 2025-09-10T08:27:04.666751</small></p>
+</body>
+</html>

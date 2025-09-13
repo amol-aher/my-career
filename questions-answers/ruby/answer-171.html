@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 171</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 171: Implement an asynchronous HTTP fetcher using Fibers or async/nio4r (or describe how to do it without external gems). (Advanced example)</h1>
+<h2>Concept</h2>
+<p>This builds on earlier discussion: use Fiber-based schedulers or non-blocking IO with select to implement async HTTP. Libraries like async/http or nio4r provide robust primitives; a homemade solution can be built using non-blocking sockets and a simple event loop.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Prefer a battle-tested library (httpx, async) for production. For learning, implement a small event loop that manages non-blocking sockets, resumes fibers when IO is ready, and performs minimal HTTP parsing.</p>
+
+<h2>Example (simplified educational implementation)</h2>
+<pre><code class="language-ruby">require 'socket'
+require 'fcntl'
+require 'uri'
+
+class SimpleEventLoop
+  def initialize
+    @read_wait = {}
+    @write_wait = {}
+  end
+
+  def add_read(fd, fiber) @read_wait[fd] = fiber end
+  def add_write(fd, fiber) @write_wait[fd] = fiber end
+
+  def run
+    loop do
+      r = @read_wait.keys
+      w = @write_wait.keys
+      break if r.empty? && w.empty?
+      ready = IO.select(r, w, nil, 1)
+      if ready
+        ready[0]&.each { |fd| f = @read_wait.delete(fd); f.resume if f && f.alive? }
+        ready[1]&.each { |fd| f = @write_wait.delete(fd); f.resume if f && f.alive? }
+      end
+    end
+  end
+end
+
+def fetch(url, loop)
+  uri = URI(url)
+  sock = TCPSocket.new(uri.host, uri.port || 80)
+  sock.fcntl(Fcntl::F_SETFL, Fcntl::O_NONBLOCK)
+  req = "GET \#{uri.request_uri} HTTP/1.0\r\nHost: \#{uri.host}\r\nConnection: close\r\n\r\n"
+  bytes = sock.write_nonblock(req) rescue nil
+  fiber = Fiber.current
+  loop.add_write(sock, fiber) unless bytes
+  Fiber.yield
+
+  response = ''
+  begin
+    loop.add_read(sock, fiber)
+    Fiber.yield while (chunk = sock.read_nonblock(4096) rescue nil).nil?
+    response << chunk while chunk && !chunk.empty?
+  rescue EOFError
+  end
+  sock.close
+  response
+end
+
+loop = SimpleEventLoop.new
+f = Fiber.new { puts fetch('http://example.com/', loop)[0..200] }
+f.resume
+loop.run</code></pre>
+
+<h2>Notes</h2>
+<p>This is educational and incomplete: proper error handling, partial writes/reads, non-blocking state machine, and HTTP parsing are needed. Use libraries for production.</p>
+
+<hr/><footer>Generated HTML for question 171</footer>
+</body></html>

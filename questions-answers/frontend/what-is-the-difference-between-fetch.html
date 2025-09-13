@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>What is the difference between fetch and Ajax? Why are we using fetch instead of Ajax?</title>
+<style>
+body{font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; max-width:900px; margin:24px auto; line-height:1.6; padding:20px}
+h1{font-size:22px;margin-bottom:6px}
+h2{font-size:18px;margin-top:18px}
+pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+code{background:#f1f1f1;padding:2px 4px;border-radius:4px}
+.section{margin-bottom:18px}
+.followups li{margin-bottom:8px}
+small.meta{color:#666}
+</style>
+</head>
+<body>
+<h1>What is the difference between fetch and Ajax? Why are we using fetch instead of Ajax?</h1>
+<div class="section"><p>Summary:<br>&#x27;Ajax&#x27; historically refers to asynchronous requests using `XMLHttpRequest` (XHR). `fetch` is the modern, Promise-based API that replaces many use-cases of XHR with a cleaner interface, streaming capabilities, and better composability with modern JavaScript.</p></div>
+<div class="section"><p>Detailed comparison:<br>- API surface: XHR is callback/event-driven; fetch uses Promises and async/await for clearer control flow.<br>- Streaming: fetch supports ReadableStreams for progressive processing; XHR has limited streaming options (progress events but not a true stream API).<br>- CORS and credentials: both support CORS, but fetch requires explicit `credentials` setting to send cookies; XHR previously had different defaults and more verbosity.<br>- Response handling: fetch resolves the Promise for any HTTP response; XHR provides status codes via callbacks. fetch offers a unified `Response` object with convenience methods.<br>- Abort/Cancel: fetch uses AbortController; XHR uses `xhr.abort()` but without Promise semantics.</p></div>
+<div class="section"><p>Why use fetch today:<br>- Cleaner syntax with Promises / async-await.<br>- Better composability (Promise utilities, chaining, concurrency patterns).<br>- Streaming support and integration with Service Workers for offline/caching features.<br>- Simpler API surface reduces bugs and improves readability.</p></div>
+<div class="section"><p>Caveats:<br>- Older browsers may need polyfills for fetch and AbortController.<br>- fetch does not automatically reject HTTP errors, so you must check `response.ok`.</p></div>
+<div class="section"><p>Interviewer follow-ups:<br>- Q: How do you handle request timeouts with fetch?<br>  A: Use AbortController to implement a timeout wrapper that aborts the fetch after a set time.<br>- Q: Do you still use XHR sometimes?<br>  A: Rarely in modern apps; only for legacy support or very specific browser APIs not supported by fetch.</p></div>
+<hr>
+<p class="meta"><small>Generated on 2025-09-10T08:27:04.669647</small></p>
+</body>
+</html>

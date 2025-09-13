@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Implementing method_missing without respond_to_missing</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; margin:20px; color:#111 }
+    pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto }
+    code { font-family: monospace; }
+    h1 { color:#1a56db }
+    h2 { color:#0b5a78 }
+  </style>
+</head>
+<body>
+  <h1>Implementing <code>method_missing</code> without <code>respond_to_missing?</code></h1>
+
+  <p><strong>Short answer:</strong> Yes, you can implement <code>method_missing</code> without implementing <code>respond_to_missing?</code> — calls to missing methods will be handled — but reflection (<code>respond_to?</code>, <code>methods</code>, documentation tools, and some libraries) will not indicate that those methods exist. This can cause surprising behavior.</p>
+
+  <h2>Example</h2>
+  <pre><code class="language-ruby">class DynamicGreeter
+  def method_missing(name, *args)
+    if name.to_s.start_with?("greet_")
+      person = name.to_s.split("_", 2)[1]
+      "Hello, #{person.capitalize}"
+    else
+      super
+    end
+  end
+end
+
+g = DynamicGreeter.new
+g.greet_alice           # => "Hello, Alice"
+g.respond_to?(:greet_alice)  # => false (surprising)</code></pre>
+
+  <h2>What happens and why it matters</h2>
+  <ul>
+    <li><strong>Positive:</strong> Calls work — Ruby will dispatch to <code>method_missing</code> when a method is not found.</li>
+    <li><strong>Negative:</strong> Introspection fails: <code>respond_to?</code> will usually return <code>false</code> for names handled only by <code>method_missing</code>. Many libraries rely on <code>respond_to?</code> to decide behavior — without <code>respond_to_missing?</code> integration, those libraries may behave incorrectly.</li>
+  </ul>
+
+  <h2>Concrete impacts</h2>
+  <ul>
+    <li>Auto-completion and IDE hints won't show the dynamic methods.</li>
+    <li>Gems and frameworks that call <code>respond_to?</code> before invoking methods will not call your dynamic methods (e.g., some serialization or templating code).</li>
+    <li>Tools like RDoc / YARD won't document the dynamic methods unless you add explicit documentation.</li>
+    <li>Delegation and proxy patterns rely on <code>respond_to_missing?</code> to remain transparent.</li>
+  </ul>
+
+  <h2>How to fix / recommended approach</h2>
+  <p>Implement <code>respond_to_missing?</code> alongside <code>method_missing</code>. Example fix for the above class:</p>
+  <pre><code class="language-ruby">class DynamicGreeter
+  def method_missing(name, *args)
+    if name.to_s.start_with?("greet_")
+      person = name.to_s.split("_", 2)[1]
+      "Hello, #{person.capitalize}"
+    else
+      super
+    end
+  end
+
+  def respond_to_missing?(name, include_private = false)
+    name.to_s.start_with?("greet_") || super
+  end
+end
+
+g = DynamicGreeter.new
+g.respond_to?(:greet_alice) # => true</code></pre>
+
+  <h2>Other options</h2>
+  <ol>
+    <li><strong>Define methods at runtime</strong> the first time they are called (use <code>define_singleton_method</code> / <code>define_method</code>). That makes the methods true members of the object/class and <code>respond_to?</code> will work automatically.</li>
+    <li><strong>Override <code>respond_to?</code></strong> — avoid this unless you fully understand the responsibilities; prefer implementing <code>respond_to_missing?</code>.</li>
+  </ol>
+
+  <h2>Summary</h2>
+  <p>Technically possible but fragile. For robust, predictable behavior — and for compatibility with other libraries — always pair <code>method_missing</code> with <code>respond_to_missing?</code> or define methods dynamically instead.</p>
+</body>
+</html>

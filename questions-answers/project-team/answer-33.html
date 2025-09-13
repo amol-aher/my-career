@@ -1,0 +1,34 @@
+<!doctype html><html><head><meta charset='utf-8'><title>Prioritizing tasks when everything seems urgent</title>
+<style>
+body{font-family:Segoe UI,Arial,Helvetica,sans-serif;line-height:1.6;padding:24px;max-width:900px;margin:auto;color:#111}
+header{border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:18px}
+h1{font-size:20px;margin:0 0 6px 0}
+.role{color:#555;font-size:13px;margin-bottom:6px}
+pre{background:#f6f6f6;padding:12px;border-radius:6px;overflow:auto}
+code{font-family:monospace;font-size:13px}
+section{margin-bottom:18px}
+.sub{font-weight:600;margin-top:8px}
+ul{margin-left:18px}
+ol{margin-left:18px}
+</style></head><body><header><h1>Prioritizing tasks when everything seems urgent</h1><div class='role'>System architect · Technical lead · Senior software engineer (Ruby on Rails, AWS, SQL, Vue.js)</div></header>
+<section>
+<p><strong>Summary:</strong> Use frameworks (Impact/Effort, RICE), align with business goals, and use triage rules. Communicate trade-offs and maintain a clear escalation path for truly urgent items.</p>
+
+<div class='sub'>Practical approach</div>
+<ol>
+<li><strong>Classify:</strong> Is this emergency (production incident), business-critical (regulatory), or important but not urgent?</li>
+<li><strong>Quantify impact:</strong> revenue, user experience, legal/compliance risk, or technical risk.</li>
+<li><strong>Estimate effort:</strong> quick estimate to decide if fast mitigation is possible.</li>
+<li><strong>Use RICE:</strong> Reach * Impact * Confidence / Effort for prioritization.</li>
+<li><strong>Apply WIP limits:</strong> avoid starting too many items simultaneously.</li>
+</ol>
+
+<div class='sub'>Triage playbook</div>
+<pre><code>Priority matrix:
+- P0: production outage -> immediate
+- P1: major feature blocking revenue -> next slot with senior devs
+- P2: nice-to-have -> backlog
+
+Communicate: update stakeholders with chosen path and expected ETA within 1 hour for emergencies.</code></pre>
+</section>
+</body></html>

@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Handling Obscure or Lacking Requirements</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Handling Obscure or Lacking Requirements</h1>
+  <p>Unclear requirements are common. The goal is to reduce ambiguity fast, minimize wasted work, and align stakeholders. Below is a practical approach and likely subquestions.</p>
+
+  <h2>1. Ask targeted clarifying questions</h2>
+  <p>Use examples, acceptance criteria, and "given/when/then" scenarios. Example:</p>
+  <pre><code>Given a returning user with a cart,
+When they apply coupon X,
+Then discount Y should be applied to the line-items only, not shipping.
+  </code></pre>
+
+  <h2>2. Propose assumptions and get buy-in</h2>
+  <p>Document assumptions as testable items and get stakeholder sign-off (Jira ticket comments or a short PR-like spec).</p>
+
+  <h2>3. Deliver a spike or prototype</h2>
+  <p>Build a small prototype or spike to validate assumptions and reveal hidden complexities.</p>
+
+  <h2>4. Use iterative delivery</h2>
+  <p>Break work into small deliverables with clear acceptance criteria so feedback can course-correct quickly.</p>
+
+  <h2>5. Fall-back: Decision log</h2>
+  <p>Record decisions and rationale in a decision log (ADR — Architecture Decision Record) so future changes know why choices were made.</p>
+
+  <h2>Common subquestions & answers</h2>
+  <ul>
+    <li><strong>Q:</strong> What if stakeholders disagree? <strong>A:</strong> Show prototypes and data; prioritize based on business impact.</li>
+    <li><strong>Q:</strong> What if time is limited? <strong>A:</strong> Deliver the simplest thing that could possibly work and iterate.</li>
+  </ul>
+</body>
+</html>

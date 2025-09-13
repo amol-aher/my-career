@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>define_method vs class_eval/module_eval in Ruby</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:18px;color:#111}
+    h1 { color:#1a56db } h2 { color:#0b5a78 }
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <h1>Differences between <code>define_method</code> and <code>class_eval/module_eval</code></h1>
+
+  <p>Both <code>define_method</code> and <code>class_eval</code>/<code>module_eval</code> allow you to create methods at runtime, but they behave differently in terms of lexical scope, closures, safety, and semantics.</p>
+
+  <h2>Key differences</h2>
+  <ul>
+    <li><strong>Lexical binding / closures:</strong> <code>define_method</code> accepts a block or Proc and preserves its surrounding lexical scope — it creates a closure capturing local variables. <code>class_eval</code> with a block evaluates the block in the context of the class but does not capture the outer lexical local variables in the same way.</li>
+    <li><strong>Self and method body:</strong> In a <code>define_method</code> block, <code>self</code> inside the method (when called) is the instance, same as a normal method. With <code>class_eval</code> string, the method body is defined as if written in the class body and has its own lexical scope.</li>
+    <li><strong>Use of <code>super</code>:</strong> Methods defined with <code>class_eval</code> behave like regular methods and support <code>super</code> normally. For <code>define_method</code>, using <code>super</code> inside the block behaves differently historically; modern Ruby versions handle it better but edge cases exist.</li>
+    <li><strong>Safety:</strong> <code>define_method</code> avoids string eval and is safer than <code>class_eval</code> with strings. Prefer <code>define_method</code> to avoid parsing and security issues.</li>
+    <li><strong>Source locations:</strong> Methods defined with <code>class_eval</code> using strings may show different source locations and can make backtraces less clear. <code>define_method</code> attaches the Proc's source location, which might point to the place where the block was created.</li>
+  </ul>
+
+  <h2>Examples</h2>
+  <h3>define_method</h3>
+  <pre><code class="language-ruby">class User
+  [:name, :email].each do |attr|
+    define_method(attr) { instance_variable_get("@#{attr}") }
+    define_method("#{attr}=") { |v| instance_variable_set("@#{attr}", v) }
+  end
+end</code></pre>
+
+  <h3>class_eval (block)</h3>
+  <pre><code class="language-ruby">klass = Class.new do
+  def greet
+    "hello"
+  end
+end
+
+klass.class_eval do
+  def farewell
+    "bye"
+  end
+end</code></pre>
+
+  <h3>class_eval (string)</h3>
+  <pre><code class="language-ruby">klass.class_eval <<-RUBY
+def dynamic_method(x)
+  x * 2
+end
+RUBY</code></pre>
+
+  <h2>When to choose which</h2>
+  <ul>
+    <li>Use <code>define_method</code> when you need closures or want to avoid <code>eval</code>.</li>
+    <li>Use <code>class_eval</code> (with blocks) when you want to define multiple methods or want the method to behave as if it was defined in class body, including normal <code>super</code> behavior.</li>
+    <li>Avoid <code>class_eval</code> with strings unless you must generate code textually; prefer blocks or <code>define_method</code>.</li>
+  </ul>
+
+  <h2>Edge cases & gotchas</h2>
+  <ul>
+    <li>Keyword arguments and forwarding: historically there were differences in how <code>define_method</code> and <code>class_eval</code> handled keyword args; test on your Ruby version.</li>
+    <li><code>super</code> from blocks passed to <code>define_method</code> can be surprising — favor <code>class_eval</code> if you rely heavily on <code>super</code>.</li>
+  </ul>
+
+  <h2>Conclusion</h2>
+  <p><code>define_method</code> is the safer, closure-friendly tool for runtime method creation. <code>class_eval</code> is useful when you want to create methods that behave like statically defined methods at the class body level. Choose based on the need for closure capture, <code>super</code> semantics, and safety.</p>
+</body>
+</html>

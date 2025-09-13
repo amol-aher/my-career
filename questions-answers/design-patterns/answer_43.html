@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Background jobs and Command pattern</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Background jobs (Sidekiq/ActiveJob) and the Command pattern</h1>
+
+    <p>Background jobs are a natural fit for the Command pattern: a job encapsulates an action (command) and its parameters; it can be enqueued, serialized, retried, logged, and executed asynchronously.</p>
+
+    <h2>Example — Command object enqueued as a job</h2>
+    <pre><code># app/commands/create_invoice_command.rb
+class CreateInvoiceCommand
+  def initialize(order_id)
+    @order_id = order_id
+  end
+
+  def call
+    order = Order.find(@order_id)
+    InvoiceGenerator.generate(order)
+  end
+end
+
+# Sidekiq worker (invokes command)
+class CommandWorker
+  include Sidekiq::Worker
+
+  def perform(command_klass, *args)
+    klass = Object.const_get(command_klass)
+    klass.new(*args).call
+  end
+end
+
+# enqueue
+CommandWorker.perform_async('CreateInvoiceCommand', order.id)
+</code></pre>
+
+    <h2>How ActiveJob fits</h2>
+    <p>ActiveJob provides a framework to write jobs that can target multiple backends (Sidekiq, Resque, DelayedJob). Jobs act as command wrappers around business logic.</p>
+    <pre><code>class CreateInvoiceJob &lt; ApplicationJob
+  queue_as :default
+
+  def perform(order_id)
+    CreateInvoiceCommand.new(order_id).call
+  end
+end
+
+# enqueue
+CreateInvoiceJob.perform_later(order.id)
+</code></pre>
+
+    <h2>Benefits</h2>
+    <ul>
+      <li>Encapsulation: commands hold everything needed to run an action.</li>
+      <li>Observability: enqueue, retries and failures are tracked by job system.</li>
+      <li>Testability: test command logic without the worker infrastructure; test worker wiring separately.</li>
+    </ul>
+
+    <h2>Considerations</h2>
+    <ul>
+      <li>Serialize simple args only (IDs, primitives) — avoid serializing AR objects.</li>
+      <li>Ensure commands are idempotent or handle duplicates (job retries).</li>
+      <li>Version commands carefully if you deploy code changes while jobs are queued (use job versioning or migration strategies).</li>
+    </ul>
+
+    <h2>Interview talking points</h2>
+    <ul>
+      <li>Describe how you implemented audit/logging for commands and job retries in production.</li>
+      <li>Explain trade-offs of pushing orchestration into jobs vs using a workflow engine for long-running processes.</li>
+    </ul>
+
+    <p style="color:#666">In interviews, present a concrete example showing how commands were enqueued, retried, and monitored, and how you handled idempotency and job failures.</p>
+  </div>
+</body>
+</html>

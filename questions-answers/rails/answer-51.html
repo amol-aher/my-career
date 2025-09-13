@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Debt Analysis</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px; }
+        .subquestion { margin-top: 25px; }
+        .example { background-color: #f8f9fa; padding: 15px; border-left: 4px solid #3498db; margin: 15px 0; }
+        .solution { background-color: #eaf7ff; padding: 15px; border-radius: 5px; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <h1>Tech Debt Items: Common Issues and Refactoring Backlog</h1>
+
+    <p><strong>Most Frequent Tech Debt Categories:</strong></p>
+    
+    <div class="example">
+        <h2>Duplication Patterns</h2>
+        <ul>
+            <li><strong>Code Clones:</strong> Identical business logic copied across controllers/services (e.g., user permission checks in 8 different places)</li>
+            <li><strong>Data Transformation Repetition:</strong> Same date formatting/parsing logic in multiple models</li>
+            <li><strong>Validation Rules:</strong> Email/password validation duplicated in sign-up/login flows</li>
+        </ul>
+    </div>
+
+    <div class="example">
+        <h2>Testing Deficiencies</h2>
+        <ul>
+            <li><strong>Critical Path Gaps:</strong> 0% test coverage for payment processing workflows</li>
+            <li><strong>Edge Case Neglect:</strong> Tests only verify happy paths, ignoring error scenarios</li>
+            <li><strong>Integration Blind Spots:</strong> Missing tests for third-party API integrations</li>
+        </ul>
+    </div>
+
+    <div class="example">
+        <h2>Dependency Management</h2>
+        <ul>
+            <li><strong>Outdated Gems:</strong> Using Rails 5.2 with vulnerable OpenSSL versions</li>
+            <li><strong>Incompatible Upgrades:</strong> Attempted Rails 6 upgrade blocked by deprecated gem X</li>
+            <li><strong>AWS SDK Stagnation:</strong> Using v2.x while v3 offers critical performance improvements</li>
+        </ul>
+    </div>
+
+    <div class="example">
+        <h2>Performance Bottlenecks</h2>
+        <ul>
+            <li><strong>N+1 Query Epidemic:</strong> 15-minute report generation due to uncached associations</li>
+            <li><strong>Missing Indexes:</strong> Full table scans on frequently queried columns</li>
+            <li><strong>Memory Leaks:</strong> Background job processes consuming 100% RAM over time</li>
+        </ul>
+    </div>
+
+    <div class="example">
+        <h2>Architectural Decay</h2>
+        <ul>
+            <li><strong>God Object Anti-Pattern:</strong> Single model handling auth, payments, and reporting</li>
+            <li><strong>Tight Coupling:</strong> 12 services directly depending on internal implementation details</li>
+            <li><strong>Configuration Hell:</strong> Environment-specific settings scattered across 50+ YAML files</li>
+        </ul>
+    </div>
+
+    <h2>Refactoring Backlog Trends</h2>
+    <p>Teams consistently defer these categories:</p>
+    <ul>
+        <li><strong>Extract Modules:</strong> Postponing extraction of reusable components due to deadline pressure</li>
+        <li><strong>Test Coverage Expansion:</strong> Skipping integration tests because "unit tests are sufficient"</li>
+        <li><strong>Dependency Updates:</strong> Delaying gem upgrades until forced by security alerts</li>
+        <li><strong>Query Optimization:</strong> Ignoring slow queries until production complaints arise</li>
+        <li><strong>Service Boundaries:</strong> Avoiding domain decomposition due to perceived complexity</li>
+    </ul>
+
+    <div class="solution">
+        <h2>Root Causes Behind Deferred Refactoring</h2>
+        <ul>
+            <li><strong>Delivery Pressure:</strong> Business prioritizes features over maintainability</li>
+            <li><strong>Technical Debt Visibility:</strong> Lack of metrics showing long-term cost impact</li>
+            <li><strong>Risk Aversion:</strong> Fear of introducing bugs during refactoring</li>
+            <li><strong>Tooling Limitations:</strong> Insufficient automated refactoring support</li>
+        </ul>
+    </div>
+</body>
+</html>

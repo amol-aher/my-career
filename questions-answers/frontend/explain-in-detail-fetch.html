@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Explain in detail fetch?</title>
+<style>
+body{font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; max-width:900px; margin:24px auto; line-height:1.6; padding:20px}
+h1{font-size:22px;margin-bottom:6px}
+h2{font-size:18px;margin-top:18px}
+pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+code{background:#f1f1f1;padding:2px 4px;border-radius:4px}
+.section{margin-bottom:18px}
+.followups li{margin-bottom:8px}
+small.meta{color:#666}
+</style>
+</head>
+<body>
+<h1>Explain in detail fetch?</h1>
+<div class="section"><p>Summary:<br>`fetch()` is a modern browser API to make network requests. It returns a Promise resolving to a `Response` object. It improves on older `XMLHttpRequest` by being Promise-based, supporting streaming, and integrating cleanly with async/await.</p></div>
+<div class="section"><p>Deep dive — behavior and features:<br>- `fetch(url, options)` returns a Promise even for HTTP errors (4xx/5xx); check `response.ok` (boolean) or `response.status`.<br>- The `Response` has methods: `response.json()`, `response.text()`, `response.blob()`, `response.arrayBuffer()`, and `response.body` (ReadableStream) for streaming.<br>- Options allow `method`, `headers`, `body`, `mode` (cors/no-cors), `credentials` (omit, same-origin, include), `cache`, `redirect`, and `signal` (AbortController).<br>- CORS and credentials: by default, `fetch` does not send credentials; set `credentials: &#x27;include&#x27;` to send cookies cross-origin (and the server must allow it).</p></div>
+<div class="section"><p>Advanced topics:<br>- AbortController: cancel an in-flight fetch to save resources.<br>- Streaming responses: process large responses incrementally using `ReadableStream` (useful for large NDJSON responses or progressive rendering).<br>- Service workers: intercept `fetch` events for offline capability, caching and request manipulation.</p></div>
+<div class="section"><p>Examples:<br>```js<br>// Basic<br>const res = await fetch(&#x27;/api/users&#x27;);<br>if (!res.ok) throw new Error(res.statusText);<br>const users = await res.json();</p></div>
+<div class="section"><p>// Abort example<br>const ctrl = new AbortController();<br>fetch(&#x27;/api/long&#x27;, { signal: ctrl.signal }).catch(err =&gt; {<br>  if (err.name === &#x27;AbortError&#x27;) console.log(&#x27;fetch aborted&#x27;);<br>});<br>ctrl.abort();<br>```</p></div>
+<div class="section"><p>Interviewer follow-ups:<br>- Q: Does fetch reject on HTTP 404/500?<br>  A: No — it resolves. Check `response.ok` to detect HTTP-level errors.<br>- Q: How to stream a JSON array?<br>  A: Convert server output to NDJSON or stream by chunks and parse incrementally; streaming a standard JSON array is harder because it requires parsing partial JSON.</p></div>
+<hr>
+<p class="meta"><small>Generated on 2025-09-10T08:27:04.667381</small></p>
+</body>
+</html>

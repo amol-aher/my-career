@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inter-Service Communication</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px; }
+        .communication-method { background-color: #f0f8ff; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .protocol-comparison { display: flex; justify-content: space-between; margin: 20px 0; }
+        .protocol-card { width: 45%; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .async-vs-sync { display: flex; gap: 20px; }
+        .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Inter-Service Communication Patterns</h1>
+
+    <div class="communication-method">
+        <h2>Synchronous Communication</h2>
+        <p>Request-response pattern where caller waits for immediate response:</p>
+        
+        <div class="side-by-side">
+            <div>
+                <h3>REST/HTTP APIs</h3>
+                <ul>
+                    <li><strong>Pros:</strong> Simple, human-readable, widely supported</li>
+                    <li><strong>Cons:</strong> Latency-sensitive, hard to scale horizontally</li>
+                    <li><strong>Use Cases:</strong> Real-time data retrieval, form submissions</li>
+                </ul>
+            </div>
+            
+            <div>
+                <h3>gRPC</h3>
+                <ul>
+                    <li><strong>Pros:</strong> High performance, strong typing, multiplexing</li>
+                    <li><strong>Cons:</strong> Binary protocol, steeper learning curve</li>
+                    <li><strong>Use Cases:</strong> Internal microservices, high-throughput systems</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="communication-method">
+        <h2>Asynchronous Communication</h2>
+        <p>Fire-and-forget pattern with no immediate response required:</p>
+        
+        <div class="async-vs-sync">
+            <div>
+                <h3>Message Queues (RabbitMQ, SQS)</h3>
+                <ul>
+                    <li><strong>Pattern:</strong> Point-to-point messaging</li>
+                    <li><strong>Use Cases:</strong> Task distribution, order processing</li>
+                    <li><strong>Example:</strong> Payment service sends "invoice_generated" message to billing service</li>
+                </ul>
+            </div>
+            
+            <div>
+                <h3>Pub/Sub Systems (Kafka, NATS)</h3>
+                <ul>
+                    <li><strong>Pattern:</strong> Broadcast to multiple subscribers</li>
+                    <li><strong>Use Cases:</strong> Event streaming, real-time analytics</li>
+                    <li><strong>Example:</strong> User activity events published to analytics, monitoring, and recommendation services</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="communication-method">
+        <h2>Alternative Communication Protocols</h2>
+        
+        <div class="protocol-comparison">
+            <div class="protocol-card">
+                <h3>GraphQL</h3>
+                <ul>
+                    <li><strong>Advantage:</strong> Client specifies exactly what data it needs</li>
+                    <li><strong>Use Case:</strong> Complex client applications needing tailored responses</li>
+                    <li><strong>Trade-off:</strong> Can lead to N+1 query problems if not optimized</li>
+                </ul>
+            </div>
+            
+            <div class="protocol-card">
+                <h3>WebSockets</h3>
+                <ul>
+                    <li><strong>Advantage:</strong> Persistent bidirectional connections</li>
+                    <li><strong>Use Case:</strong> Real-time dashboards, chat applications</li>
+                    <li><strong>Trade-off:</strong> Connection management overhead</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="protocol-comparison">
+            <div class="protocol-card">
+                <h3>Server-Sent Events (SSE)</h3>
+                <ul>
+                    <li><strong>Advantage:</strong> Simple unidirectional streaming from server to client</li>
+                    <li><strong>Use Case:</strong> Live updates, news feeds</li>
+                    <li><strong>Trade-off:</strong> Limited to HTTP, no binary data support</li>
+                </ul>
+            </div>
+            
+            <div class="protocol-card">
+                <h3>gRPC-Web</h3>
+                <ul>
+                    <li><strong>Advantage:</strong> gRPC over HTTP/1.1 for browser compatibility</li>
+                    <li><strong>Use Case:</strong> Browser-based clients needing gRPC benefits</li>
+                    <li><strong>Trade-off:</strong> Additional proxy layer required</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="communication-method">
+        <h2>Communication Best Practices</h2>
+        <ul>
+            <li><strong>Idempotency:</strong> Ensure messages can be processed multiple times safely</li>
+            <li><strong>Timeouts & Retries:</strong> Set reasonable timeouts and implement exponential backoff</li>
+            <li><strong>Dead Letter Queues:</strong> Route failed messages for later analysis/reprocessing</li>
+            <li><strong>Versioning:</strong> Maintain backward compatibility in APIs and message formats</li>
+            <li><strong>Security:</strong> Encrypt sensitive data in transit (TLS) and at rest</li>
+        </ul>
+    </div>
+
+    <div class="solution">
+        <h2>Protocol Selection Guide</h2>
+        <table style="width:100%; border-collapse: collapse; margin-top: 20px;">
+            <thead>
+                <tr style="background-color: #f2f2f2;">
+                    <th>Requirement</th>
+                    <th>Recommended Protocol</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Low latency, high throughput</td>
+                    <td>gRPC</td>
+                </tr>
+                <tr>
+                    <td>Browser compatibility</td>
+                    <td>REST/GraphQL</td>
+                </tr>
+                <tr>
+                    <td>Real-time updates</td>
+                    <td>WebSockets/SSE</td>
+                </tr>
+                <tr>
+                    <td>Decoupled processing</td>
+                    <td>Message Queues/PubSub</td>
+                </tr>
+                <tr>
+                    <td>Flexible data fetching</td>
+                    <td>GraphQL</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

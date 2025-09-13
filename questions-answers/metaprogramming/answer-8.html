@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Metaprogramming across languages</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:18px;color:#111}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{font-family:monospace}
+    h1{color:#1a56db}
+    h2{color:#0b5a78}
+  </style>
+</head>
+<body>
+  <h1>Examples of metaprogramming techniques across multiple languages</h1>
+
+  <p>Below are short examples and explanations for how different languages provide metaprogramming: compile-time vs runtime approaches are both included.</p>
+
+  <h2>Ruby (runtime metaprogramming)</h2>
+  <pre><code class="language-ruby">class User
+  [:name, :email].each do |attr|
+    define_method(attr) { instance_variable_get("@#{attr}") }
+    define_method("#{attr}=") { |v| instance_variable_set("@#{attr}", v) }
+  end
+end</code></pre>
+
+  <h2>Python (dynamic attributes, decorators, metaclasses)</h2>
+  <pre><code class="language-python"># setattr/getattr and decorators
+class Proxy:
+    def __init__(self, target):
+        self._target = target
+    def __getattr__(self, name):
+        return getattr(self._target, name)
+
+# metaclass example (modify class at creation)
+class AutoRepr(type):
+    def __new__(cls, name, bases, attrs):
+        if '__repr__' not in attrs:
+            attrs['__repr__'] = lambda self: f"&lt;{name} {self.__dict__}&gt;"
+        return super().__new__(cls, name, bases, attrs)</code></pre>
+
+  <h2>JavaScript (proxies, dynamic properties)</h2>
+  <pre><code class="language-javascript">// Proxy example
+const target = {a:1};
+const p = new Proxy(target, {
+  get(obj, prop) {
+    if (!(prop in obj)) return `missing ${String(prop)}`;
+    return obj[prop];
+  }
+});
+p.b // "missing b"</code></pre>
+
+  <h2>Java (reflection & annotation processing)</h2>
+  <pre><code class="language-java">// Reflection
+Method m = obj.getClass().getMethod("doSomething");
+m.invoke(obj);
+
+// Compile-time code generation: Annotation processors create .java files at build time (e.g. Dagger, AutoValue)</code></pre>
+
+  <h2>C++ (templates & macros)</h2>
+  <pre><code class="language-cpp">// Template metaprogramming (compile-time)
+template&lt;int N&gt; struct Factorial { static const int value = N * Factorial&lt;N-1&gt;::value; };
+template&lt;&gt; struct Factorial&lt;0&gt; { static const int value = 1; };
+
+/* Factorial&lt;5&gt;::value is computed at compile time */</code></pre>
+
+  <h2>Rust (macros)</h2>
+  <pre><code class="language-rust">// Declarative macro
+macro_rules! create_fn {
+  ($name:ident) =&gt; {
+    fn $name() { println!("Called {}", stringify!($name)); }
+  };
+}
+
+create_fn!(hello);
+hello();</code></pre>
+
+  <h2>C# (reflection, expression trees)</h2>
+  <pre><code class="language-csharp">// Using Expression to build code at runtime, or Reflection.Emit to create types dynamically.
+// Many projects use T4 templates or Roslyn code analyzers to generate code at compile time.</code></pre>
+
+  <h2>Go (code generation)</h2>
+  <pre><code class="language-go">// go generate + templates: write code generators that run before build.
+// Example: protoc generates Go code for protobufs</code></pre>
+
+  <h2>Takeaway</h2>
+  <p>Metaprogramming exists on a spectrum: some languages favor runtime manipulation (Ruby, Python, JS), others emphasize compile-time transformations (C++ templates, Rust macros, Java annotation processors). Choose the right tool based on performance, safety, and developer ergonomics.</p>
+</body>
+</html>

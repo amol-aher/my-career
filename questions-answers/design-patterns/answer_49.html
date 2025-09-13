@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>delegate method and the Delegation pattern in Rails</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Rails' <code>delegate</code> method and the Delegation pattern</h1>
+
+    <p>The Delegation pattern forwards method calls to another object. Rails provides <code>delegate</code> (and <code>Forwardable</code>) to define forwarding methods succinctly, reducing boilerplate and clarifying intent.</p>
+
+    <h2>Example</h2>
+    <pre><code>class Order &lt; ApplicationRecord
+  belongs_to :user
+  delegate :email, :name, to: :user, prefix: true, allow_nil: true
+end
+
+# usage
+order.user_email # forwards to order.user.email
+</code></pre>
+
+    <h2>Options</h2>
+    <ul>
+      <li><code>prefix: true</code> avoids name collisions by adding <code>user_</code> prefix.</li>
+      <li><code>allow_nil: true</code> prevents <code>nil</code> errors by returning nil if the target is nil.</li>
+    </ul>
+
+    <h2>When to use delegation</h2>
+    <ul>
+      <li>Keep model interfaces small and surface only needed methods.</li>
+      <li>Avoid exposing entire associated objects to callers when only a few attributes are needed.</li>
+    </ul>
+
+    <h2>Interview tip</h2>
+    <p>Explain how delegation improved clarity in a codebase by avoiding deep chaining (e.g., <code>order.user.profile.avatar_url</code>) and where you preferred presenters over delegation for view-specific formatting.</p>
+  </div>
+</body>
+</html>

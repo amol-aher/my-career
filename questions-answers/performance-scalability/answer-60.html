@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Sticky Sessions on AWS ALB — Configuration and Trade-offs</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Sticky Sessions on AWS ALB — How to Configure and Trade-offs</h1>
+
+  <h2>How to configure</h2>
+  <ol>
+    <li>Create or edit your target group in the AWS Console.</li>
+    <li>Enable stickiness and choose duration (seconds). ALB uses a load-balancer-generated cookie (<code>AWSALB</code>).</li>
+    <li>Alternatively, use application cookie stickiness for finer control.</li>
+  </ol>
+
+  <h2>Trade-offs</h2>
+  <ul>
+    <li><strong>Reduces statelessness:</strong> Ties a user to a specific instance which complicates scaling and deployments.</li>
+    <li><strong>Failover issues:</strong> If target fails, sticky sessions are lost and clients may need to re-authenticate or lose session state.</li>
+    <li><strong>Maintenance:</strong> Rolling deploys may evict sticky sessions leading to inconsistent user experience.</li>
+  </ul>
+
+  <h2>Alternatives</h2>
+  <ul>
+    <li>Use shared session stores (Redis) or JWT/session in cookies to remain stateless.</li>
+    <li>Prefer sticky sessions only for legacy apps that cannot be refactored quickly.</li>
+  </ul>
+</body>
+</html>

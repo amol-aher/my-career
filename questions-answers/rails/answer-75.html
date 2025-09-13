@@ -1,0 +1,302 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Transactions in Rails (ActiveRecord Transactions)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #2980b9;
+            margin-top: 25px;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .comparison-table th,
+        .comparison-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .comparison-table th {
+            background-color: #f2f2f2;
+        }
+        .key-point {
+            background-color: #e8f4fd;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .subquestion {
+            background-color: #f0f7ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Database Transactions in Rails (ActiveRecord Transactions)</h1>
+    
+    <p>Database transactions in Rails provide a way to group multiple database operations into a single atomic unit. This ensures that either all operations complete successfully or none are applied, maintaining data integrity.</p>
+    
+    <h2>Basic Transaction Structure</h2>
+    <p>In Rails, transactions are created using the `transaction` method, which wraps a block of code that will be executed atomically:</p>
+    
+    <div class="code-block">
+        <pre>ActiveRecord::Base.transaction do
+  # Database operations here
+  user.update!(balance: 100)
+  order.create!(user_id: user.id)
+  
+  # Any exception will roll back the entire transaction
+  raise "Insufficient funds" if user.balance < 0
+end</pre>
+    </div>
+    
+    <h2>Key Features of ActiveRecord Transactions</h2>
+    <ul>
+        <li><strong>Atomicity:</strong> All operations succeed or fail together</li>
+        <li><strong>Isolation:</strong> Prevents interference from other transactions</li>
+        <li><strong>Consistency:</strong> Ensures database state remains valid after transaction</li>
+        <li><strong>Durability:</strong> Once committed, changes persist even after system failures</li>
+    </ul>
+    
+    <h2>Transaction Isolation Levels</h2>
+    <p>Rails supports different isolation levels that control how transactions interact:</p>
+    
+    <table class="comparison-table">
+        <thead>
+            <tr>
+                <th>Isolation Level</th>
+                <th>Description</th>
+                <th>Use Case</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>READ_COMMITTED</code></td>
+                <td>Default level. Reads committed data only</td>
+                <td>Most general-purpose transactions</td>
+            </tr>
+            <tr>
+                <td><code>REPEATABLE_READ</code></td>
+                <td>Ensures same data is read throughout transaction</td>
+                <td>Financial calculations, reporting</td>
+            </tr>
+            <tr>
+                <td><code>SERIALIZABLE</code></td>
+                <td>Strictest level. Fully isolated transactions</td>
+                <td>Critical operations where absolute consistency required</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="code-block">
+        <pre># Setting isolation level
+ActiveRecord::Base.transaction(isolation: :repeatable_read) do
+  # Operations here run with repeatable read isolation
+end</pre>
+    </div>
+    
+    <h2>Handling Rollbacks</h2>
+    <p>Transactions automatically roll back when an exception occurs. You can manually trigger a rollback using `rollback!`:</p>
+    
+    <div class="code-block">
+        <pre>begin
+  ActiveRecord::Base.transaction do
+    user.debit_account(50)
+    raise "Invalid operation" unless user.valid?
+  end
+rescue => e
+  logger.error "Transaction failed: #{e.message}"
+  # Handle the error appropriately
+end</pre>
+    </div>
+    
+    <h2>Subtransactions and Nesting</h2>
+    <p>Rails supports nested transactions, where inner transactions can be rolled back independently:</p>
+    
+    <div class="code-block">
+        <pre>ActiveRecord::Base.transaction do
+  user.save!
+  
+  ActiveRecord::Base.transaction(requires_new: true) do
+    # Inner transaction - can be rolled back separately
+    payment.process!
+  end
+  
+  # Outer transaction continues even if inner was rolled back
+end</pre>
+    </div>
+    
+    <h2>Best Practices</h2>
+    <ul>
+        <li>Keep transactions as short as possible to reduce locking</li>
+        <li>Never perform long-running operations inside transactions</li>
+        <li>Use appropriate isolation levels for your use case</li>
+        <li>Always test transaction boundaries thoroughly</li>
+        <li>Monitor transaction performance in production</li>
+    </ul>
+    
+    <h2>Subquestions and Detailed Answers</h2>
+    
+    <div class="subquestion">
+        <h3>How do ActiveRecord transactions interact with database locks?</h3>
+        <div class="key-point">
+            <p>Transactions create implicit locks on affected rows:</p>
+            <ul>
+                <li><strong>Row-Level Locks:</strong> Created when updating/deleting records</li>
+                <li><strong>Table-Level Locks:</strong> May occur during schema changes</li>
+                <li><strong>Deadlock Detection:</strong> Rails automatically detects deadlocks and raises <code>ActiveRecord::Deadlocked</code></li>
+            </ul>
+            <p>To manage locks explicitly:</p>
+            <div class="code-block">
+                <pre># Explicit row locking
+User.lock.first
+
+# Optimistic locking with versioning
+user.increment!(:version)
+user.save!</pre>
+            </div>
+        </div>
+    </div>
+    
+    <div class="subquestion">
+        <h3>What happens when a transaction contains both successful and failed operations?</h3>
+        <div class="key-point">
+            <p>In a transaction, all operations are treated as a single unit:</p>
+            <ul>
+                <li>All operations succeed → Transaction commits</li>
+                <li>Any operation fails → Entire transaction rolls back</li>
+                <li>Partial success is not possible</li>
+            </ul>
+            <p>Example scenario:</p>
+            <div class="code-block">
+                <pre>begin
+  User.transaction do
+    user1.update!(status: 'active') # Success
+    user2.update!(status: 'inactive') # Fails due to validation error
+    
+    # Both changes are rolled back
+  end
+rescue ActiveRecord::RecordInvalid => e
+  # Handle validation error
+end</pre>
+            </div>
+        </div>
+    </div>
+    
+    <div class="subquestion">
+        <h3>How can you handle exceptions within a transaction gracefully?</h3>
+        <div class="key-point">
+            <p>Graceful exception handling in transactions:</p>
+            <div class="code-block">
+                <pre>User.transaction do
+  begin
+    user.update!(attributes)
+    send_notification(user)
+  rescue StandardError => e
+    # Log error and re-raise for rollback
+    Rails.logger.error "Transaction failed: #{e.message}"
+    raise e
+  end
+end
+
+# Outside transaction block
+rescue => e
+  # Handle the error appropriately
+  flash[:error] = "Operation failed"
+end</pre>
+            </div>
+            <p>Key points:</p>
+            <ul>
+                <li>Rescue specific exceptions rather than generic <code>Exception</code></li>
+                <li>Log detailed information for debugging</li>
+                <li>Provide user-friendly feedback</li>
+                <li>Consider using service objects for complex transactions</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="subquestion">
+        <h3>What are the performance implications of using transactions?</h3>
+        <div class="key-point">
+            <p>Performance considerations:</p>
+            <ul>
+                <li><strong>Lock Contention:</strong> Longer transactions increase lock duration</li>
+                <li><strong>Throughput Reduction:</strong> Fewer concurrent transactions can execute</li>
+                <li><strong>Overhead:</strong> Transaction bookkeeping adds computational cost</li>
+                <li><strong>Deadlocks:</strong> Can cause system-wide performance degradation</li>
+            </ul>
+            <p>Optimization strategies:</p>
+            <ul>
+                <li>Minimize transaction scope</li>
+                <li>Use appropriate isolation levels</li>
+                <li>Index foreign keys and frequently queried columns</li>
+                <li>Consider read replicas for read-only operations</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="subquestion">
+        <h3>How do transactions work in multi-database setups?</h3>
+        <div class="key-point">
+            <p>Multi-database transaction handling:</p>
+            <ul>
+                <li><strong>Two-Phase Commit:</strong> Required for distributed transactions across databases</li>
+                <li><strong>Database Support:</strong> PostgreSQL supports cross-database transactions</li>
+                <li><strong>Alternative Approaches:</strong> Event sourcing or eventual consistency patterns</li>
+            </ul>
+            <p>Example configuration:</p>
+            <div class="code-block">
+                <pre># config/database.yml
+development:
+  primary:
+    adapter: postgresql
+    database: app_db
+  secondary:
+    adapter: postgresql
+    database: analytics_db
+
+# In model
+class Order &lt; ApplicationRecord
+  establish_connection :primary
+end
+
+class Analytics &lt; ApplicationRecord
+  establish_connection :secondary
+end
+
+# Transaction spanning databases
+ActiveRecord::Base.transaction do
+  Order.create!(data: 'order')
+  Analytics.create!(order_id: order.id)
+end</pre>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

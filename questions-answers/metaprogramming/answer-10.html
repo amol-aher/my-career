@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>method_missing, define_method and DSLs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:18px;color:#111}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{font-family:monospace}
+    h1{color:#1a56db}
+    h2{color:#0b5a78}
+  </style>
+</head>
+<body>
+  <h1>How Ruby’s <code>method_missing</code> and <code>define_method</code> enable DSLs</h1>
+
+  <p>Ruby’s flexible object model and reflective APIs make it ideal for building internal DSLs (domain-specific languages). <code>method_missing</code> lets you intercept unknown method calls and interpret them as DSL commands; <code>define_method</code> lets you materialize commands as ordinary methods for future performance and discoverability.</p>
+
+  <h2>Patterns used in DSLs</h2>
+  <ul>
+    <li><strong>Instance evaluation:</strong> Eval user blocks in the context of a DSL object using <code>instance_eval</code>.</li>
+    <li><strong>Intercept & interpret:</strong> Use <code>method_missing</code> to parse call names, arguments, and build internal structures.</li>
+    <li><strong>Materialize:</strong> Use <code>define_method</code> to create concrete accessors or helper methods after parsing.</li>
+  </ul>
+
+  <h2>Small example: configuration DSL</h2>
+  <pre><code class="language-ruby">class ConfigDSL
+  def initialize(&block)
+    instance_eval(&block) if block_given?
+  end
+
+  def database(&blk)
+    @database_config ||= {}
+    instance_eval(&blk) if blk
+  end
+
+  def method_missing(name, *args, &blk)
+    # allow nested keys like adapter 'postgres'
+    if args.size == 1 && blk.nil?
+      @database_config ||= {}
+      @database_config[name] = args.first
+    else
+      super
+    end
+  end
+
+  def respond_to_missing?(name, include_private=false)
+    true
+  end
+end
+
+cfg = ConfigDSL.new do
+  database do
+    adapter 'postgres'
+    host 'db.example.com'
+  end
+end</code></pre>
+  <p>Here <code>adapter 'postgres'</code> is a DSL call. We interpreted it via <code>method_missing</code> and stored configuration.</p>
+
+  <h2>Example: RSpec-like expectations</h2>
+  <pre><code class="language-ruby">class Expectation
+  def initialize(actual) @actual = actual end
+  def to(matcher) matcher.matches?(@actual) end
+end
+
+def expect(actual)
+  Expectation.new(actual)
+end
+
+# matchers built dynamically
+module Matchers
+  def self.be_odd
+    Struct.new(:a) { def matches?(x) x % 2 == 1 end }.new
+  end
+end
+
+# Or method_missing in matcher builder to provide many matchers</code></pre>
+
+  <h2>Advantages of using method_missing + define_method</h2>
+  <ul>
+    <li><strong>Expressiveness:</strong> Very readable DSL surface for users.</li>
+    <li><strong>Conciseness:</strong> Lots of behavior encoded with little code.</li>
+    <li><strong>Dynamic extension:</strong> DSL can accept new words without changing the core engine.</li>
+  </ul>
+
+  <h2>Caveats</h2>
+  <ul>
+    <li>Overuse of <code>method_missing</code> can hide errors; prefer define-on-first-call so repeated calls are efficient.</li>
+    <li>Document DSL behavior and provide editors with snippets or helpers so consumers can discover features.</li>
+  </ul>
+
+  <h2>Practical tip</h2>
+  <p>Combine both: use <code>method_missing</code> to parse first-time or flexible calls, and then use <code>define_method</code> to create concrete methods that back the DSL primitives for future calls and for better tooling support.</p>
+</body>
+</html>

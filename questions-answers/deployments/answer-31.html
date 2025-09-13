@@ -1,0 +1,82 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Deploying Docker Images to ECS/EKS via CI/CD</title>
+  <style>
+    body{font-family:Inter,Arial,Helvetica,sans-serif;margin:24px;color:#222;line-height:1.6}
+    h1{background:#0b5; color:#fff;padding:12px;border-radius:8px}
+    h2{color:#0b5;margin-top:18px}
+    pre{background:#f6fff6;padding:12px;border-radius:6px;overflow:auto}
+    code{background:#eef;padding:2px 6px;border-radius:4px}
+    ul{margin:8px 0 8px 20px}
+  </style>
+</head>
+<body>
+  <h1>Deploying Docker Images to ECS / EKS via CI/CD</h1>
+
+  <h2>Overview</h2>
+  <p>CI/CD for containerized apps follows a common flow: build → scan → push to registry → update deployment. On AWS you typically push images to ECR; on Kubernetes you push to any OCI registry. The pipeline then updates ECS task definitions or Kubernetes manifests/Helm charts and applies them to EKS.</p>
+
+  <h2>High-level steps</h2>
+  <ol>
+    <li>Build the image (multi-stage Dockerfile) and tag it using an immutable tag (commit SHA) and optionally a semantic tag.</li>
+    <li>Run SCA/vulnerability scans (Trivy, Clair, Amazon ECR image scanning) and block on critical issues.</li>
+    <li>Push the image to a registry (ECR, Docker Hub, Artifactory).</li>
+    <li>Create/update deployment artifact: ECS task definition revision or updated Kubernetes deployment/Helm chart referencing the new image tag.</li>
+    <li>Deploy via orchestration: for ECS update service (rolling or blue/green), for EKS `kubectl set image` or `helm upgrade` and wait for readiness/rollout status.</li>
+    <li>Run smoke tests and observability checks, then promote or roll back based on health.</li>
+  </ol>
+
+  <h2>GitHub Actions sample (ECR + ECS)</h2>
+  <pre><code>name: Build and Deploy to ECS
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE }}
+          aws-region: us-east-1
+      - name: Build image
+        run: |
+          IMAGE=${{ env.ECR_REGISTRY }}/myapp:${{ github.sha }}
+          docker build -t $IMAGE .
+          docker push $IMAGE
+      - name: Update ECS task definition & deploy
+        run: |
+          # Use aws cli or ecs-deploy script to register new task def and update service
+          ./scripts/deploy-ecs.sh $IMAGE</code></pre>
+
+  <h2>Helm / kubectl sample (EKS)</h2>
+  <pre><code># Update Helm values.yaml with new image tag and run
+helm upgrade myapp ./chart --set image.tag=sha-abcdef
+kubectl rollout status deployment/myapp --namespace production --timeout=5m</code></pre>
+
+  <h2>Best practices</h2>
+  <ul>
+    <li><strong>Use immutable tags:</strong> Always reference images by SHA so deployments are reproducible.</li>
+    <li><strong>Scan images early:</strong> Integrate Trivy/Inspector scans in CI and fail builds on critical vulnerabilities.</li>
+    <li><strong>Keep secrets out of images:</strong> Use IAM task roles (ECS task role / IRSA for EKS) and Secrets Manager/SSM for secrets at runtime.</li>
+    <li><strong>Automate rollbacks:</strong> Use health checks and alarms (CloudWatch, Prometheus) to trigger rollback or stop rollout.</li>
+    <li><strong>Blue-green / canary:</strong> Prefer safe rollout strategies for production (ECS + CodeDeploy, service mesh or ingress weight for EKS).</li>
+  </ul>
+
+  <h2>Operational notes</h2>
+  <p>Monitor image registry costs and configure lifecycle policies. For EKS, consider using an image pull secret with least privilege and enable image caching on nodes for speed. For ECS Fargate, use task execution roles to pull from ECR.</p>
+
+  <h2>Subquestions & answers</h2>
+  <h3>How do you handle DB migrations when deploying containers?</h3>
+  <p>Run migrations as dedicated pipeline jobs or init containers that run once per deployment; prefer backward-compatible migrations with feature flags. For complex migrations, perform them during a maintenance window or orchestrate as part of a blue-green deploy.</p>
+
+  <h3>How to do zero-downtime?</h3>
+  <p>Use readiness probes, ALB/NLB draining, and deployment strategies (rolling, canary, blue-green). Ensure state is externalized (Redis, S3).</p>
+
+  <h2>Conclusion</h2>
+  <p>Automating container deployments to ECS/EKS reduces human error and speeds releases. The critical pieces are immutable artifacts, secure registry usage, safe rollout strategies, and robust monitoring with automated rollback.</p>
+</body>
+</html>

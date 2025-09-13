@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Designing a social feed system — architecture, storage, scaling</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;line-height:1.6;color:#111;background:#f6f8fb;padding:28px}
+    .container{max-width:1100px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px}
+    h2{font-size:18px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    table{border-collapse:collapse;width:100%}
+    th,td{border:1px solid #eee;padding:6px;text-align:left}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Designing a social feed system — architecture, storage, scaling</h1>
+
+    <p><strong>Scenario</strong>: Users can post content; other users see a personalized news feed (e.g., LinkedIn/Facebook/Instagram). We must design for high throughput writes, low read latency, and personalization.</p>
+
+    <h2>High-level architecture</h2>
+    <ol>
+      <li><strong>Clients</strong> (mobile/web) -> CDN -> API Gateway</li>
+      <li><strong>API layer</strong> — stateless services for posts, feeds, profiles.</li>
+      <li><strong>Write pipeline</strong> — post service writes canonical post to DB and emits events (Kafka/SNS).</li>
+      <li><strong>Fan-out workers</strong> — subscribe to events to push post IDs into followers' timelines (push) or update indexes (pull-friendly stores).</li>
+      <li><strong>Storage</strong> — primary DB for posts (sharded), Redis/Elastic for timelines and search, object store (S3) for media.</li>
+      <li><strong>Read path</strong> — feed service reads precomputed timeline from Redis or composes via queries to fast stores; cache per-user timeline.</li>
+    </ol>
+
+    <h2>Data model (simplified)</h2>
+    <pre><code>posts table
+- id (UUID)
+- author_id
+- content_text
+- media_refs (S3 keys)
+- created_at
+- visibility (public/friends/private)
+- metadata (likes_count, comment_count)
+
+followers table
+- user_id
+- follower_id
+- created_at
+
+user_timeline (denormalized per user, in Redis or DB)
+- user_id
+- list of post_ids (sorted by score or timestamp)
+</code></pre>
+
+    <h2>How to store posts</h2>
+    <p>Store canonical posts in a primary persistent store (relational DB like PostgreSQL or a wide-column store like Cassandra depending on scale). Media files go to S3 with presigned URLs. For fast reads, store denormalized timelines in Redis lists or in a dedicated timeline DB (Cassandra, Scylla) keyed by user_id.</p>
+
+    <h2>How another user fetches friends' posts efficiently</h2>
+    <p>Two broad approaches:</p>
+    <ol>
+      <li><strong>Fan-out on write (push)</strong>: When author posts, fan-out post ID to all followers' timelines (redis list or timeline table). Pros: fast reads, simple paging. Cons: expensive for users with millions of followers (celebrity problem). Mitigations: hybrid push for regular users, and pull for celebrities (store in a separate hot-post index).</li>
+      <li><strong>Fan-out on read (pull)</strong>: At read time, fetch recent posts from followees (query their recent posts) and merge-sort. Pros: cheaper writes. Cons: higher read latency and heavy read amplification for many followees; requires optimized joins and caching.</li>
+    </ol>
+
+    <h2>Hybrid approach (commonly used)</h2>
+    <p>Use push for users with small-to-medium follower counts and pull for celebrities/influencers. Also maintain a global hot-posts cache for widely-shared content and perform partial merge at read time.</p>
+
+    <h2>Caching strategy</h2>
+    <ul>
+      <li>Cache per-user timeline in Redis with TTL and support for incremental updates.</li>
+      <li>Cache rendered feed pages (HTML/JSON fragments) at CDN edge where privacy allows (public posts).</li>
+      <li>Cache commonly accessed entities: user profiles, media metadata.
+      </li>
+      <li>Use cache-aside pattern for Redis: check cache, on miss fetch from timeline store and repopulate cache.</li>
+    </ul>
+
+    <h2>Pagination</h2>
+    <p>Prefer cursor-based (keyset) pagination: return a cursor token (e.g., last_post_timestamp + offset or encoded last post id) rather than offset-based pages. This avoids skipping/missing posts and scales well. Provide limits and a "load more" cursor. For infinite scroll, prefer stable cursors that encode read position.</p>
+
+    <h2>Access Control (ACL) & Visibility</h2>
+    <ul>
+      <li>Store visibility on post level (public/friends/private/custom list). Enforce ACL at write time (filter audience) when fanning out to timelines to avoid expensive checks during reads.</li>
+      <li>For group or restricted posts, maintain per-audience timelines or membership checks during read with caching of membership data.</li>
+      <li>Use signed URLs for private media and short TTLs.</li>
+    </ul>
+
+    <h2>Scaling & sharding</h2>
+    <ul>
+      <li>Shard posts by author_id to distribute write load.</li>
+      <li>Partition timeline storage by user_id. Use consistent hashing for Redis clusters or use a distributed datastore like Cassandra that scales horizontally.</li>
+      <li>Use message queues (Kafka) to absorb write bursts and fan-out asynchronously with workers and backpressure.</li>
+    </ul>
+
+    <h2>Consistency and latency trade-offs</h2>
+    <p>Feeds are usually eventually consistent. Aim for low read latency; tolerate slight delays in visibility. Use write-through or read-after-write guarantees for critical flows (e.g., show user's own new post immediately by reading from write DB or local buffer).</p>
+
+    <h2>Metrics and observability</h2>
+    <ul>
+      <li>Track feed load latency, cache hit rates, fan-out lag, queue backlog, and worker failure rates.</li>
+      <li>Monitor heavy hitters (users causing high fan-out) and adapt strategies (rate limit or switch to pull).</li>
+    </ul>
+
+    <h2>Optimizations & pitfalls</h2>
+    <ul>
+      <li>Celebrity problem: hybrid push/pull and materialized views for hot users.</li>
+      <li>Backpressure: queue-based writes and graceful degradation when workers lag—serve partial feeds from cache.</li>
+      <li>Storage cost: prune old timeline entries, compress IDs, or store only pointers to posts in timelines.
+    </ul>
+
+    <h2>Sample tech choices</h2>
+    <table>
+      <tr><th>Concern</th><th>Suggested tech</th></tr>
+      <tr><td>Canonical posts</td><td>Postgres (sharded) or Cassandra</td></tr>
+      <tr><td>Timeline / fast read store</td><td>Redis lists, Cassandra, or Scylla</td></tr>
+      <tr><td>Media</td><td>S3 + CloudFront</td></tr>
+      <tr><td>Events</td><td>Kafka or AWS SNS/SQS</td></tr>
+      <tr><td>Workers</td><td>Sidekiq, Kubernetes jobs, or AWS Lambda (for small workloads)</td></tr>
+    </table>
+
+    <h2>Interview subquestions</h2>
+    <ul>
+      <li><strong>How to handle notifications and real-time updates?</strong> Use websockets or push notifications with presence and incremental update events; update timelines in background and push deltas to clients.</li>
+      <li><strong>How to support complex ranking?</strong> Compute scores via offline ML pipelines and apply realtime boosts (engagement, recency) at read time in the feed service.</li>
+      <li><strong>How to handle deletions/privacy changes?</strong> Propagate delete events through the pipeline to remove from timeline stores and invalidate caches; for hard deletes remove in batches to avoid spikes.</li>
+      <li><strong>How to test at scale?</strong> Load test producers and consumers, simulate celebrity fan-out, and measure queue lag and worker throughput.</li>
+    </ul>
+
+    <p style="color:#666">This answer provides the architecture, storage models, and operational considerations you need to confidently discuss designing a social feed system in an interview. Be ready to sketch the flow and justify trade-offs based on read/write ratios, follower distributions, and latency goals.</p>
+  </div>
+</body>
+</html>

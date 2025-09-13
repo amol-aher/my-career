@@ -1,0 +1,46 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Architectural Patterns I Use</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:24px;color:#111}h1{font-size:24px}h2{font-size:20px}ul{margin-left:18px}</style>
+</head>
+<body>
+  <h1>Architectural Patterns — Most Useful and Why</h1>
+  <section>
+    <h2>Strangler Pattern</h2>
+    <p>Useful for incremental migration of legacy systems — replace parts of a monolith gradually with services.</p>
+  </section>
+
+  <section>
+    <h2>Event-Driven Architecture</h2>
+    <p>Great for decoupling systems, improving scalability, and enabling eventual consistency where appropriate. Use cases: analytics pipelines, integrations, async processing.</p>
+  </section>
+
+  <section>
+    <h2>Hexagonal (Ports & Adapters)</h2>
+    <p>Encourages separation between business logic and external systems (DB, APIs), making components testable and replaceable.</p>
+  </section>
+
+  <section>
+    <h2>CQRS (Command Query Responsibility Segregation)</h2>
+    <p>Useful for read-heavy systems needing different models/optimizations for read and write workloads.</p>
+  </section>
+
+  <section>
+    <h2>Microservices with Bounded Contexts</h2>
+    <p>Enables team autonomy and independent scaling when boundaries are well-defined; avoid premature decomposition.</p>
+  </section>
+
+  <section>
+    <h2>When to use which</h2>
+    <ul>
+      <li>Start with modular monolith if team is small.</li>
+      <li>Use event-driven or microservices when scale or organizational structure demands it.</li>
+      <li>Prefer hexagonal architecture to keep core logic independent from infra.</li>
+    </ul>
+  </section>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Separating Business Logic — Service Classes vs Controllers/Models</title>
+<style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.6; padding:28px; color:#111; background:#fff; }
+    .container{max-width:980px;margin:0 auto;}
+    header{border-bottom:1px solid #e6e6e6;margin-bottom:18px;padding-bottom:8px;}
+    h1{font-size:26px;margin:0 0 6px 0;}
+    h2{font-size:18px;margin-top:18px;color:#0b69ff;}
+    h3{font-size:15px;margin-top:14px;color:#0b69ff;}
+    p{margin:8px 0;}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:4px;}
+    ul{margin:8px 0 8px 20px;}
+    table{border-collapse:collapse;width:100%;margin:8px 0;}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+    .muted{color:#666;font-size:13px;}
+    footer{border-top:1px solid #e6e6e6;margin-top:22px;padding-top:12px;color:#666;font-size:13px;}
+    </style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>Separating Business Logic — Service Classes vs Controllers/Models</h1>
+<p class="muted">Prepared by: Senior Software Engineer &amp; System Architect — Rails / AWS / SQL / Vue.js</p>
+<p class="muted">Date: 2025-09-10 (UTC)</p>
+</header>
+
+<p class="muted"><strong>Overview</strong></p>
+<p>Patterns for extracting business logic: when to use service objects, policies, presenters, and where to keep logic in models or controllers.</p>
+
+<section><h2>Principles and goals</h2>
+<p>Keep code maintainable, testable, and single-responsibility. Controllers should orchestrate; models encapsulate domain invariants; service objects encapsulate application workflows that span multiple models or external systems.</p>
+</section>
+<section><h2>When to keep logic in models</h2>
+<ul>
+<li>Logic tightly coupled to data invariants (validations, callbacks directly related to persistence).</li>
+<li>Query-scoped logic (scopes) and small helper methods that operate on a single model.</li>
+<li>Shared domain behavior that multiple consumers use.</li>
+</ul>
+</section>
+<section><h2>When to use service classes</h2>
+<ul>
+<li>Complex workflows involving multiple models, external APIs, transactions, or background jobs.</li>
+<li>Operations that would otherwise make models 'fat' and hard to test.</li>
+<li>When you need explicit inputs, outputs, and error handling separate from persistence concerns.</li>
+</ul>
+<pre><code># Example service pattern
+class ChargeCustomer
+  def initialize(customer:, amount_cents:)
+    @customer = customer
+    @amount_cents = amount_cents
+  end
+
+  def call
+    PaymentGateway.charge(@customer.payment_token, @amount_cents)
+    Invoice.create!(customer: @customer, amount_cents: @amount_cents)
+  rescue PaymentError => e
+    Result.failure(e.message)
+  end
+end
+</code></pre>
+</section>
+<section><h2>Supporting patterns</h2>
+<ul>
+<li><strong>Form objects</strong> — for complex parameter validation and transformation before persistence (Reform, ActiveModel).</li>
+<li><strong>Policy objects</strong> — Pundit for authorization checks outside controllers.</li>
+<li><strong>Presenters/Decorators</strong> — for view-specific logic (Draper or simple POROs).</li>
+<li><strong>Interactors/Command objects</strong> — for orchestrating multi-step processes with clear success/failure semantics.</li>
+</ul>
+</section>
+<section><h2>Testing and clarity</h2>
+<p>Service objects are easier to unit test (no DB) or with simple fixtures. Keep public APIs of services minimal and return Result objects or raise well-defined exceptions.</p>
+</section>
+<section><h2>Subquestions you should expect</h2>
+<ol>
+<li><strong>Avoiding too many small services?</strong><br/>Group related operations into a cohesive service; avoid premature extraction. Refactor when a method reaches a complexity threshold or is used by many controllers.</li>
+<li><strong>Where to put validation failures?</strong><br/>Use form objects or service objects to validate business rules; model validations for persistence invariants.</li>
+</ol>
+</section>
+
+
+<footer>
+I can scaffold example service objects, form objects, and a small policy layer for a sample feature.
+</footer>
+</div>
+</body>
+</html>

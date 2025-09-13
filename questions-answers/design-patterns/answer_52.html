@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Service Object vs Concern vs Callback — decision guide</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:28px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    ul{margin-left:18px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>How to decide: Service Object vs Concern vs Callback</h1>
+
+    <p>Choosing among these patterns is about responsibilities, coupling and testability. Below is a practical decision guide with code examples.</p>
+
+    <h2>Definitions (brief)</h2>
+    <ul>
+      <li><strong>Service Object</strong> — a PORO that encapsulates a single business operation or workflow (testable, injectable).</li>
+      <li><strong>Concern</strong> — shared module (mixin) for behaviour reused across models/controllers; usually small and composable.</li>
+      <li><strong>Callback</strong> — lifecycle hook on models (before_save, after_commit) used for model-intrinsic behaviors (defaults, simple side-effects).</li>
+    </ul>
+
+    <h2>Decision checklist</h2>
+    <ol>
+      <li><strong>Is this business orchestration spanning multiple models or external services?</strong>
+        <ul><li>Yes → Service Object</li></ul>
+      </li>
+      <li><strong>Is this purely a small reusable behavior (scopes, small helper) used by many models/controllers?</strong>
+        <ul><li>Yes → Concern (keep it tiny)</li></ul>
+      </li>
+      <li><strong>Is this tightly coupled to model lifecycle (normalize attributes, set defaults) and simple?</strong>
+        <ul><li>Yes → Callback (prefer small; avoid heavy work in callbacks)</li></ul>
+      </li>
+      <li><strong>Does it cause side effects like sending emails/charging cards?</strong>
+        <ul><li>Avoid doing this in callbacks — instead, emit an event or enqueue a Service Object through a job.</li></ul>
+      </li>
+    </ol>
+
+    <h2>Examples</h2>
+    <h3>Service Object (good for orchestration)</h3>
+    <pre><code>class PlaceOrder
+  def initialize(user:, cart:, payment_gateway:)
+    @user = user; @cart = cart; @gateway = payment_gateway
+  end
+
+  def call
+    ActiveRecord::Base.transaction do
+      order = Order.create!(user: @user, total: @cart.total)
+      @gateway.charge(order)
+      NotifyUserJob.perform_later(order.id)
+      order
+    end
+  end
+end
+</code></pre>
+
+    <h3>Concern (small, reusable behaviour)</h3>
+    <pre><code>module Archivable
+  extend ActiveSupport::Concern
+
+  included do
+    scope :archived, -> { where.not(archived_at: nil) }
+  end
+
+  def archive!
+    update!(archived_at: Time.current)
+  end
+end
+</code></pre>
+
+    <h3>Callback (for intrinsic lifecycle logic only)</h3>
+    <pre><code>class User &lt; ApplicationRecord
+  before_validation :sanitize_email
+
+  private
+  def sanitize_email
+    self.email = email&.strip&.downcase
+  end
+end
+</code></pre>
+
+    <h2>Testing and maintainability</h2>
+    <ul>
+      <li>Service Objects — easy to unit-test (no DB) and to mock when used in controllers.</li>
+      <li>Concerns — test via small spec on a dummy class to keep behavior correct.</li>
+      <li>Callbacks — test the effect, but prefer explicit service use for complex side effects to avoid hidden behavior.</li>
+    </ul>
+
+    <h2>Common mistakes</h2>
+    <ul>
+      <li>Putting heavy orchestration in callbacks -> hard-to-test code and surprising behavior during object lifecycle.</li>
+      <li>Creating God concerns that mix many unrelated behaviours — split concerns by responsibility.</li>
+      <li>Overusing Service Objects for trivial getters/setters — don't add indirection where simple methods suffice.</li>
+    </ul>
+
+    <h2>Interview tip</h2>
+    <p>Show an example where you refactored a callback into a service (and job) and explain why it improved testability and debuggability.</p>
+  </div>
+</body

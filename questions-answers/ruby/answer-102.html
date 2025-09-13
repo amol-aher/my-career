@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 102</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 102: What is the difference between Thread.new and Thread.start?</h1>
+<h2>Concept</h2>
+<p>Both create and start a new thread immediately, but <code>Thread.start</code> is an alias for <code>Thread.new</code> with slightly different argument handling.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p><code>Thread.new</code> and <code>Thread.start</code> behave almost the same. <code>Thread.start(args)</code> passes args to the block, like <code>Thread.new(args)</code>. <code>Thread.fork</code> is also an alias.</p>
+
+<h2>Example</h2>
+<pre><code class="language-ruby">Thread.new { puts 'hi' }.join
+Thread.start { puts 'hello' }.join</code></pre>
+
+<h2>Best practices</h2>
+<ul>
+<li>Use <code>Thread.new</code> for clarity and consistency.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 102</footer>
+</body></html>

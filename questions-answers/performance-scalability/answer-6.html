@@ -1,0 +1,50 @@
+
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Measuring Code Quality and Ensuring Standards</title>
+  <style>
+    body {font-family: Arial, sans-serif; margin:40px;}
+    h1 {color:#1f4e79;}
+    pre {background:#f6f8fa;padding:12px;border-radius:6px;}
+  </style>
+</head>
+<body>
+  <h1>Measuring Code Quality and Ensuring Standards</h1>
+
+  <h2>Quantitative Metrics</h2>
+  <ul>
+    <li>Test coverage (unit, integration, E2E) — track trends not absolute numbers.</li>
+    <li>Static analysis (Rubocop, Brakeman for security, Reek for code smells).</li>
+    <li>Complexity metrics (cyclomatic complexity, method length).</li>
+    <li>Build health (CI pass rate, flakiness).</li>
+  </ul>
+
+  <h2>Qualitative Practices</h2>
+  <ul>
+    <li><strong>Code review culture:</strong> Timely reviews, checklist-based reviews focusing on design, security, testability, and performance.</li>
+    <li><strong>Definition of Done:</strong> Tests, docs, and acceptance criteria must be met before merge.</li>
+    <li><strong>Pair programming:</strong> For high-risk or complex features.</li>
+  </ul>
+
+  <h2>CI/CD and Gates</h2>
+  <p>Fail merges on failing tests, failing linters, or missing docs. Run full test suite or a subset on PR; run full suite on main branch.</p>
+
+  <h2>Automated Tools Examples</h2>
+  <pre><code># Sample GitHub Actions job snippet for Ruby
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ruby/setup-ruby@v1
+      - run: bundle install --path vendor/bundle
+      - run: bundle exec rubocop
+      - run: bundle exec rspec
+  </code></pre>
+
+  <h2>Code Quality Reviews and Metrics</h2>
+  <p>Use PR analytics to see time-to-merge, review coverage. Track tech debt tickets and remediation velocity. Conduct periodic architecture reviews.</p>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 166</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 166: When would you prefer actor-model libraries (e.g., concurrent-ruby Actors) over shared-memory threads?</h1>
+<h2>Concept</h2>
+<p>Actor-model enforces message-passing and encapsulates state, avoiding many shared-memory concurrency pitfalls.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Use actors when you need strong encapsulation, easier reasoning about state, fault isolation, or when modeling entities as independent actors (e.g., game servers, IoT devices). Shared-memory is fine for simple cases where locks are well-understood.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>Pros:</strong> safer concurrency model, easier to reason about, good for distributed systems.</li>
+<li><strong>Cons:</strong> messaging overhead, complexity for transactions across actors.</li>
+</ul>
+
+<h2>Example</h2>
+<pre><code class="language-ruby">require 'concurrent-ruby'
+actor = Concurrent::Actor.spawn(:counter) do
+  state = 0
+  loop do
+    react do |msg|
+      case msg
+      when :inc
+        state += 1
+      when :get
+        sender << state
+      end
+    end
+  end
+end</code></pre>
+
+<h2>Best practices</h2>
+<ul>
+<li>Design actor interfaces carefully; use supervision and monitoring for production systems.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 166</footer>
+</body></html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resourceful Routing or RESTful API in Rails</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #2980b9;
+            margin-top: 30px;
+        }
+        .section {
+            margin-bottom: 25px;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        .key-point {
+            background-color: #e8f4fd;
+            border-left: 4px solid #3498db;
+            padding: 10px 15px;
+            margin: 15px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Resourceful Routing or RESTful API in Rails</h1>
+
+    <div class="section">
+        <h2>What is Resourceful Routing?</h2>
+        <p><strong>Resourceful routing</strong> is a convention in Rails that simplifies the creation of RESTful interfaces by automatically mapping HTTP verbs to controller actions. It follows the Representational State Transfer (REST) architectural style, which treats resources as nouns and actions as verbs.</p>
+        
+        <p>Instead of manually defining every route, resourceful routing generates a complete set of routes for a given resource, making your application follow REST conventions by default.</p>
+    </div>
+
+    <div class="section">
+        <h2>REST Principles</h2>
+        <p>REST (Representational State Transfer) is an architectural style for designing networked applications. Its main principles include:</p>
+        
+        <ul>
+            <li><strong>Client-Server Separation</strong>: Clear separation between clients and servers</li>
+            <li><strong>Statelessness</strong>: Each request contains all necessary information</li>
+            <li><strong>Cacheability</strong>: Responses can be marked as cacheable</li>
+            <li><strong>Uniform Interface</strong>: Standardized method names and resource identifiers</li>
+            <li><strong>Layered System</strong>: Multiple layers can be added without affecting communication</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>HTTP Verbs and CRUD Operations</h2>
+        <p>Resourceful routing maps HTTP verbs to CRUD operations:</p>
+        
+        <table>
+            <tr>
+                <th>HTTP Verb</th>
+                <th>CRUD Operation</th>
+                <th>Controller Action</th>
+                <th>URL Pattern</th>
+            </tr>
+            <tr>
+                <td>GET</td>
+                <td>Read</td>
+                <td>index</td>
+                <td>/resources</td>
+            </tr>
+            <tr>
+                <td>GET</td>
+                <td>Read</td>
+                <td>show</td>
+                <td>/resources/:id</td>
+            </tr>
+            <tr>
+                <td>POST</td>
+                <td>Create</td>
+                <td>create</td>
+                <td>/resources</td>
+            </tr>
+            <tr>
+                <td>PUT/PATCH</td>
+                <td>Update</td>
+                <td>update</td>
+                <td>/resources/:id</td>
+            </tr>
+            <tr>
+                <td>DELETE</td>
+                <td>Delete</td>
+                <td>destroy</td>
+                <td>/resources/:id</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>Implementing Resourceful Routing</h2>
+        <p>In Rails, resourceful routing is implemented using the <code>resources</code> method in <code>config/routes.rb</code>:</p>
+        
+        <div class="code-block">
+            # config/routes.rb<br>
+            Rails.application.routes.draw do<br>
+              resources :articles<br>
+              <br>
+              # With optional nested resources<br>
+              resources :authors do<br>
+                resources :books<br>
+              end<br>
+              <br>
+              # Custom member route<br>
+              resource :profile, only: [:show, :edit, :update]<br>
+            end
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Generated Routes Example</h2>
+        <p>For a resource called <code>articles</code>, Rails generates the following routes:</p>
+        
+        <div class="code-block">
+            GET    /articles          # index<br>
+            GET    /articles/new      # new<br>
+            GET    /articles/:id      # show<br>
+            GET    /articles/:id/edit # edit<br>
+            POST   /articles          # create<br>
+            PUT    /articles/:id     # update<br>
+            DELETE /articles/:id      # destroy
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Benefits of Resourceful Routing</h2>
+        <ul>
+            <li><strong>Consistency</strong>: Follows established REST conventions</li>
+            <li><strong>Reduced Code</strong>: Automatically generates all necessary routes</li>
+            <li><strong>Improved Readability</strong>: Clear mapping between URLs and actions</li>
+            <li><strong>Built-in Conventions</strong>: Standardized approach across the application</li>
+            <li><strong>Easy Documentation</strong>: Routes can be documented automatically</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Common Customizations</h2>
+        <p>Resourceful routing can be customized in various ways:</p>
+        
+        <ul>
+            <li><strong>Only Specific Actions</strong>: <code>resources :articles, only: [:index, :show]</code></li>
+            <li><strong>Exclude Actions</strong>: <code>resources :articles, except: [:new, :edit]</code></li>
+            <li><strong>Custom Member Routes</strong>: <code>member { get 'publish' }</code></li>
+            <li><strong>Collection Routes</strong>: <code>collection { get 'search' }</code></li>
+            <li><strong>Nested Resources</strong>: <code>resources :categories do resources :products</code></li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Subquestion: How do you handle singular resources?</h2>
+        <p>Singular resources are used for resources that don't have multiple instances:</p>
+        
+        <div class="code-block">
+            # config/routes.rb<br>
+            resource :profile, only: [:show, :edit, :update]
+            
+            # Generated routes:<br>
+            # GET    /profile           # show<br>
+            # GET    /profile/edit       # edit<br>
+            # PATCH  /profile           # update<br>
+            # PUT    /profile           # update
+        </div>
+        
+        <p>Note that singular resources don't have index or new actions since there's only one instance.</p>
+    </div>
+
+    <div class="section">
+        <h2>Subquestion: How can you version your API?</h2>
+        <p>API versioning can be implemented in several ways:</p>
+        
+        <ul>
+            <li><strong>URL Versioning</strong>: <code>namespace :v1 do resources :articles end</code></li>
+            <li><strong>Header Versioning</strong>: Use custom headers to specify version</li>
+            <li><strong>Accept Header Versioning</strong>: Differentiate by MIME type</li>
+            <li><strong>Parameter Versioning</strong>: Use query parameters</li>
+        </ul>
+        
+        <p>Example with URL versioning:</p>
+        <div class="code-block">
+            # config/routes.rb<br>
+            namespace :api do<br>
+              namespace :v1 do<br>
+                resources :articles<br>
+              end<br>
+            end
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Subquestion: How do you handle API authentication?</h2>
+        <p>API authentication can be implemented using:</p>
+        
+        <ul>
+            <li><strong>Token Authentication</strong>: Include API token in request headers</li>
+            <li><strong>OAuth 2.0</strong>: Industry-standard authorization framework</li>
+            <li><strong>JWT (JSON Web Tokens)</strong>: Self-contained authentication tokens</li>
+            <li><strong>Basic Auth</strong>: Simple username/password authentication</li>
+        </ul>
+        
+        <p>Example with token authentication:</p>
+        <div class="code-block">
+            # app/controllers/api/v1/application_controller.rb<br>
+            class Api::V1::ApplicationController &lt; ApplicationController<br>
+              before_action :authenticate_api_user<br>
+              <br>
+              private<br>
+              <br>
+              def authenticate_api_user<br>
+                token = request.headers['X-API-Token']<br>
+                @current_user = User.find_by(api_token: token)<br>
+                head :unauthorized unless @current_user<br>
+              end<br>
+            end
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Conclusion</h2>
+        <p>Resourceful routing in Rails provides a powerful and standardized way to implement RESTful APIs. By following REST conventions and using the built-in routing helpers, developers can create consistent, predictable, and maintainable interfaces for their web applications. This approach reduces boilerplate code, enforces best practices, and makes the application easier to understand and extend over time.</p>
+    </div>
+</body>
+</html>

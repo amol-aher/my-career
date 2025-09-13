@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>API rate limiting — strategies and handling exceeded limits</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px}
+    h2{font-size:18px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Handling API rate limits across integrations</h1>
+
+    <p>Rate limiting is crucial when integrating with external APIs. Each provider has its own limits and policies. You must protect both your system and respect provider rules. Below are strategies for enforcement and recovery.</p>
+
+    <h2>Types of rate limits</h2>
+    <ul>
+      <li>Per-second / per-minute / per-day limits</li>
+      <li>Concurrent request limits</li>
+      <li>Leaky-bucket or token-bucket enforced by provider</li>
+      <li>Per-API-key or per-account limits</li>
+    </ul>
+
+    <h2>Client-side strategies</h2>
+    <ul>
+      <li><strong>Centralized rate limiter</strong> — a shared component that tracks allowance per provider/tenant and delays/queues requests when limits approach. Implement token-bucket or leaky-bucket algorithms in Redis for distributed processes.</li>
+      <li><strong>Per-connector quotas</strong> — read provider docs for limits and configure the limiter per endpoint/connector manifest.</li>
+      <li><strong>Adaptive throttling</strong> — lower concurrency when error rates increase; dynamic windows based on observed Retry-After headers.</li>
+    </ul>
+
+    <h2>When limits are exceeded</h2>
+    <ol>
+      <li><strong>Detect</strong> — provider typically returns 429 or specific error codes and may include Retry-After header.</li>
+      <li><strong>Respect Retry-After</strong> — delay retries according to header. For missing headers, use exponential backoff with jitter.</li>
+      <li><strong>Queue & prioritize</strong> — enqueue failed requests to a retry queue with backoff. Prioritize critical requests and deprioritize bulk syncs.</li>
+      <li><strong>Notify & expose status</strong> — surface rate limit hits in dashboards and inform tenants if their integrations are triggering excessive calls.</li>
+    </ol>
+
+    <h2>Architectural components</h2>
+    <ul>
+      <li><strong>Rate limit store</strong> — Redis or in-memory with consistency layer to track tokens per provider/account.</li>
+      <li><strong>Request queue</strong> — persistent queue for delayed retries (SQS/Kafka/Redis streams).</li>
+      <li><strong>Circuit breaker</strong> — open the circuit for an endpoint under sustained 429s and avoid wasting resources.</li>
+      <li><strong>Backoff & jitter</strong> — exponential backoff with randomized jitter to prevent thundering herds.</li>
+    </ul>
+
+    <h2>Sample algorithm (token bucket in Redis)</h2>
+    <pre><code># pseudocode
+def allow?(key)
+  now = Time.now.to_i
+  bucket = redis.get(key) || {tokens: capacity, last: now}
+  # add tokens since last
+  elapsed = now - bucket[:last]
+  bucket[:tokens] = [capacity, bucket[:tokens] + elapsed * rate].min
+  if bucket[:tokens] >= 1
+    bucket[:tokens] -= 1
+    bucket[:last] = now
+    redis.set(key, bucket)
+    true
+  else
+    false
+  end
+end
+</code></pre>
+
+    <h2>Operational considerations</h2>
+    <ul>
+      <li>Monitor rate limit rejections per provider and per tenant.</li>
+      <li>Provide dashboards and alerts for sustained rate limiting.</li>
+      <li>Offer tenant-level throttles and self-service limits to avoid noisy neighbors.</li>
+      <li>Log sample request payloads and provider responses to debug frequent 429s.</li>
+    </ul>
+
+    <h2>Interview follow-ups</h2>
+    <ul>
+      <li><strong>Q: What if provider provides no Retry-After?</strong><br>Use exponential backoff with bounded retries and escalate to a dead-letter queue for manual inspection.</li>
+      <li><strong>Q: How to prioritize requests?</strong><br>Classify requests (real-time, background sync, bulk import) and enforce different priority queues and rate buckets.</li>
+      <li><strong>Q: How to handle token expiry and auth errors?</strong><br>Retain a refresh flow and renew tokens proactively; pause requests if auth fails repeatedly and alert owners.</li>
+    </ul>
+
+    <p style="color:#666;margin-top:12px">In interviews give concrete examples: e.g., implemented Redis-based token-bucket limiter that reduced 429s by 80% and added per-tenant quotas to prevent abuse.</p>
+  </div>
+</body>
+</html>

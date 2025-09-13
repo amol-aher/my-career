@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stateful vs Stateless APIs — guidance for microservices and monoliths</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;line-height:1.6;color:#111;background:#f7f8fb;padding:28px}
+    .container{max-width:1000px;margin:0 auto;background:#fff;padding:28px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px;margin-bottom:6px}
+    h2{font-size:18px;margin-top:18px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+    ul{margin-left:18px}
+    .callout{background:#eef8ff;border-left:4px solid #9fd3ff;padding:10px;border-radius:6px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Stateful vs Stateless APIs — guidance for microservices and monoliths</h1>
+
+    <p><strong>Elevator summary</strong>: Prefer stateless APIs for HTTP-based microservices and external public APIs because statelessness improves scalability, resilience, and operational simplicity. Stateful APIs (server-side session state, sticky sessions) are acceptable in limited contexts (legacy apps, interactive sessions, websockets), but when state is required, externalize it to a shared store (Redis, DynamoDB) rather than binding it to an instance.</p>
+
+    <h2>What does statelessness mean?</h2>
+    <p>Statelessness means each request carries all information necessary to process it — the server does not rely on stored session state across requests. Authentication tokens (JWT/OAuth), request parameters, or idempotency keys are examples of state carried with a request.</p>
+
+    <h2>Benefits of stateless APIs</h2>
+    <ul>
+      <li><strong>Horizontal scaling:</strong> Any instance can serve any request; simple autoscaling and load balancing.</li>
+      <li><strong>Failure isolation:</strong> Replacing nodes is cheap — no session affinity to maintain.</li>
+      <li><strong>Simpler deployment:</strong> Rolling upgrades and blue/green deployments are easier without session stickiness.</li>
+      <li><strong>Better caching & CDNs:</strong> Stateless responses are easier to cache at intermediaries.</li>
+    </ul>
+
+    <h2>When stateful APIs are necessary</h2>
+    <ul>
+      <li><strong>Websockets / Server-Sent Events (SSE):</strong> Persistent connections inherently maintain state (connections, subscriptions).</li>
+      <li><strong>Complex multi-step transactions:</strong> Long-lived workflows where serializing intermediate state each request is expensive (but consider externalizing state).
+      </li>
+      <li><strong>Legacy apps:</strong> Existing session-based architectures where rework is costly.</li>
+      <li><strong>Real-time presence / collaborative apps:</strong> Presence and cursor positions are often easier with in-memory connection state combined with an external pub/sub layer.</li>
+    </ul>
+
+    <h2>State management patterns</h2>
+    <ul>
+      <li><strong>External session store (recommended when state needed):</strong> Store session data in Redis, DynamoDB, or a DB. Instances remain stateless; data is centralized and replicated. Example: Rails session_store with Redis.</li>
+      <li><strong>JWTs and opaque tokens:</strong> JWTs are stateless tokens carrying claims (fast verification) but complicate revocation and sensitive data storage. Opaque tokens (stored and validated against Redis) enable easy revocation.</li>
+      <li><strong>Sticky sessions (load balancer affinity):</strong> Route a user to the same instance. Simple but reduces resilience and complicates scaling/maintenance.</li>
+      <li><strong>Client-side state:</strong> Keep minimal state in the client (e.g., local storage) and send it with each request. Useful for shopping carts or UI state but security must be considered.</li>
+    </ul>
+
+    <h2>Practical recommendations</h2>
+    <ol>
+      <li><strong>Default to stateless</strong>: Design APIs so any instance can process a request. Use bearer tokens, idempotency keys, and externalize long-lived state.</li>
+      <li><strong>If you need sessions, externalize them</strong>: Use Redis or a DB for sessions rather than in-memory instance state; ensure high availability and autoscaling of the session store.</li>
+      <li><strong>Use JWTs carefully</strong>: Prefer short-lived JWTs with refresh tokens; implement revocation via token blacklists (Redis) or use rotating refresh tokens.</li>
+      <li><strong>Design for web sockets</strong>: Use a connection manager (e.g., a dedicated service or a message broker) and keep minimal critical state in a durable store to allow reconnects and graceful failover.</li>
+      <li><strong>Graceful degradation</strong>: When external session stores are unavailable, surface clear errors or fallback to reduced functionality rather than silently failing.</li>
+    </ol>
+
+    <h2>Examples (Ruby / Rails snippets)</h2>
+    <p><strong>1) Stateless auth with JWT (verify token on each request)</strong></p>
+    <pre><code>class ApplicationController &lt; ActionController::API
+  before_action :authenticate!
+
+  def authenticate!
+    token = request.headers['Authorization']&.split(' ')&.last
+    payload = JwtService.decode(token)
+    @current_user = User.find(payload['sub'])
+  rescue JWT::ExpiredSignature, JWT::DecodeError
+    head :unauthorized
+  end
+end
+</code></pre>
+
+    <p><strong>2) Opaque token validated against Redis (revocable)</strong></p>
+    <pre><code>class SessionsController &lt; ActionController::API
+  def create
+    token = SecureRandom.hex(32)
+    Redis.current.setex("session:#{token}", 2.hours.to_i, user.id)
+    render json: {access_token: token}
+  end
+end
+
+# middleware
+class TokenAuth
+  def call(env)
+    token = env['HTTP_AUTHORIZATION']&.split(' ')&.last
+    user_id = Redis.current.get("session:#{token}")
+    if user_id
+      env['current_user_id'] = user_id
+      @app.call(env)
+    else
+      [401, {'Content-Type' => 'application/json'}, [{error: 'unauthorized'}.to_json]]
+    end
+  end
+end
+</code></pre>
+
+    <h2>Handling websockets and sticky connections</h2>
+    <p>For real-time features, use a dedicated connection manager or message broker (Redis pub/sub, Kafka, or managed services like AWS AppSync/IoT). Avoid relying on sticky sessions when possible — instead, store minimal connection metadata in a central store so another instance can resume or send messages via the broker.</p>
+
+    <h2>Trade-offs — interview talking points</h2>
+    <ul>
+      <li><strong>Why stateless for microservices?</strong> Because microservices scale independently and failure of one instance shouldn’t affect client sessions. Statelessness simplifies service discovery and load balancing.</li>
+      <li><strong>Performance vs complexity:</strong> Stateless JWTs reduce DB lookups but complicate revocation. Opaque tokens and Redis add a network hop but make revocation simple.</li>
+      <li><strong>Operational cost:</strong> Externalizing session state increases infrastructure needs (Redis clusters) but reduces operational pain of instance affinity and enables horizontal scale.</li>
+    </ul>
+
+    <h2>Common interview follow-ups & concise answers</h2>
+    <ul>
+      <li><strong>Q: How do you revoke a JWT?</strong> Implement short-lived access tokens + refresh tokens with server-side revoke lists or track a token version in user DB and include it in the token claims.</li>
+      <li><strong>Q: When are sticky sessions acceptable?</strong> For legacy applications with heavy in-memory sessions where reengineering is not feasible; ensure LB redundancy and graceful draining during deploys.</li>
+      <li><strong>Q: How to scale Redis session store?</strong> Use clustering (Redis Cluster), sharding, or a managed service (ElastiCache) and monitor memory usage and eviction policies; add LRU and TTLs to avoid unbounded growth.</li>
+    </ul>
+
+    <div class="callout">
+      <strong>Quick checklist to state vs stateless decisions:</strong>
+      <ol>
+        <li>Does the feature require persistent connection (websocket)? If yes, plan for stateful connection management.</li>
+        <li>Can the state be externalized to a durable store? Prefer externalizing.</li>
+        <li>Is revocation and security critical? Prefer opaque tokens or short-lived JWTs with revocation.</li>
+        <li>Is horizontal scaling a primary goal? Prefer stateless design.</li>
+      </ol>
+    </div>
+
+    <p style="margin-top:12px;color:#666">This answer is tailored for interview settings: give concrete examples, explain trade-offs, and show you can design both stateless-by-default systems and pragmatic stateful solutions when required.</p>
+  </div>
+</body>
+</html>

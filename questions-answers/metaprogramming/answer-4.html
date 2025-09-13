@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Define methods at runtime in Ruby (define_method)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:18px;color:#111}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{font-family:monospace}
+    h1{color:#1a56db}
+    h2{color:#0b5a78}
+  </style>
+</head>
+<body>
+  <h1>Defining methods at runtime in Ruby (metaprogramming with <code>define_method</code>)</h1>
+
+  <p>Ruby's reflective and metaprogramming facilities let you create methods at runtime. The common approaches are <code>define_method</code>, <code>define_singleton_method</code>, <code>class_eval</code>/<code>module_eval</code>, and manipulating constants and classes. Below are examples and recommendations.</p>
+
+  <h2>1) <code>define_method</code> (instance methods)</h2>
+  <pre><code class="language-ruby">class Person
+  [:name, :email, :age].each do |attr|
+    define_method(attr) do
+      instance_variable_get("@#{attr}")
+    end
+
+    define_method("#{attr}=") do |val|
+      instance_variable_set("@#{attr}", val)
+    end
+  end
+end
+
+p = Person.new
+p.name = "Ada"
+p.name # => "Ada"</code></pre>
+
+  <h2>2) <code>define_singleton_method</code> (per-object methods)</h2>
+  <pre><code class="language-ruby">obj = Object.new
+obj.define_singleton_method(:greet) { |name| "Hi #{name}" }
+obj.greet("Sam") # => "Hi Sam"</code></pre>
+
+  <h2>3) <code>class_eval / module_eval</code> (string or block eval within class/module)</h2>
+  <pre><code class="language-ruby">klass = Class.new
+klass.class_eval do
+  def dynamic
+    "I'm a runtime method"
+  end
+end
+
+klass.new.dynamic # => "I'm a runtime method"</code></pre>
+
+  <h2>4) Creating class (or module) constants</h2>
+  <pre><code class="language-ruby">MyWorker = Class.new do
+  def perform; "work" end
+end
+
+MyWorker.new.perform # => "work"</code></pre>
+
+  <h2>Notes & patterns</h2>
+  <ul>
+    <li><strong>Capturing variables:</strong> <code>define_method</code> creates closures that capture local variables, which is safer than using string-eval for the same goal.</li>
+    <li><strong>Class methods:</strong> Use <code>define_singleton_method</code> on the class object, or open the singleton class (<code>class << self; define_method ...; end</code>).</li>
+    <li><strong>Performance:</strong> Defining methods explicitly is cheaper at call time than handling calls with <code>method_missing</code>. For repeated calls prefer dynamic definition on first call.</li>
+  </ul>
+
+  <h2>Example: Define-on-first-call pattern</h2>
+  <pre><code class="language-ruby">class LazyBuilder
+  def method_missing(name, *args, &block)
+    # Create a concrete method to avoid future method_missing overhead
+    self.class.define_method(name) do |*a, &b|
+      "computed: #{name} with #{a.inspect}"
+    end
+    send(name, *args, &block)
+  end
+
+  def respond_to_missing?(name, include_private=false)
+    true
+  end
+end
+
+x = LazyBuilder.new
+x.foo(1)  # defines method foo, returns computed value
+x.foo(2)  # calls concrete method (faster)</code></pre>
+
+  <h2>Guidelines</h2>
+  <ol>
+    <li>Prefer <code>define_method</code> over <code>class_eval</code> with strings: it's safer and avoids parse-time mixing.</li>
+    <li>Use dynamic-definition patterns to convert expensive <code>method_missing</code> dispatches into normal method calls.</li>
+    <li>Keep generated methods small, documented, and test-covered.</li>
+  </ol>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!doctype html><html><head><meta charset='utf-8'><title>Hands-on in creating user stories and decomposing them</title>
+<style>
+body{font-family:Segoe UI,Arial,Helvetica,sans-serif;line-height:1.5;padding:24px;max-width:900px;margin:auto;color:#111}
+header{border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:18px}
+h1{font-size:20px;margin:0 0 6px 0}
+.role{color:#555;font-size:13px;margin-bottom:6px}
+pre{background:#f6f6f6;padding:12px;border-radius:6px;overflow:auto}
+code{font-family:monospace;font-size:13px}
+section{margin-bottom:18px}
+.sub{font-weight:600;margin-top:8px}
+ul{margin-left:18px}
+ol{margin-left:18px}
+</style></head><body><header><h1>Hands-on in creating user stories and decomposing them</h1><div class='role'>System architect · Technical lead · Senior software engineer (Ruby on Rails, AWS, SQL, Vue.js)</div></header>
+<section>
+<p><strong>Summary:</strong> I am very hands-on. I co-create user stories with Product, ensure acceptance criteria are precise, and decompose stories into implementation tasks including infra and QA work.</p>
+
+<div class='sub'>Typical workflow</div>
+<ol>
+<li><strong>Discovery:</strong> Work with product on user needs, run spikes for unknowns.</li>
+<li><strong>Draft stories:</strong> Write stories using the standard template (As a / I want / So that) and propose acceptance criteria driven by examples.</li>
+<li><strong>Grooming:</strong> In grooming sessions, break stories into vertical slices and list the tasks (API, UI, DB, tests, infra, deploy).</li>
+<li><strong>Definition of Done:</strong> Code + tests + docs + deployment + monitoring + performance considerations.</li>
+</ol>
+
+<div class='sub'>Example user story and subtasks</div>
+<pre><code>User story:
+As a paying customer, I want to save multiple shipping addresses so that I can choose them at checkout.
+
+Acceptance criteria:
+- Add new address
+- List existing addresses
+- Select default address for checkout
+- Validation errors shown for invalid input
+
+Subtasks:
+- Backend: Add Address model and controller endpoints (2d)
+- Frontend: Address management UI (3d)
+- Tests: RSpec + system tests (1d)
+- Infra: Add secrets & config for address validation service (0.5d)
+- Docs: API docs and runbook (0.5d)</code></pre>
+
+<div class='sub'>When I do less hands-on</div>
+<p>If the team is senior and self-sufficient, I step back to unblock and review, focusing on architecture and non-blocking contributions.</p>
+</section>
+</body></html>

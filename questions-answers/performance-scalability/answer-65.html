@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Integrating AWS ElastiCache with Your App</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Integrating AWS ElastiCache (Redis/Memcached) with Your App</h1>
+
+  <h2>Provisioning</h2>
+  <ol>
+    <li>Create a subnet group and security group allowing access from your app instances.</li>
+    <li>Choose engine: Redis for advanced features (persistence, replication, pub/sub); Memcached for simple key-value caching.</li>
+    <li>Enable Multi-AZ with Auto-Failover for Redis replication groups if high availability is needed.</li>
+  </ol>
+
+  <h2>Networking & security</h2>
+  <ul>
+    <li>Place ElastiCache nodes in private subnets.</li>
+    <li>Use Security Groups to allow only app-tier inbound traffic.</li>
+    <li>Enable in-transit encryption (TLS) and at-rest encryption (Redis only in newer engine versions).</li>
+  </ul>
+
+  <h2>App integration (Rails example)</h2>
+  <pre><code># Gemfile
+gem 'redis'
+# config/environments/production.rb
+config.cache_store = :redis_cache_store, {
+  url: ENV['ELASTICACHE_REDIS_URL'],
+  error_handler: -> (method:, returning:, exception:) { ... }
+}
+  </code></pre>
+
+  <h2>Operational tips</h2>
+  <ul>
+    <li>Monitor memory usage, eviction counts, network throughput, and cache hit ratio via CloudWatch.</li>
+    <li>Right-size node types and use cluster mode for Redis to scale beyond single-node limits.</li>
+    <li>Schedule maintenance windows and enable automatic backups if needed (Redis snapshotting).</li>
+    <li>Use parameter groups to tune eviction policy and maxmemory settings.</li>
+  </ul>
+
+  <h2>Common pitfalls</h2>
+  <ul>
+    <li>Sharing a single cache cluster for critical and ephemeral data can cause eviction of important keys—use separate clusters or namespaces.</li>
+    <li>Misconfigured timeouts can cause app to block waiting for cache; set appropriate socket timeouts and fallback paths.</li>
+  </ul>
+</body>
+</html>

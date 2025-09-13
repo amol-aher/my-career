@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Using AWS SNS and SQS — Roles, Patterns, and Best Practices</title>
+<style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.6; padding:28px; color:#111; background:#fff; }
+    .container{max-width:980px;margin:0 auto;}
+    header{border-bottom:1px solid #e6e6e6;margin-bottom:18px;padding-bottom:8px;}
+    h1{font-size:26px;margin:0 0 6px 0;}
+    h2{font-size:18px;margin-top:18px;color:#0b69ff;}
+    h3{font-size:15px;margin-top:14px;color:#0b69ff;}
+    p{margin:8px 0;}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:4px;}
+    ul{margin:8px 0 8px 20px;}
+    table{border-collapse:collapse;width:100%;margin:8px 0;}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+    .muted{color:#666;font-size:13px;}
+    footer{border-top:1px solid #e6e6e6;margin-top:22px;padding-top:12px;color:#666;font-size:13px;}
+    </style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>Using AWS SNS and SQS — Roles, Patterns, and Best Practices</h1>
+<p class="muted">Prepared by: Senior Software Engineer &amp; System Architect — Rails / AWS / SQL / Vue.js</p>
+<p class="muted">Date: 2025-09-10 (UTC)</p>
+</header>
+
+<p class="muted"><strong>Overview</strong></p>
+<p>Detailed explanation of SNS and SQS: what they are, when to use each, common patterns (fanout, pub/sub, queueing), security, and operational tips.</p>
+
+<section><h2>What are SNS and SQS?</h2>
+<ul>
+<li><strong>SNS (Simple Notification Service):</strong> Pub/Sub messaging for fan-out to multiple endpoints (SQS, HTTP, Lambda, email, SMS). Good for broadcasting events.</li>
+<li><strong>SQS (Simple Queue Service):</strong> Durable queue service for decoupling producers from consumers. Two types: Standard (high throughput, at-least-once, best-effort ordering) and FIFO (exactly-once processing within a 5-minute dedupe window, ordered).</li>
+</ul>
+</section>
+<section><h2>Common patterns</h2>
+<h3>Fan-out</h3>
+<p>Publisher -> SNS topic -> multiple SQS subscriptions (or Lambdas). Useful for sending the same event to many consumers.</p>
+
+<h3>Event bus</h3>
+<p>SNS as an event bus for microservices; integrate with EventBridge for richer routing.</p>
+
+<h3>Queueing</h3>
+<p>SQS as a durable buffer for jobs processed by consumers (Shoryuken, Lambda, consumers).</p>
+</section>
+<section><h2>Security and reliability best practices</h2>
+<ul>
+<li>Use IAM roles with least privilege for producers and consumers.</li>
+<li>Enable server-side encryption (SSE) on SQS and encrypt SNS messages if sensitive.</li>
+<li>Use VPC endpoints (AWS PrivateLink) for SQS/SNS to avoid public internet traffic.</li>
+<li>Monitor CloudWatch metrics (ApproximateNumberOfMessagesVisible, NumberOfMessagesSent, NumberOfMessagesDeleted, ApproximateAgeOfOldestMessage).</li>
+</ul>
+</section>
+<section><h2>Operational tips & costs</h2>
+<ul>
+<li>Use long polling on SQS to reduce empty responses and lower costs (wait time up to 20s).</li>
+<li>Tune visibility timeout based on consumer processing time.</li>
+<li>Use DLQs to catch poison messages and metrics/alarms to detect anomalous redrive counts.</li>
+<li>Watch costs for very high message volumes; standard queues are cheaper but FIFO adds cost and throughput limits.</li>
+</ul>
+</section>
+<section><h2>Subquestions and answers</h2>
+<ol>
+<li><strong>When to use SNS vs SQS?</strong><br/>Use SNS for pub/sub and fanout; SQS for durable queues and buffering. Often they are used together: SNS publishes events, SQS stores them for consumers.</li>
+
+<li><strong>How to ensure messages are processed exactly once?</strong><br/>Use SQS FIFO + deduplication where applicable and design idempotent consumers. For large scale, rely on idempotency because distributed systems rarely guarantee perfect once-only semantics.</li>
+</ol>
+</section>
+
+
+<footer>
+I can generate CloudFormation/Terraform snippets to create SNS topics, SQS queues with DLQs, and the subscriptions wiring if you'd like.
+</footer>
+</div>
+</body>
+</html>

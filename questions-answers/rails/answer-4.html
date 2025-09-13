@@ -1,0 +1,237 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fetching Batches of Records in Rails</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #2980b9;
+            margin-top: 30px;
+        }
+        .section {
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .code-block {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        .feature-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .feature-list li {
+            margin: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Fetching Batches of Records in Rails</h1>
+
+<div class="section">
+    <h2>Why Batch Processing?</h2>
+    <p>When dealing with large datasets in Rails, loading all records into memory at once can cause significant performance issues, including memory bloat and slow response times. Batch processing allows us to process records in smaller chunks, reducing memory consumption and improving overall application performance.</p>
+</div>
+
+<div class="section">
+    <h2>Available Methods</h2>
+    <p>Rails provides three primary methods for batch processing: <code>find_each</code>, <code>find_in_batches</code>, and <code>in_batches</code>.</p>
+</div>
+
+<div class="section">
+    <h2>1. find_each</h2>
+    <p>The simplest way to iterate through records in batches. It yields individual records to a block.</p>
+    
+    <h3>Basic Usage:</h3>
+    <div class="code-block">User.find_each do |user|
+  puts user.email
+end</div>
+    
+    <h3>Key Features:</h3>
+    <ul class="feature-list">
+        <li>Processes records one-by-one</li>
+        <li>Default batch size: 1000 records</li>
+        <li>Automatically orders by primary key</li>
+        <li>Handles large datasets efficiently</li>
+    </ul>
+    
+    <h3>Customization Options:</h3>
+    <div class="code-block"># Change batch size
+User.find_each(batch_size: 500) do |user|
+  # ...
+end
+
+# Start from a specific point
+User.find_each(start: 5000) do |user|
+  # ...
+end</div>
+</div>
+
+<div class="section">
+    <h2>2. find_in_batches</h2>
+    <p>Similar to <code>find_each</code>, but yields entire batches (arrays of records) rather than individual records.</p>
+    
+    <h3>Basic Usage:</h3>
+    <div class="code-block">User.find_in_batches do |users|
+  users.each { |user| puts user.email }
+end</div>
+    
+    <h3>Key Features:</h3>
+    <ul class="feature-list">
+        <li>Yields batches as arrays</li>
+        <li>More efficient for certain operations</li>
+        <li>Allows batch-level processing</li>
+    </ul>
+    
+    <h3>Customization Options:</h3>
+    <div class="code-block"># Specify columns to select
+User.find_in_batches(select: :email) do |users|
+  # Only email field loaded
+end</div>
+</div>
+
+<div class="section">
+    <h2>3. in_batches</h2>
+    <p>The most flexible option, providing direct access to batch objects for more advanced scenarios.</p>
+    
+    <h3>Basic Usage:</h3>
+    <div class="code-block">User.in_batches do |relation|
+  relation.update_all(active: true)
+end</div>
+    
+    <h3>Key Features:</h3>
+    <ul class="feature-list">
+        <li>Provides batch objects with additional methods</li>
+        <li>Supports chaining with other query methods</li>
+        <li>Allows batch-level operations</li>
+    </ul>
+    
+    <h3>Advanced Usage:</h3>
+    <div class="code-block"># Access batch information
+User.in_batches(of: 100).each_with_index do |relation, batch_index|
+  puts "Processing batch #{batch_index}"
+  
+  # Perform batch operation
+  relation.update_all(processed_at: Time.current)
+end</div>
+</div>
+
+<div class="section">
+    <h2>Comparison Table</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Method</th>
+                <th>Yields Individual Records</th>
+                <th>Yields Batches</th>
+                <th>Batch Object Access</th>
+                <th>Best For</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>find_each</code></td>
+                <td>Yes</td>
+                <td>No</td>
+                <td>No</td>
+                <td>Simple iteration over records</td>
+            </tr>
+            <tr>
+                <td><code>find_in_batches</code></td>
+                <td>No</td>
+                <td>Yes (as arrays)</td>
+                <td>No</td>
+                <td>Batch-level processing</td>
+            </tr>
+            <tr>
+                <td><code>in_batches</code></td>
+                <td>No</td>
+                <td>Yes (as relations)</td>
+                <td>Yes</td>
+                <td>Advanced batch operations</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="section">
+    <h2>Important Considerations</h2>
+    <ul class="feature-list">
+        <li><strong>Ordering:</strong> All batch methods rely on primary key ordering. If your records aren't ordered by ID, results may be inconsistent.</li>
+        <li><strong>Concurrency:</strong> Batch processing isn't thread-safe by default. Use appropriate locking mechanisms if modifying records.</li>
+        <li><strong>Database Load:</strong> While batch processing reduces memory usage, it increases database load due to multiple queries.</li>
+        <li><strong>Association Loading:</strong> Be cautious with eager loading associations, as it can significantly increase memory usage.</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>Best Practices</h2>
+    <ul class="feature-list">
+        <li>Always specify a reasonable <code>batch_size</code> based on your memory constraints</li>
+        <li>Use <code>select</code> to limit loaded columns when possible</li>
+        <li>Avoid complex calculations inside batch blocks</li>
+        <li>Consider background jobs for long-running batch processes</li>
+        <li>Monitor database performance during batch operations</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>Alternatives</h2>
+    <ul class="feature-list">
+        <li><strong>Raw SQL Cursors:</strong> For extremely large datasets, consider database-specific cursor implementations</li>
+        <li><strong>Background Jobs:</strong> Use Active Job with queue adapters for asynchronous batch processing</li>
+        <li><strong>Streaming Responses:</strong> For web requests, consider streaming responses with ActionController::Live</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>Conclusion</h2>
+    <p>Choosing the right batch processing method depends on your specific use case. For simple iteration, <code>find_each</code> is usually sufficient. For batch-level operations, <code>find_in_batches</code> or <code>in_batches</code> provide more flexibility. Always consider memory constraints and database performance when working with large datasets.</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,66 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Purpose of Artifact Repositories</title>
+  <style>
+    body{font-family:Georgia,serif;margin:24px;color:#222;line-height:1.6}
+    h1{background:#6c757d;color:#fff;padding:12px;border-radius:8px}
+    h2{color:#6c757d;margin-top:18px}
+    pre{background:#f7f7f8;padding:12px;border-radius:6px;overflow:auto}
+    ul{margin:8px 0 8px 20px}
+  </style>
+</head>
+<body>
+  <h1>Purpose of Artifact Repositories (S3, Nexus, Artifactory, ECR)</h1>
+
+  <h2>Executive summary</h2>
+  <p>Artifact repositories store build outputs (container images, packages, binaries, archives) reliably and predictably. They enable artifact immutability, versioning, promotion through environments, access control, caching, and scanning — essential for reproducible deployments and a secure software supply chain.</p>
+
+  <h2>Roles & examples</h2>
+  <ul>
+    <li><strong>S3:</strong> Generic object store; often used for build artifacts, serverless deployments, and hosting static assets. Cheap and simple, but lacks package-specific features out-of-the-box.</li>
+    <li><strong>Nexus/Artifactory:</strong> Universal package managers for Maven, npm, NuGet, Docker, and more; provide metadata, proxying, and fine-grained access control.</li>
+    <li><strong>ECR:</strong> Managed Docker registry optimized for AWS; integrates with ECS/EKS/CodeBuild and supports scanning and lifecycle policies.</li>
+  </ul>
+
+  <h2>Why you need artifact repositories</h2>
+  <ul>
+    <li><strong>Immutability:</strong> Store immutable artifacts (by SHA or unique version) so deployments are reproducible.</li>
+    <li><strong>Promotion:</strong> Promote the same artifact through environments (staging -> prod) without rebuilding.</li>
+    <li><strong>Access control:</strong> Limit who or what can read/write artifacts.</li>
+    <li><strong>Caching & performance:</strong> Proxy external registries and cache dependencies for faster and more reliable builds.</li>
+    <li><strong>Supply chain security:</strong> Scan artifacts for vulnerabilities, sign and verify artifacts, and maintain audit logs.</li>
+  </ul>
+
+  <h2>Integration patterns</h2>
+  <ul>
+    <li>CI builds push images to ECR or packages to Artifactory and record the artifact reference (SHA) as part of release metadata.</li>
+    <li>Deployment pipelines fetch artifacts by version/SHA to promote or rollback easily.</li>
+    <li>Use lifecycle policies to clean up old artifacts and manage storage costs.</li>
+  </ul>
+
+  <h2>Best practices</h2>
+  <ul>
+    <li>Tag images with semantic versions and the commit SHA (e.g., <code>v1.2.3</code> and <code>sha-abcdef</code>).</li>
+    <li>Keep a single source of truth for released artifacts and do not rebuild on promotion.</li>
+    <li>Use repository replication for geographic performance and DR.</li>
+    <li>Scan artifacts on push and enforce promotion gates for vulnerabilities.</li>
+  </ul>
+
+  <h2>Subquestions & answers</h2>
+  <h3>Q: When to use S3 vs Artifactory?</h3>
+  <p>A: Use S3 for simple binary storage, static websites, or serverless artifacts. Use Artifactory/Nexus when you need package-type awareness, metadata, proxying remote repositories, or fine-grained repository policies.</p>
+
+  <h3>Q: How to handle retention and costs?</h3>
+  <p>A: Configure lifecycle policies (S3 lifecycle, ECR lifecycle policies, Artifactory cleanup jobs) to expire snapshots and unused artifacts. Monitor storage consumption and implement quotas.</p>
+
+  <h3>Q: How do repositories help with compliance?</h3>
+  <p>A: Repositories provide audit trails (who pushed what and when), immutability for released artifacts, and scanning/metadata for license and vulnerability compliance.</p>
+
+  <h2>Conclusion</h2>
+  <p>Artifact repositories are a core part of the delivery pipeline. They secure, catalog, and make artifacts reproducible — enabling safe promotions, rollbacks and supply-chain controls.</p>
+</body>
+</html>

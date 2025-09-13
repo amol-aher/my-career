@@ -1,0 +1,46 @@
+<!doctype html><html><head><meta charset='utf-8'><title>Approach to architectural and technical decisions</title>
+<style>
+body{font-family:Segoe UI,Arial,Helvetica,sans-serif;line-height:1.5;padding:24px;max-width:900px;margin:auto;color:#111}
+header{border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:18px}
+h1{font-size:20px;margin:0 0 6px 0}
+.role{color:#555;font-size:13px;margin-bottom:6px}
+pre{background:#f6f6f6;padding:12px;border-radius:6px;overflow:auto}
+code{font-family:monospace;font-size:13px}
+section{margin-bottom:18px}
+.sub{font-weight:600;margin-top:8px}
+ul{margin-left:18px}
+ol{margin-left:18px}
+</style></head><body><header><h1>Approach to architectural and technical decisions</h1><div class='role'>System architect · Technical lead · Senior software engineer (Ruby on Rails, AWS, SQL, Vue.js)</div></header>
+<section>
+<p><strong>Summary:</strong> I favor inclusive decision-making: define the problem, propose options, run lightweight design reviews, gather feedback from senior engineers and the team, and make a documented decision (ADR). For critical or emergency decisions I might act quicker but still document rationale.</p>
+
+<div class='sub'>Decision process</div>
+<ol>
+<li><strong>Define goals & constraints:</strong> performance, cost, compatibility, timeline.</li>
+<li><strong>Research & spikes:</strong> prototypes to validate assumptions.</li>
+<li><strong>Options & trade-offs:</strong> list alternatives with pros/cons.</li>
+<li><strong>Design review:</strong> invite senior engineers for feedback and consider broader team inputs.</li>
+<li><strong>Decision:</strong> pick an approach, write an Architecture Decision Record (ADR), and outline migration steps.</li>
+</ol>
+
+<div class='sub'>When to involve whom</div>
+<ul>
+<li>Senior engineers: for major platform or cross-service changes.</li>
+<li>Whole team: for choices affecting day-to-day implementation or team productivity.</li>
+<li>Stakeholders: for decisions with business impact or cost changes.</li>
+</ul>
+
+<div class='sub'>Example ADR structure</div>
+<pre><code># ADR: Switch from monolith DB to per-service DBs
+Status: Accepted
+Context: increasing contention on the shared DB impacting latency
+Decision: Move to per-service Postgres instances with async replication for shared reads
+Consequences:
+- + better isolation & scaling
+- - increased operational complexity & backup costs
+Implementation plan:
+- Spike & benchmark
+- Create cross-team migration guide
+- Migrate in 3 phases with feature flags</code></pre>
+</section>
+</body></html>

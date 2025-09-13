@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Vertical vs Horizontal Scaling in the Context of Rails</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Vertical vs Horizontal Scaling in the Context of Rails</h1>
+  <p>Vertical scaling = increase power of a single node; Horizontal scaling = add more nodes. Each has trade-offs for Rails applications.</p>
+
+  <h2>Vertical scaling</h2>
+  <ul>
+    <li>Pros: easier to implement, fewer networking complexities, faster per-request performance for single-threaded tasks.</li>
+    <li>Cons: finite limit, more expensive at scale, single point of failure.</li>
+  </ul>
+
+  <h2>Horizontal scaling</h2>
+  <ul>
+    <li>Pros: near-infinite scaling, high availability, cost-effective via commodity instances, better fault-tolerance.</li>
+    <li>Cons: added complexity (session management, distributed caching, DB connections, deployment coordination).</li>
+  </ul>
+
+  <h2>Rails-specific considerations</h2>
+  <ul>
+    <li>Statelessness is required for horizontal scaling — move sessions to Redis or signed cookies.</li>
+    <li>DB connection limits become a constraint: use pgbouncer, read replicas, and tune pool sizes.</li>
+    <li>Assets and caches should be stored in shared stores (S3, Redis) or at the edge (CDN).</li>
+    <li>Deployments: rolling / blue-green to avoid downtime when multiple nodes exist.</li>
+  </ul>
+
+  <h2>Typical approach</h2>
+  <p>Start with vertical scaling during early phases for simplicity. Migrate to horizontal scaling when workload or availability demands it. Most production Rails apps use a hybrid approach: reasonably sized instances (vertical) with horizontal scaling of app and worker pools.</p>
+
+  <h2>Summary</h2>
+  <p>Use vertical scaling for short-term needs and horizontal scaling for long-term growth. Address database architecture and state management when moving to horizontal scale.</p>
+</body>
+</html>

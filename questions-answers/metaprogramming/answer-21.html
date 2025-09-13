@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>eval vs instance_eval vs class_eval in Ruby</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; margin:20px; color:#111 }
+    h1 { color:#1a56db } h2 { color:#0b5a78 }
+    pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto }
+    code { font-family: monospace; }
+  </style>
+</head>
+<body>
+  <h1>Difference between <code>eval</code>, <code>instance_eval</code>, and <code>class_eval</code></h1>
+
+  <p><strong>Quick summary:</strong></p>
+  <ul>
+    <li><code>eval(string, binding=nil)</code> executes Ruby code in the given binding (default is caller's). It has full access to local variables of that binding and can create/modify locals/constants there.</li>
+    <li><code>instance_eval</code> executes a block or string in the context of a specific object; inside the block <code>self</code> becomes that object. It's used to add per-object behavior or evaluate DSL blocks on an object instance.</li>
+    <li><code>class_eval</code> (a.k.a. <code>module_eval</code>) executes a block or string in the context of a class or module; it's typically used to define instance methods dynamically on that class.</li>
+  </ul>
+
+  <h2>Behavioral differences & examples</h2>
+  <h3>eval</h3>
+  <pre><code class="language-ruby">x = 1
+eval("x + 2") # => 3
+
+# eval with binding (access a local variable in method scope)
+def test_eval
+  local = 10
+  eval("local + 5", binding) # => 15
+end</code></pre>
+
+  <h3>instance_eval</h3>
+  <pre><code class="language-ruby">obj = Object.new
+obj.instance_eval do
+  def secret; "only on this object" end
+  @foo = 42
+end
+
+obj.secret    # => "only on this object"
+# obj2 = Object.new; obj2.secret # NoMethodError</code></pre>
+
+  <h3>class_eval / module_eval</h3>
+  <pre><code class="language-ruby">klass = Class.new
+klass.class_eval do
+  def hello; "hi" end
+end
+
+klass.new.hello # => "hi"</code></pre>
+
+  <h2>Local variables and closures</h2>
+  <p><code>eval</code> can access and modify local variables via a binding; <code>instance_eval</code> and <code>class_eval</code> with blocks capture closures differently:</p>
+  <ul>
+    <li><code>define_method</code> with a block captures surrounding local variables (closure).</li>
+    <li><code>class_eval</code> with a string does not capture outer local variables; with a block it shares the block's lexical scope differently.</li>
+  </ul>
+
+  <h2>When each is appropriate</h2>
+  <ul>
+    <li><strong>Avoid <code>eval</code></strong> unless you absolutely must execute dynamic Ruby source from a trusted source. It's dangerous (code injection), hard to debug, and slows optimization.</li>
+    <li><strong>Use <code>instance_eval</code></strong> for building internal DSLs where a block needs to be evaluated on an object (e.g., configuration blocks).</li>
+    <li><strong>Use <code>class_eval</code></strong> for defining instance methods or inserting code into a class context dynamically. Prefer passing a block to avoid string eval.</li>
+    <li><strong>Prefer <code>define_method</code></strong> over string-based <code>class_eval</code> for safety and closure semantics.</li>
+  </ul>
+
+  <h2>When to avoid them</h2>
+  <ul>
+    <li>Never eval untrusted input — huge security risk.</li>
+    <li>Avoid using these in hot paths without benchmarking; dynamic code may prevent some interpreter optimizations.</li>
+    <li>Avoid widespread use that makes code hard to reason about — prefer explicit definitions or factory methods.</li>
+  </ul>
+
+  <h2>Practical patterns</h2>
+  <pre><code class="language-ruby"># Safer: use define_method with closures rather than class_eval string
+[:a, :b].each do |name|
+  define_method(name) { instance_variable_get("@#{name}") }
+end</code></pre>
+
+  <h2>Summary</h2>
+  <p>All three allow dynamic code execution, but <code>eval</code> acts on bindings and local scope (most dangerous). <code>instance_eval</code> and <code>class_eval</code> are contextual — use them for DSLs and dynamic definitions, but prefer safer alternatives like <code>define_method</code> and avoid string eval.</p>
+</body>
+</html>

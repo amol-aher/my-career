@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"/><title>Answer 23</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6; color:#111 }
+pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto }
+code { font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace }
+h1,h2,h3 { color:#0b5394 }
+footer { color:#666; font-size:0.9em }
+</style></head><body>
+<h1>Question 23: If your object has five attributes and you want to apply two more attributes using decorators, will it affect all the objects or just that one?</h1>
+<h2>Concept</h2>
+<p>Decorators applied to a single object (wrapper or singleton methods via <code>extend</code>) affect only that instance. Changing the class or including a module into the class affects all instances.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Applying a decorator as a wrapper or using <code>object.extend</code> affects only that object. Including a module into the class affects all instances.</p>
+
+<h2>Example</h2>
+<pre><code class="language-ruby">u = User.new
+module Extra; def vip?; true end; end
+u.extend(Extra) # only u has vip?
+v = User.new
+v.respond_to?(:vip?) # false</code></pre>
+
+<h2>Best practices / Pitfalls</h2>
+<ul>
+<li>Prefer explicit wrappers for per-instance behavior to avoid surprising global changes.</li>
+</ul>
+
+<hr/>
+<footer>Generated HTML for question 23</footer>
+</body></html>

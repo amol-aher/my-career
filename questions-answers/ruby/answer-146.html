@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 146</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 146: Describe how to build deterministic tests for concurrent code. What techniques and libraries help?</h1>
+<h2>Concept</h2>
+<p>Concurrent code is nondeterministic, but deterministic testing aims to control or simulate scheduling. Techniques: dependency injection of schedulers, fake clocks, controlling thread interleaving.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Use deterministic schedulers, mocks, and tools like RSpec's time helpers or specialized concurrency testing libraries. Insert synchronization points or use model checking approaches.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>Techniques:</strong> use barriers/latches, test harnesses that control thread progress.</li>
+<li><strong>Libraries:</strong> rspec-retry, deterministic schedulers, custom wrappers for thread coordination.</li>
+</ul>
+
+<h2>Best practices</h2>
+<ul>
+<li>Design code to allow injection of schedulers/clocks for testability.</li>
+<li>Write stress tests in addition to deterministic unit tests.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 146</footer>
+</body></html>

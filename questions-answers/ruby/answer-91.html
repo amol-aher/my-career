@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 91</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 91: How would you optimize slow Ruby code?</h1>
+<h2>Concept</h2>
+<p>Optimizing Ruby code involves identifying hotspots via profiling, reducing allocations, simplifying algorithms, and applying appropriate concurrency or native extensions.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Profile first (stackprof, ruby-prof), focus on the hot paths, reduce allocations, optimize algorithms/data structures, cache results, and consider moving CPU-heavy parts to native extensions or separate services.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>Allocation reduction:</strong> reuse objects, avoid creating many temporary strings, use frozen literals.</li>
+<li><strong>Algorithmic improvements:</strong> choose appropriate data structures (hash vs array) and avoid O(n^2) patterns.</li>
+<li><strong>IO optimization:</strong> batch database queries, use appropriate indexes, and preload associations.</li>
+</ul>
+
+<h2>Example</h2>
+<pre><code class="language-ruby"># before: N+1 query
+users.each { |u| puts u.posts.count }
+
+# after: preload
+users = User.includes(:posts)
+users.each { |u| puts u.posts.size }</code></pre>
+
+<h2>Best practices / Pitfalls</h2>
+<ul>
+<li>Measure before and after changes; premature optimization can add complexity.</li>
+<li>Always profile in an environment similar to production.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 91</footer>
+</body></html>

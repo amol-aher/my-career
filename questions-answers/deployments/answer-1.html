@@ -1,0 +1,76 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Cloud Deployment Experience</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;line-height:1.6;margin:24px;color:#111}
+    h1{color:#0b5; background:#072; padding:12px; border-radius:6px; color:#fff}
+    h2{color:#072;margin-top:22px}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{background:#f1f1f1;padding:2px 6px;border-radius:4px}
+    .subq{background:#eef9ff;padding:10px;border-left:4px solid #03a9f4;margin:8px 0;border-radius:6px}
+    ul{margin:8px 0 8px 20px}
+    table{border-collapse:collapse;width:100%}
+    td,th{padding:8px;border:1px solid #ddd;text-align:left}
+  </style>
+</head>
+<body>
+  <h1>Cloud Deployment Experience</h1>
+  <h2>Executive summary</h2>
+  <p>Yes — I have deployed multiple production services and full-stack projects to cloud platforms, primarily AWS, and in some cases GCP. My deployments ranged from monolith Rails apps on EC2/Elastic Beanstalk to microservice architectures on EKS and ECS (Fargate), serverless functions with Lambda, and static sites behind CloudFront. I use Infrastructure as Code (Terraform / CloudFormation / CDK), CI/CD pipelines (GitHub Actions, CodePipeline, Jenkins), container registries (ECR), and observability stacks (CloudWatch, Prometheus/Grafana).</p>
+
+  <h2>Typical project components I deploy</h2>
+  <ul>
+    <li>API services (Rails, Sinatra, Node) in Docker on EKS/ECS or as Lambda.</li>
+    <li>Frontend apps (Vue.js) deployed to S3 + CloudFront or containerized behind ALB.</li>
+    <li>Databases: RDS (Postgres/MySQL), Aurora, DynamoDB for NoSQL.</li>
+    <li>Cache: ElastiCache Redis and memcached.</li>
+    <li>Background processing: Sidekiq on container tasks or EC2, or Step Functions/Lambda for serverless jobs.</li>
+    <li>CI/CD with automated tests, security scanning, image builds and blue/green releases.</li>
+  </ul>
+
+  <h2>How I approached a real deployment (concise workflow)</h2>
+  <ol>
+    <li>Containerize application with a small Dockerfile and multi-stage build for smaller images.</li>
+    <li>Write Terraform modules for VPC, subnets, security groups, and the compute plane (EKS/ECS/EC2 autoscaling groups).</li>
+    <li>Set up CI pipeline to run tests, build container image, push to ECR, run image security scan.</li>
+    <li>Manage configuration and secrets using SSM Parameter Store / Secrets Manager and rotate keys.</li>
+    <li>Deploy to staging using Helm / Terraform and run integration & smoke tests automatically.</li>
+    <li>Promote to production using blue-green or canary patterns, monitoring healthchecks and logs for 15–30 minutes, then cut traffic.</li>
+    <li>Automate rollback via deployment tool (ArgoCD, CodeDeploy or ECS rolling update) if health checks fail.</li>
+  </ol>
+
+  <h2>Common interview follow-ups and answers</h2>
+  <div class="subq">
+    <strong>Which cloud provider did you use and why?</strong>
+    <p>I predominantly used AWS because of its maturity, breadth of services and strong ecosystem (EKS, ECS, RDS, S3, IAM, and Code* tools). In earlier projects I used GCP for data-heavy workloads (BigQuery) and Azure for corporate clients tied to Microsoft ecosystems.</p>
+  </div>
+
+  <div class="subq">
+    <strong>How did you manage secrets and credentials?</strong>
+    <p>I used AWS Secrets Manager for database credentials and API keys, combined with IAM roles for services. For containers running on EKS/ECS I use IAM Roles for Service Accounts (IRSA) or task roles so credentials are never baked into images. Encryption of secrets at rest is enabled via KMS.</p>
+  </div>
+
+  <div class="subq">
+    <strong>How did you ensure security during deployment?</strong>
+    <ul>
+      <li>Least-privilege IAM policies, role separation for CI and runtime.</li>
+      <li>Network segmentation with private subnets and bastion hosts for management.</li>
+      <li>Automated vulnerability scanning of container images and dependencies.</li>
+      <li>Use of CloudFront + WAF to restrict traffic and mitigate common attacks.</li>
+    </ul>
+  </div>
+
+  <h2>Key takeaways</h2>
+  <ul>
+    <li>Cloud deployments must be automated, repeatable and tested — IaC + CI/CD are non-negotiable.</li>
+    <li>Design for failure: health checks, autoscaling, retries, and observability.</li>
+    <li>Cost and security must be balanced: monitor cost and rightsizing; automate secret rotation and auditing.</li>
+  </ul>
+
+  <p style="margin-top:28px">If you want, I can also include the actual Terraform snippets, sample GitHub Actions pipelines, or the Dockerfile we used for a project — tell me which you want and I’ll prepare a follow-up file.</p>
+</body>
+</html>

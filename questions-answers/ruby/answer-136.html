@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 136</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 136: How do you detect and debug a race condition or data race in a Ruby program? Tools and strategies.</h1>
+<h2>Concept</h2>
+<p>Detecting race conditions involves reproducing the concurrency scenario, adding logging, using thread sanitizers (where available), and stress testing under high concurrency.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Use stress tests, race detectors (limited in Ruby), thread-safe logging, and deterministic concurrency testing techniques. Add assertions, increase concurrency, and use tools like ThreadSanitizer for native parts or heavy logging plus heap snapshots.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>Reproducibility:</strong> race conditions may be timing-dependent — increase load, add sleeps, and use fuzzing to reproduce.</li>
+<li><strong>Tools:</strong> limited native Ruby race detectors; use sanitizer tools for C extensions, heavy instrumentation, and unit tests that control scheduling.</li>
+</ul>
+
+<h2>Example approach</h2>
+<pre><code class="language-ruby"># add per-operation logging and thread ids
+mutex = Mutex.new
+shared = 0
+100.times.map do
+  Thread.new do
+    100.times do
+      old = shared
+      new = old + 1
+      puts "\#{Thread.current.object_id} reads \#{old} -> writes \#{new}"
+      shared = new
+    end
+  end
+end.each(&:join)</code></pre>
+
+<h2>Best practices / Pitfalls</h2>
+<ul>
+<li>Design for determinism in tests; consider using tools that allow controlling thread scheduling in tests (e.g., custom schedulers).</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 136</footer>
+</body></html>

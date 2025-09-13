@@ -1,0 +1,317 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Single Table Inheritance (STI) in Rails</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #2980b9;
+            margin-top: 25px;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .comparison-table th,
+        .comparison-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .comparison-table th {
+            background-color: #f2f2f2;
+        }
+        .key-point {
+            background-color: #e8f4fd;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .subquestion {
+            background-color: #f0f7ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Single Table Inheritance (STI) in Rails</h1>
+    
+    <p>Single Table Inheritance (STI) is a design pattern in Rails where multiple subclasses share a single database table. Each subclass is represented by a distinct value in a type column, allowing different classes to be stored in the same table while behaving as separate entities.</p>
+    
+    <h2>Basic Implementation</h2>
+    
+    <p>To implement STI, follow these steps:</p>
+    
+    <div class="code-block">
+        <pre># app/models/payment.rb
+class Payment &lt; ApplicationRecord
+  self.inheritance_column = :payment_type # Optional, defaults to 'type'
+end
+
+# app/models/credit_card_payment.rb
+class CreditCardPayment &lt; Payment
+  # Specific credit card payment logic
+end
+
+# app/models/paypal_payment.rb
+class PayPalPayment &lt; Payment
+  # Specific PayPal payment logic
+end</pre>
+    </div>
+    
+    <p>The database table would have a structure like:</p>
+    
+    <div class="code-block">
+        <pre>CREATE TABLE payments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  amount DECIMAL(10,2),
+  payment_type VARCHAR(255), -- Stores class names ('CreditCardPayment', 'PayPalPayment')
+  credit_card_number VARCHAR(19),
+  paypal_account_id VARCHAR(255),
+  created_at DATETIME,
+  updated_at DATETIME
+);</pre>
+    </div>
+    
+    <h2>Key Features of STI</h2>
+    
+    <ul>
+        <li><strong>Type Column:</strong> A string column (typically named <code>type</code>) stores the class name of each record</li>
+        <li><strong>Shared Structure:</strong> All subclasses inherit the same database schema</li>
+        <li><strong>Polymorphic Behavior:</strong> Records can be instantiated as different subclasses based on the type column</li>
+        <li><strong>Flexible Schema:</strong> Subclasses can have optional fields that only apply to specific types</li>
+    </ul>
+    
+    <h2>Comparison with Polymorphic Associations</h2>
+    
+    <table class="comparison-table">
+        <thead>
+            <tr>
+                <th>Feature</th>
+                <th>Single Table Inheritance (STI)</th>
+                <th>Polymorphic Associations</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Structure</strong></td>
+                <td>All data in a single table with a type discriminator</td>
+                <td>Separate tables linked through foreign keys</td>
+            </tr>
+            <tr>
+                <td><strong>Implementation</strong></td>
+                <td>One model class hierarchy sharing a table</td>
+                <td>Multiple independent models linked by associations</td>
+            </tr>
+            <tr>
+                <td><strong>Query Performance</strong></td>
+                <td>Fast queries with simple type filtering</td>
+                <td>Joins required between tables</td>
+            </tr>
+            <tr>
+                <td><strong>Schema Flexibility</strong></td>
+                <td>Fixed schema with nullable columns for unused fields</td>
+                <td>Independent schemas for each model</td>
+            </tr>
+            <tr>
+                <td><strong>Use Case</strong></td>
+                <td>Similar objects with minor variations (e.g., payment methods)</td>
+                <td>Radically different objects (e.g., comments on posts vs products)</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h2>When to Use STI</h2>
+    
+    <ul>
+        <li><strong>Similar Objects:</strong> When objects share most attributes but have a few differences</li>
+        <li><strong>Simple Hierarchies:</strong> Small inheritance hierarchies (2-5 subclasses)</li>
+        <li><strong>Performance-Critical:</strong> When join performance is a concern</li>
+        <li><strong>Shared Business Logic:</strong> When common functionality can be abstracted in a base class</li>
+    </ul>
+    
+    <h2>When to Avoid STI</h2>
+    
+    <ul>
+        <li><strong>Many Attributes:</strong> When subclasses have vastly different attributes</li>
+        <li><strong>Complex Queries:</strong> When queries become overly complex due to many nullable fields</li>
+        <li><strong>Large Number of Types:</strong> When the number of subclasses grows beyond manageable levels</li>
+        <li><strong>Strict Data Integrity:</strong> When null constraints are important for optional fields</li>
+    </ul>
+    
+    <h2>Advanced STI Techniques</h2>
+    
+    <div class="key-point">
+        <h3>Conditional Scopes</h3>
+        <p>Create scopes to easily fetch specific subclasses:</p>
+        <div class="code-block">
+            <pre>class Payment &lt; ApplicationRecord
+  scope :credit_cards, -> { where(payment_type: 'CreditCardPayment') }
+  scope :paypal, -> { where(payment_type: 'PayPalPayment') }
+end</pre>
+        </div>
+    </div>
+    
+    <div class="key-point">
+        <h3>Polymorphic Interface Methods</h3>
+        <p>Define methods that behave differently based on the subclass:</p>
+        <div class="code-block">
+            <pre>class Payment &lt; ApplicationRecord
+  def process
+    case payment_type
+    when 'CreditCardPayment' then process_credit_card
+    when 'PayPalPayment' then process_paypal
+    else super
+    end
+  end
+end</pre>
+        </div>
+    </div>
+    
+    <h2>Subquestions and Detailed Answers</h2>
+    
+    <div class="subquestion">
+        <h3>How does STI handle validations and callbacks?</h3>
+        <div class="key-point">
+            <p>STI handles validations and callbacks as follows:</p>
+            <ul>
+                <li><strong>Shared Callbacks:</strong> Defined in the base class apply to all subclasses</li>
+                <li><strong>Specific Callbacks:</strong> Subclasses can override base class callbacks</li>
+                <li><strong>Validation Context:</strong> Validations can be made type-specific using conditional logic</li>
+                <div class="code-block">
+                    <pre>class Payment &lt; ApplicationRecord
+  validates :amount, presence: true
+  
+  validate :specific_validation, if: :credit_card_payment?
+  
+  def credit_card_payment?
+    payment_type == 'CreditCardPayment'
+  end
+end</pre>
+                </div>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="subquestion">
+        <h3>Can STI be combined with other design patterns?</h3>
+        <div class="key-point">
+            <p>Yes, STI can be effectively combined with:</p>
+            <ul>
+                <li><strong>Decorators/Presenters:</strong> To handle view-specific logic for different types</li>
+                <li><strong>Service Objects:</strong> For complex business logic that varies by type</li>
+                <li><strong>Concerns:</strong> To modularize shared functionality between types</li>
+                <div class="code-block">
+                    <pre># Using concerns with STI
+module Billable
+  extend ActiveSupport::Concern
+  
+  included do
+    validates :amount, numericality: true
+  end
+end
+
+class Payment &lt; ApplicationRecord
+  include Billable
+end</pre>
+                </div>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="subquestion">
+        <h3>How does STI affect database migrations?</h3>
+        <div class="key-point">
+            <p>Migration considerations:</p>
+            <ul>
+                <li><strong>Add Columns Carefully:</strong> Add new columns to existing tables with caution</li>
+                <li><strong>Default Values:</strong> Provide sensible defaults for new fields added to existing records</li>
+                <li><strong>Backfill Data:</strong> Use migrations to populate type columns for existing data</li>
+                <div class="code-block">
+                    <pre># Example migration to add STI
+class AddPaymentTypeToPayments &lt; ActiveRecord::Migration[6.1]
+  def up
+    add_column :payments, :payment_type, :string
+    
+    Payment.reset_column_information
+    
+    Payment.find_each do |payment|
+      payment.update(payment_type: 'GenericPayment')
+    end
+  end
+end</pre>
+                </div>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="subquestion">
+        <h3>What are the performance implications of STI?</h3>
+        <div class="key-point">
+            <p>Performance considerations:</p>
+            <ul>
+                <li><strong>Read Performance:</strong> Fast reads with simple type filtering</li>
+                <li><strong>Write Performance:</strong> Slower writes due to larger table size and potential contention</li>
+                <li><strong>Indexing:</strong> Crucial to index the type column for efficient querying</li>
+                <li><strong>Query Complexity:</strong> Complex queries with many conditions may suffer performance degradation</li>
+                <li><strong>Scaling:</strong> May become unwieldy with hundreds of types</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="subquestion">
+        <h3>How can STI be refactored to polymorphic associations?</h3>
+        <div class="key-point">
+            <p>To refactor STI to polymorphic associations:</p>
+            <div class="code-block">
+                <pre># Original STI structure
+# payments table with payment_type column
+
+# Refactored polymorphic structure
+# payments table (base)
+# credit_card_payments table
+# paypal_payments table
+
+# Models
+class Payment &lt; ApplicationRecord
+  has_one :credit_card_payment, dependent: :destroy
+  has_one :paypal_payment, dependent: :destroy
+end
+
+class CreditCardPayment &lt; ApplicationRecord
+  belongs_to :payment
+end
+
+class PayPalPayment &lt; ApplicationRecord
+  belongs_to :payment
+end</pre>
+            </div>
+            <p>This approach offers better separation of concerns but requires more complex queries when accessing shared attributes.</p>
+        </div>
+    </div>
+</body>
+</html>

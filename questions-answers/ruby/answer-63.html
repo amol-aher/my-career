@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 63</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 63: What are mixins? How do you use modules in Ruby?</h1>
+<h2>Concept</h2>
+<p>Mixins are modules that add shared behavior to classes via <code>include</code> (instance methods) or <code>extend</code> (class/singleton methods). They're a primary mechanism for code reuse in Ruby.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Define reusable methods in modules and include them into classes to add instance methods, or extend to add methods to a single object or class.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>include vs extend:</strong> <code>include</code> mixes in instance methods; <code>extend</code> adds methods to the receiver (class or instance).</li>
+<li><strong>prepend:</strong> inserts module before the class in the method lookup chain, useful to override behavior.</li>
+</ul>
+
+<h2>Example</h2>
+<pre><code class="language-ruby">module Loggable
+  def log(msg); puts "[\#{self.class}] \#{msg}" end
+end
+
+class Svc
+  include Loggable
+end
+
+Svc.new.log('hi') # => [Svc] hi</code></pre>
+
+<h2>Best practices / Pitfalls</h2>
+<ul>
+<li>Keep modules focused; avoid modules that carry too many responsibilities (God modules).</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 63</footer>
+</body></html>

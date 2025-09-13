@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Approach to Code Reviews as a Senior Engineer</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; padding:28px; background:#ffffff; color:#071222; }
+    header { margin-bottom:8px; }
+    h1 { color:#0b3d91; margin-bottom:4px; }
+    section { background:#fff; padding:14px; border-radius:10px; box-shadow:0 1px 6px rgba(6,12,24,0.06); margin-bottom:12px; }
+    ul { margin-left:18px; }
+    .flow { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+    .step { background:#f0f6ff; padding:8px 10px; border-radius:8px; color:#064e9a; font-weight:700; }
+    pre { background:#f6fbff; padding:10px; border-radius:6px; overflow:auto; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Approach to Code Reviews as a Senior Engineer</h1>
+    <p>My mindset: ship correctness, teach effectively, remove blockers, and keep the codebase healthy. Reviews are formative — they should guide authors and diffuse knowledge.</p>
+  </header>
+
+  <section>
+    <h2>High-level approach</h2>
+    <div class="flow">
+      <div class="step">Understand intent</div>
+      <div class="step">Sanity-check & run tests</div>
+      <div class="step">Focus on risks</div>
+      <div class="step">Give clear, actionable feedback</div>
+      <div class="step">Approve / follow-up</div>
+    </div>
+
+    <p>Start by reading the PR description and reproduction steps. If intent is unclear, do not guess — ask a clarifying question in the PR (but keep the question concise).</p>
+  </section>
+
+  <section>
+    <h2>Concrete review workflow I follow</h2>
+    <ol>
+      <li><strong>Skim</strong> — read title/description, glance files changed to understand scope (5–10s).</li>
+      <li><strong>Sanity-run</strong> — run tests locally (if quick) or ensure CI covers the change. Try a local smoke test if the change is runtime-visible.</li>
+      <li><strong>Read critical files</strong> — focus on business logic, DB changes, API surface, and contracts.</li>
+      <li><strong>Check tests</strong> — confirm meaningful tests exist and edge-cases are covered.</li>
+      <li><strong>Performance & security check</strong> — flag risky patterns (N+1, unbounded results, missing authorization).</li>
+      <li><strong>Suggest improvements</strong> — give code examples or small patches when helpful.</li>
+      <li><strong>Decide outcome</strong> — approve, approve with suggestions, or request changes (with clear reasons).</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Reviewing tone & pedagogy</h2>
+    <ul>
+      <li>Start with a positive note for non-trivial work: "Nice: This refactor reduces duplication and clarified X."</li>
+      <li>Be precise and actionable. Replace "This is confusing" with "Can you rename `process` to `process_order` and add a short docstring?"</li>
+      <li>Separate nit comments (style) from substantive issues. Use `nit:` to make trivial suggestions non-blocking.</li>
+      <li>Prefer questions to statements: "Was there a reason we chose X instead of Y?" encourages dialogue.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Handling disagreements</h2>
+    <ul>
+      <li>If author disagrees, discuss rationale in PR or schedule a 15–30 minute sync. Avoid escalating publicly; keep the conversation professional.</li>
+      <li>If it's an architectural decision with broad impact, request an ADR (architecture decision record) and involve stakeholders.</li>
+      <li>Defer to code owners or system architects when appropriate; document the outcome for future reviews.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Practical tips & guardrails</h2>
+    <ul>
+      <li>Set a size guideline (e.g., less than ~800 changed lines) and ask authors to split large changes.</li>
+      <li>Use PR templates that surface migration risk, perf impact, and testing notes.</li>
+      <li>Timebox reviews — don't get bogged down in a single PR for > 1 hour in one sitting; schedule a pairing session if deeper discussion is required.</li>
+      <li>Automate what you can: linters, security scanners, type checks, tests — keep the human focus on design, correctness and risk.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Sample comments (copy-paste friendly)</h2>
+    <pre><strong>Positive:</strong>
+Nice work — this clarifies the order flow and reduces duplication.
+
+<strong>Blocking:</strong>
+Blocking: This migration will rewrite a large table and will cause downtime. Please provide a zero-downtime migration plan.
+
+<strong>Suggestion:</strong>
+Suggestion: Can we move this helper into `app/services/` and add a small unit test to cover the edge-case when `current_user` is nil?
+
+<strong>Nit:</strong>
+Nit: Prefer `safe_join` here for HTML building; not blocking.</pre>
+  </section>
+
+  <section>
+    <h2>Subquestions & answers</h2>
+    <h3>Q: How long should a code review take?</h3>
+    <p>A: It depends on PR size & risk. Small PRs (a few files, <300 lines) should be reviewed in ~15–45 minutes of focused time. Larger PRs should be broken up. The key is responsiveness (within your team's SLA) and timely follow-up.</p>
+
+    <h3>Q: When do you escalate to synchronous review?</h3>
+    <p>A: If the PR triggers an architecture discussion, or you and the author have a back-and-forth >3 comments without resolution, schedule a short live discussion — it's often faster and builds alignment.</p>
+
+    <h3>Q: How to avoid blocking junior devs with too many rejections?</h3>
+    <p>A: Use the review as a teaching opportunity: explain why something matters, show a small code change, and where possible, propose a concrete patch. Praise correct design decisions to reinforce good practices.</p>
+  </section>
+
+  <footer>
+    <p>Conclusion: reviews are the mechanism to keep the codebase healthy and to raise the team's skill level. As a senior reviewer, the goal is to be precise, kind, and outcome-focused.</p>
+  </footer>
+</body>
+</html>

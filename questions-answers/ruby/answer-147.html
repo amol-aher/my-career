@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 147</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 147: How would you choose between Fork + exec, Process.spawn, threads, and external services for parallelism in a production system?</h1>
+<h2>Concept</h2>
+<p>Choice depends on workload (CPU vs IO), isolation, resource usage, and deployment model.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Fork+exec: good for replacing process image, isolation. Process.spawn: flexible child process creation. Threads: lightweight IO concurrency (limited by GVL on MRI). External services: best for scaling CPU-bound or language-diverse tasks.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>Isolation needs:</strong> processes/services isolate failures better.</li>
+<li><strong>Performance:</strong> threads cheaper for IO concurrency; processes better for CPU work on MRI.</li>
+<li><strong>Deployment:</strong> external services enable polyglot scaling (e.g., ML tasks in Python).</li>
+</ul>
+
+<h2>Best practices</h2>
+<ul>
+<li>Use threads for IO-bound concurrency, processes for CPU parallelism, and external services for specialized workloads.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 147</footer>
+</body></html>

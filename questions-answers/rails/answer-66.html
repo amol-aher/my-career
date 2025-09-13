@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Action Dispatch in Rails</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #2980b9;
+            margin-top: 30px;
+        }
+        .section {
+            margin-bottom: 25px;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        .key-point {
+            background-color: #e8f4fd;
+            border-left: 4px solid #3498db;
+            padding: 10px 15px;
+            margin: 15px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Action Dispatch in Rails</h1>
+
+    <div class="section">
+        <h2>What is Action Dispatch?</h2>
+        <p><strong>Action Dispatch</strong> is the component of Ruby on Rails responsible for routing HTTP requests to the appropriate controller actions. It acts as the central router that determines how incoming web requests are handled by your Rails application.</p>
+        
+        <p>Action Dispatch works alongside Action Controller to provide the full request-response cycle in Rails applications.</p>
+    </div>
+
+    <div class="section">
+        <h2>Key Components of Action Dispatch</h2>
+        <ul>
+            <li><strong>Routes</strong>: Defines URL patterns and maps them to controller actions</li>
+            <li><strong>Request Object</strong>: Represents the incoming HTTP request</li>
+            <li><strong>Response Object</strong>: Handles the outgoing HTTP response</li>
+            <li><strong>Middleware Stack</strong>: Processes requests and responses through a series of filters</li>
+            <li><strong>Parameters Parser</strong>: Extracts parameters from the request</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>How Action Dispatch Works</h2>
+        <p>The flow of a request through Action Dispatch follows these steps:</p>
+        
+        <ol>
+            <li><strong>Receive Request</strong>: Web server passes the request to Rails</li>
+            <li><strong>Routing</strong>: Routes match the request path to a controller and action</li>
+            <li><strong>Middleware Processing</strong>: Request passes through configured middleware layers</li>
+            <li><strong>Controller Execution</strong>: The matched controller action is executed</li>
+            <li><strong>View Rendering</strong>: Controller renders a view template</li>
+            <li><strong>Response Generation</strong>: Response is sent back through middleware stack</li>
+            <li><strong>Send Response</strong>: Final response is returned to the web server</li>
+        </ol>
+    </div>
+
+    <div class="section">
+        <h2>Configuring Routes</h2>
+        <p>Routes are defined in the <code>config/routes.rb</code> file:</p>
+        
+        <div class="code-block">
+            Rails.application.routes.draw do<br>
+              # Basic route<br>
+              get '/articles', to: 'articles#index'<br><br>
+              # RESTful routes<br>
+              resources :articles<br><br>
+              # Named route with constraint<br>
+              get '/admin/*path', to: 'admin#index', constraints: { subdomain: 'admin' }<br><br>
+              # Route with format<br>
+              get '/feed.:format', to: 'feeds#show'<br>
+            end
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Route Helpers</h2>
+        <p>Action Dispatch provides helper methods for generating URLs:</p>
+        
+        <div class="code-block">
+            # In views or controllers<br>
+            article_path(@article)       # /articles/1<br>
+            edit_article_path(@article)  # /articles/1/edit<br>
+            articles_url                 # http://localhost:3000/articles
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Middleware in Action Dispatch</h2>
+        <p>Action Dispatch uses Rack middleware to process requests and responses. Common middleware includes:</p>
+        
+        <ul>
+            <li><strong>Rack::Runtime</strong>: Adds X-Runtime header</li>
+            <li><strong>Rack::Logger</strong>: Logs request information</li>
+            <li><strong>ActionDispatch::RequestId</strong>: Sets unique request ID</li>
+            <li><strong>ActionDispatch::Flash</strong>: Manages flash messages</li>
+            <li><strong>ActionDispatch::Session::CookieStore</strong>: Manages session cookies</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Request and Response Objects</h2>
+        <p>Action Dispatch provides rich objects for handling requests and responses:</p>
+        
+        <div class="code-block">
+            # Accessing request parameters<br>
+            params[:id]   # From URL segment<br>
+            params[:name]  # From query string<br>
+            <br>
+            # Setting response headers<br>
+            response.headers['Content-Type'] = 'application/json'
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Subquestion: How does Action Dispatch handle parameter parsing?</h2>
+        <p>Action Dispatch uses several strategies for parameter parsing:</p>
+        
+        <ul>
+            <li><strong>Path Parameters</strong>: Extracted directly from the URL segments</li>
+            <li><strong>Query Parameters</strong>: Parsed from the query string</li>
+            <li><strong>Form Data</strong>: Parsed from POST bodies (application/x-www-form-urlencoded)</li>
+            <li><strong>JSON Parameters</strong>: Parsed from JSON payloads (application/json)</li>
+            <li><strong>Multipart Form Data</strong>: Handles file uploads</li>
+        </ul>
+        
+        <p>The parsed parameters are available via the <code>params</code> hash in controllers.</p>
+    </div>
+
+    <div class="section">
+        <h2>Subquestion: How can you customize the routing behavior?</h2>
+        <p>Customizing routing can be done in several ways:</p>
+        
+        <ul>
+            <li><strong>Constraints</strong>: Restrict routes to specific formats or subdomains</li>
+            <li><strong>Scopes</strong>: Group routes under a common prefix or set of constraints</li>
+            <li><strong>Concerns</strong>: Define reusable sets of routes</li>
+            <li><strong>Redirects</strong>: Create redirects for deprecated routes</li>
+            <li><strong>Mounting Engines</strong>: Integrate other Rack-based frameworks</li>
+        </ul>
+        
+        <p>Example with constraints:</p>
+        <div class="code-block">
+            constraints(format: :json) do<br>
+              resources :articles<br>
+            end
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Subquestion: How does Action Dispatch integrate with other components?</h2>
+        <p>Action Dispatch integrates with:</p>
+        
+        <ul>
+            <li><strong>Action Controller</strong>: Receives routed requests and processes them</li>
+            <li><strong>Action View</strong>: Renders templates for responses</li>
+            <li><strong>Active Record</strong>: Provides access to database models</li>
+            <li><strong>Rails Console</strong>: Allows testing routes interactively</li>
+            <li><strong>Rails Generators</strong>: Creates scaffold routes and controllers</li>
+        </ul>
+        
+        <p>This integration creates the complete MVC framework that makes Rails so productive.</p>
+    </div>
+
+    <div class="section">
+        <h2>Conclusion</h2>
+        <p>Action Dispatch is the critical routing component that connects incoming HTTP requests to the appropriate controller actions in a Rails application. By providing a flexible routing system, middleware processing, and comprehensive request/response handling, it forms the backbone of the Rails request lifecycle. Understanding how Action Dispatch works enables developers to build more efficient, maintainable, and scalable web applications.</p>
+    </div>
+</body>
+</html>

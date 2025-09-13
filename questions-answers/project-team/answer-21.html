@@ -1,0 +1,59 @@
+<!doctype html><html><head><meta charset='utf-8'><title>Technically challenging project — approach, learnings, outcome</title>
+<style>
+body{font-family:Segoe UI,Arial,Helvetica,sans-serif;line-height:1.6;padding:24px;max-width:900px;margin:auto;color:#111}
+header{border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:18px}
+h1{font-size:20px;margin:0 0 6px 0}
+.role{color:#555;font-size:13px;margin-bottom:6px}
+pre{background:#f6f6f6;padding:12px;border-radius:6px;overflow:auto}
+code{font-family:monospace;font-size:13px}
+section{margin-bottom:18px}
+.sub{font-weight:600;margin-top:8px}
+ul{margin-left:18px}
+ol{margin-left:18px}
+</style></head><body><header><h1>Technically challenging project — approach, learnings, outcome</h1><div class='role'>System architect · Technical lead · Senior software engineer (Ruby on Rails, AWS, SQL, Vue.js)</div></header>
+<section>
+<p><strong>Context & challenge:</strong> We built a realtime analytics pipeline that ingested millions of events per day, required near‑real‑time dashboards, strict cost limits, and correctness guarantees (exactly‑once processing where possible). The stack included Ruby services producing events, Kafka for ingestion, a stream-processing layer (Kafka Streams / Flink), and a Postgres + Redshift combination for real-time and historical queries.</p>
+
+<div class='sub'>How we approached it</div>
+<ol>
+<li><strong>Define SLAs & requirements:</strong> latency targets for dashboards, acceptable data lag, cost constraints, and order/duplicate tolerances.</li>
+<li><strong>Measure & profile:</strong> baseline existing latency and costs; created synthetic load to reproduce scale issues.</li>
+<li><strong>Prove assumptions with spikes:</strong> implemented two spikes: one using a managed Kafka + KStream approach; another using a micro-batch architecture (Kinesis + Lambdas + Redshift COPY).</li>
+<li><strong>Choose architecture:</strong> We adopted Kafka + stream processors (Flink) for low-latency aggregations and a CDC pipeline (Debezium -> Kafka) for slowly-changing dimensions.</li>
+<li><strong>Reliability & idempotency:</strong> design producers and consumers to be idempotent; use deduplication via event IDs and compacted topics.</li>
+<li><strong>Testing & deployment:</strong> contract tests, chaos tests, and capacity testing. Canary deploys and progressive rollouts with feature flags.</li>
+</ol>
+
+<div class='sub'>Technical highlights & code snippets</div>
+<p><em>Sidekiq worker producing events to Kafka (Ruby)</em></p>
+<pre><code>class EventProducerWorker
+  include Sidekiq::Worker
+
+  def perform(event_type, payload)
+    event = {
+      id: SecureRandom.uuid,
+      type: event_type,
+      ts: Time.now.utc.iso8601,
+      payload: payload
+    }
+    KafkaClient.produce('events', event.to_json)
+  end
+end</code></pre>
+
+<p><em>Idempotent consumer pseudocode (Java/Scala-ish)</em></p>
+<pre><code>def process(record):
+  event = parse(record.value)
+  if already_processed(event.id): return
+  begin_transaction()
+  apply_updates(event)
+  mark_processed(event.id)
+  commit()</code></pre>
+
+<div class='sub'>Outcome & learning</div>
+<ul>
+<li>Achieved near-real-time dashboards (latency &lt; 5s for key aggregates).</li>
+<li>Reduced cost by batching less-critical computations into hourly Redshift jobs.</li>
+<li>Key lessons: validate assumptions with spikes, invest in observability (end-to-end tracing), and design idempotency from the start.</li>
+</ul>
+</section>
+</body></html>

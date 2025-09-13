@@ -1,0 +1,62 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Leading Through Ambiguity</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>body{font-family:Arial, sans-serif;margin:24px;color:#111}h1{font-size:24px}h2{font-size:20px}ul{margin-left:20px}pre{background:#f5f5f5;padding:12px;border-radius:6px;overflow:auto}</style>
+</head>
+<body>
+  <h1>Leading Through Ambiguity or Incomplete Requirements</h1>
+
+  <section>
+    <h2>Strategy</h2>
+    <ul>
+      <li>Rapid discovery: identify assumptions, unknowns, and risks.</li>
+      <li>Make small, testable bets: build prototypes or MVPs to validate assumptions.</li>
+      <li>Prioritize outcomes over features: define success metrics.</li>
+      <li>Iterate with short feedback loops and frequent stakeholder check-ins.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Example</h2>
+    <p>We had to build an integration with a partner whose API was unstable and under-documented. I ran a 2-week discovery that included:</p>
+    <ul>
+      <li>Ask the partner for sandbox access and sample payloads.</li>
+      <li>Build a small adapter prototype to exercise edge cases.</li>
+      <li>Define an MVP that served 10 customers with clear fallbacks.</li>
+      <li>Document contract expectations and error-handling behavior.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Artifacts I produce</h2>
+    <ul>
+      <li>Assumption map</li>
+      <li>Risk register</li>
+      <li>MVP scope and acceptance criteria</li>
+      <li>Prototype code and metrics for validation</li>
+    </ul>
+
+    <pre><code># Sample simple assumption map (YAML)
+assumptions:
+  - partner_api_supports_pagination: unknown
+  - partner_retry_semantics: unknown
+risks:
+  - large_payloads_might_timeout: high
+mitigations:
+  - use streaming & pagination; set timeouts & retries</code></pre>
+  </section>
+
+  <section>
+    <h2>Subquestions & Answers</h2>
+    <h3>How do you keep the team motivated?</h3>
+    <p>Provide clarity on short-term goals, celebrate small wins (spikes completed), and rotate ownership so everyone feels contribution and progress.</p>
+
+    <h3>How do you get stakeholder buy-in?</h3>
+    <p>Share prototype demos, explicit risks, expected outcomes, and success metrics. Ask stakeholders to commit to decision gates for further investment.</p>
+  </section>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Enforcing DDD patterns in Rails</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:1100px;margin:0 auto;background:#fff;padding:28px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Applying Domain-Driven Design (DDD) patterns in Rails</h1>
+
+    <p>Rails is an opinionated framework optimized for CRUD, but you can apply DDD principles by organizing code around domain concepts: entities, value objects, aggregates, repositories, domain services and bounded contexts.</p>
+
+    <h2>Key practices</h2>
+    <ul>
+      <li><strong>Bounded contexts</strong>: group related code under namespaces (or engines) per domain.</li>
+      <li><strong>Entities & Value Objects</strong>: implement as plain Ruby classes under <code>app/domain</code>.</li>
+      <li><strong>Aggregates</strong>: choose aggregate roots (e.g., Order) and enforce invariants through domain services.</li>
+      <li><strong>Repositories</strong>: encapsulate persistence behind interfaces and adapters.</li>
+      <li><strong>Domain events</strong>: use events to communicate between bounded contexts asynchronously.</li>
+    </ul>
+
+    <h2>Project structure example</h2>
+    <pre><code>app/domain/orders/
+  entities/
+    order.rb
+    line_item.rb
+  services/
+    place_order.rb
+  repositories/
+    order_repository.rb
+  events/
+    order_placed.rb
+</code></pre>
+
+    <h2>Example entity and domain service</h2>
+    <pre><code>module Orders
+  class OrderEntity
+    attr_reader :line_items, :customer_id
+
+    def initialize(attrs)
+      @customer_id = attrs[:customer_id]
+      @line_items = attrs[:line_items] || []
+    end
+
+    def total_cents
+      line_items.sum { |li| li.unit_price_cents * li.qty }
+    end
+
+    def valid?
+      # domain invariants
+    end
+  end
+end
+
+class PlaceOrder
+  def initialize(repo: Orders::Repository.new, payments: Payments::Gateway.new)
+    @repo = repo; @payments = payments
+  end
+
+  def call(order_attrs)
+    order = Orders::OrderEntity.new(order_attrs)
+    raise unless order.valid?
+    ActiveRecord::Base.transaction do
+      persisted = @repo.save(order)
+      @payments.charge(persisted)
+      EventBus.publish('order.placed', order_id: persisted.id)
+    end
+  end
+end
+</code></pre>
+
+    <h2>Governance & team structure</h2>
+    <ul>
+      <li>Organize teams around bounded contexts for faster autonomy.</li>
+      <li>Define contracts (events, APIs) between teams and version them.</li>
+    </ul>
+
+    <h2>Tools & gems</h2>
+    <ul>
+      <li>rails_event_store — event store and dispatcher.</li>
+      <li>dry-rb family (dry-struct, dry-validation) — for value objects and validations.</li>
+    </ul>
+
+    <h2>Interview tip</h2>
+    <p>Explain how you gradually introduced DDD into an existing Rails app: start with one bounded context, extract domain objects and repositories, and add events to decouple downstream concerns.</p>
+  </div>
+</body>
+</html>

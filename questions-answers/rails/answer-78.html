@@ -1,0 +1,254 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skipping Callbacks in Rails</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #2980b9;
+            margin-top: 25px;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+        }
+        .key-point {
+            background-color: #e8f4fd;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .subquestion {
+            background-color: #f0f7ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>How to Skip Callback Execution in Rails</h1>
+    
+    <p>In Rails, callbacks are hooks that execute at specific points in an Active Record object's lifecycle. Sometimes you may need to bypass these callbacks for performance reasons, data integrity concerns, or special operations. Here are the primary methods to skip callback execution:</p>
+    
+    <h2>1. Using Direct Database Updates</h2>
+    <p>The most reliable way to skip all callbacks (including validations) is to perform direct database updates:</p>
+    
+    <div class="code-block">
+        <pre># Update single attribute without callbacks
+user.update_column(:name, "New Name")
+
+# Update multiple attributes without callbacks
+user.update_columns(name: "New Name", age: 30)
+
+# Toggle boolean field without callbacks
+user.toggle!(:active)
+
+# Increment/decrement counters without callbacks
+user.increment!(:login_count)
+user.decrement!(:points)</pre>
+    </div>
+    
+    <p><strong>Important Note:</strong> These methods skip validations, callbacks, and touch timestamps. They should be used cautiously as they bypass important safety checks.</p>
+    
+    <h2>2. Temporarily Disabling Callbacks</h2>
+    <p>You can temporarily disable callbacks for a specific operation using Ruby's metaprogramming features:</p>
+    
+    <div class="code-block">
+        <pre># Disable a specific callback
+User.skip_callback(:save, :before, :log_update)
+
+# Disable all callbacks for a class
+User.skip_callbacks(:all)
+
+# Execute code without callbacks
+User.without_callbacks do
+  user.save
+end</pre>
+    </div>
+    
+    <p><strong>Warning:</strong> This approach modifies the class-level behavior and can have unintended side effects if not properly scoped.</p>
+    
+    <h2>3. Conditional Callback Execution</h2>
+    <p>Instead of skipping callbacks, you can make them conditionally executable:</p>
+    
+    <div class="code-block">
+        <pre>class User &lt; ApplicationRecord
+  before_save :encrypt_password, if: :password_changed?
+  
+  private
+  
+  def password_changed?
+    encrypted_password_previously_changed? || new_record?
+  end
+end</pre>
+    </div>
+    
+    <h2>4. Transaction-Level Control</h2>
+    <p>Callbacks related to transactions can be controlled at the transaction level:</p>
+    
+    <div class="code-block">
+        <pre>ActiveRecord::Base.transaction(requires_new: true) do
+  user.touch # Runs callbacks
+  User.skip_callback(:save, :before, :touch) # Temporarily disable
+  another_user.touch # No touch callback executed
+end</pre>
+    </div>
+    
+    <h2>5. Special Cases: After Commit Callbacks</h2>
+    <p>Even when using direct updates, `after_commit` callbacks will still execute when the transaction is committed:</p>
+    
+    <div class="code-block">
+        <pre>class User &lt; ApplicationRecord
+  after_commit :send_welcome_email, on: :create
+  
+  def create_without_email
+    User.transaction do
+      self.update_columns(created_at: Time.current) # Skips most callbacks
+      # ... other operations ...
+    end
+    # after_commit callback will still execute here
+  end
+end</pre>
+    </div>
+    
+    <h2>Best Practices for Skipping Callbacks</h2>
+    <ul>
+        <li><strong>Minimize Usage:</strong> Only skip callbacks when absolutely necessary</li>
+        <li><strong>Document Thoroughly:</strong> Clearly explain why callbacks are being skipped</li>
+        <li><strong>Test Rigorously:</strong> Ensure data integrity is maintained without callbacks</li>
+        <li><strong>Consider Alternatives:</strong> Refactor callbacks to be more efficient instead of skipping them</li>
+        <li><strong>Limit Scope:</strong> Use temporary disabling within narrow blocks rather than globally</li>
+    </ul>
+    
+    <h2>Subquestions and Detailed Answers</h2>
+    
+    <div class="subquestion">
+        <h3>How do I skip only specific callbacks while keeping others?</h3>
+        <div class="key-point">
+            <p>To selectively skip callbacks:</p>
+            <ul>
+                <li>Use <code>skip_callback</code> for individual callbacks</li>
+                <li>Create wrapper methods that conditionally execute callbacks</li>
+                <li>Use module composition to mix in callback-free versions</li>
+            </ul>
+            <div class="code-block">
+                <pre># Selectively skipping a callback
+class Product &lt; ApplicationRecord
+  before_create :set_default_price, unless: :bulk_import?
+  
+  def bulk_import?
+    # Check if this is a bulk import operation
+  end
+end</pre>
+            </div>
+        </div>
+    </div>
+    
+    <div class="subquestion">
+        <h3>What are the risks of skipping callbacks?</h3>
+        <div class="key-point">
+            <p>Key risks include:</p>
+            <ul>
+                <li><strong>Data Inconsistency:</strong> Skipping validation can lead to invalid data</li>
+                <li><strong>Missing Side Effects:</strong> Critical business logic may not execute</li>
+                <li><strong>Integrity Violations:</strong> Foreign key constraints or uniqueness violations</li>
+                <li><strong>Security Vulnerabilities:</strong> Bypassing sanitization or authorization checks</li>
+                <li><strong>Audit Trail Gaps:</strong> Missing entries in change tracking systems</li>
+            </ul>
+            <p>Always validate data manually when skipping callbacks and consider adding compensating transactions.</p>
+        </div>
+    </div>
+    
+    <div class="subquestion">
+        <h3>How do I test code that skips callbacks?</h3>
+        <div class="key-point">
+            <p>Testing strategies:</p>
+            <ul>
+                <li><strong>Unit Tests:</strong> Verify behavior with and without callbacks enabled</li>
+                <li><strong>Integration Tests:</strong> Test the full workflow including callback skipping</li>
+                <li><strong>Mocking:</strong> Use mocks to simulate callback execution paths</li>
+                <li><strong>Edge Cases:</strong> Test boundary conditions where callbacks would normally run</li>
+                <li><strong>Consistency Checks:</strong> Verify data remains valid after callback-skipping operations</li>
+            </ul>
+            <div class="code-block">
+                <pre># Testing callback skipping
+it "skips callbacks during bulk update" do
+  user = create(:user)
+  expect(user).to receive(:log_update).never
+  user.update_columns(last_login: Time.current)
+end</pre>
+            </div>
+        </div>
+    </div>
+    
+    <div class="subquestion">
+        <h3>Can I skip callbacks in background jobs?</h3>
+        <div class="key-point">
+            <p>Background job considerations:</p>
+            <ul>
+                <li>Most background processing libraries (Sidekiq, Resque) execute callbacks by default</li>
+                <li>Use direct database updates in jobs for efficiency</li>
+                <li>Consider job classes without callbacks for high-throughput tasks</li>
+                <li>Use <code>update_columns</code> in jobs to skip callbacks entirely</li>
+                <li>Ensure idempotency since jobs may retry</li>
+            </ul>
+            <div class="code-block">
+                <pre># Efficient job with callback skipping
+class ProcessUsersJob &lt; ApplicationJob
+  def perform(*ids)
+    User.where(id: ids).each do |user|
+      user.update_columns(processed: true) # Skips callbacks
+    end
+  end
+end</pre>
+            </div>
+        </div>
+    </div>
+    
+    <div class="subquestion">
+        <h3>How do I handle callbacks in API endpoints?</h3>
+        <div class="key-point">
+            <p>API endpoint strategies:</p>
+            <ul>
+                <li>Use strong parameters to sanitize input before saving</li>
+                <li>Perform manual validation checks before updating</li>
+                <li>Consider service objects that encapsulate callback logic</li>
+                <li>Use direct updates for administrative endpoints</li>
+                <li>Implement comprehensive error handling for callback-related issues</li>
+            </ul>
+            <div class="code-block">
+                <pre># API controller with selective callback execution
+def update
+  user = User.find(params[:id])
+  
+  if params[:admin_action]
+    user.update_columns(admin_status: true) # Skip callbacks
+  else
+    user.update(user_params) # Run full callback chain
+  end
+  
+  render json: user
+end</pre>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

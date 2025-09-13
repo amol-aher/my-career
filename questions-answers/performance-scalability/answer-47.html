@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Database per Service vs Shared Database</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Database per Service vs Shared Database</h1>
+
+  <h2>Database per service (recommended for microservices)</h2>
+  <ul>
+    <li><strong>Pros:</strong> Loose coupling, independent schema evolution, clearer ownership and scaling.</li>
+    <li><strong>Cons:</strong> Data duplication, complexity in maintaining read models and joins.</li>
+  </ul>
+
+  <h2>Shared database (anti-pattern)</h2>
+  <ul>
+    <li><strong>Pros:</strong> Simpler queries and joins across domains, simpler transactions.</li>
+    <li><strong>Cons:</strong> Tight coupling, danger of cross-service schema changes breaking other services, deployment coordination.</li>
+  </ul>
+
+  <h2>When to tolerate shared DB</h2>
+  <p>For small teams or transitional periods, a shared DB can be pragmatic, but plan to decouple as complexity grows. Use schema ownership policies and read-only views to limit risk.</p>
+
+  <h2>Alternatives & patterns</h2>
+  <ul>
+    <li>Use change-data-capture (CDC) to stream changes and populate local read models.</li>
+    <li>Expose data via APIs or events rather than direct DB access.</li>
+    <li>Use materialized views or read replicas for cross-service queries.</li>
+  </ul>
+</body>
+</html>

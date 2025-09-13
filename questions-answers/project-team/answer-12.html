@@ -1,0 +1,50 @@
+<!doctype html><html><head><meta charset='utf-8'><title>Creating sub-tasks: solo vs collaborative</title>
+<style>
+body{font-family:Segoe UI,Arial,Helvetica,sans-serif;line-height:1.5;padding:24px;max-width:900px;margin:auto;color:#111}
+header{border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:18px}
+h1{font-size:20px;margin:0 0 6px 0}
+.role{color:#555;font-size:13px;margin-bottom:6px}
+pre{background:#f6f6f6;padding:12px;border-radius:6px;overflow:auto}
+code{font-family:monospace;font-size:13px}
+section{margin-bottom:18px}
+.sub{font-weight:600;margin-top:8px}
+ul{margin-left:18px}
+ol{margin-left:18px}
+</style></head><body><header><h1>Creating sub-tasks: solo vs collaborative</h1><div class='role'>System architect · Technical lead · Senior software engineer (Ruby on Rails, AWS, SQL, Vue.js)</div></header>
+<section>
+<p><strong>Summary:</strong> Sub-tasks should be collaborative. I often draft an initial decomposition, but final sizing and task ownership are decided with the team during grooming to ensure shared understanding and buy-in.</p>
+
+<div class='sub'>Why collaborate</div>
+<ul>
+<li>Captures knowledge from implementers.</li>
+<li>Uncovers hidden work (infra, monitoring, migrations).</li>
+<li>Improves estimates and ownership.</li>
+</ul>
+
+<div class='sub'>My role</div>
+<ul>
+<li>Provide structure and example subtasks.</li>
+<li>Highlight cross-cutting concerns (security, performance, data).</li>
+<li>Ensure tasks meet the Definition of Ready before sprint commitment.</li>
+</ul>
+
+<div class='sub'>Practical approach during grooming</div>
+<ol>
+<li>PO explains intent and acceptance criteria.</li>
+<li>I present the draft decomposition.</li>
+<li>Team members add/adjust subtasks and provide estimates.</li>
+<li>We finalize and assign ownership.</li>
+</ol>
+
+<div class='sub'>Template for a sub-task entry</div>
+<pre><code>Title: Backend: Implement address POST endpoint
+Description:
+- Controller action + strong params
+- Model validations
+- Authentication & authorization checks
+- Unit & request specs
+Estimate: 8h
+Owner: @alice
+Acceptance: API returns 201 with created address id and persisted data</code></pre>
+</section>
+</body></html>

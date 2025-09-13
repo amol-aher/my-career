@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 59</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 59: Explain the difference between instance methods and class methods.</h1>
+<h2>Concept</h2>
+<p>Instance methods operate on an object of a class, with <code>self</code> bound to the instance. Class methods operate on the class object itself.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Instance methods are defined with <code>def name</code>; class methods with <code>def self.name</code> or inside <code>class &lt;&lt; self</code>.</p>
+
+<h2>Example</h2>
+<pre><code class="language-ruby">class User
+  def greet; "hi" end          # instance method
+  def self.find(id); ... end   # class method
+end</code></pre>
+
+<hr/><footer>Generated HTML for question 59</footer>
+</body></html>

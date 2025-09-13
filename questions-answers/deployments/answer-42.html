@@ -1,0 +1,67 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Blue-Green vs Rolling vs Canary Deployments</title>
+  <style>
+    body{font-family:Georgia,serif;margin:22px;color:#222;line-height:1.65}
+    h1{background:#4a90e2;color:white;padding:12px;border-radius:8px}
+    h2{color:#4a90e2;margin-top:18px}
+    pre{background:#f2f8ff;padding:12px;border-radius:6px;overflow:auto}
+    ul{margin:8px 0 8px 20px}
+  </style>
+</head>
+<body>
+  <h1>Comparing Blue-Green, Rolling, and Canary Deployments</h1>
+
+  <h2>Definitions</h2>
+  <ul>
+    <li><strong>Blue-Green:</strong> Two separate environments (blue = current, green = new). After verification, traffic is switched from blue to green (DNS swap, ALB CNAME swap, or listener weight change).</li>
+    <li><strong>Rolling:</strong> Gradually replace instances/pods with new versions across the existing pool while maintaining minimum available capacity.</li>
+    <li><strong>Canary:</strong> Release new version to a small subset of users (or servers) and gradually increase exposure while monitoring metrics.</li>
+  </ul>
+
+  <h2>Comparison table</h2>
+  <table style="width:100%;border-collapse:collapse">
+    <tr><th style="text-align:left;padding:8px">Aspect</th><th style="text-align:left;padding:8px">Blue-Green</th><th style="text-align:left;padding:8px">Rolling</th><th style="text-align:left;padding:8px">Canary</th></tr>
+    <tr><td style="padding:8px">Downtime</td><td style="padding:8px">Near-zero (traffic switch)</td><td style="padding:8px">Near-zero if configured correctly</td><td style="padding:8px">Near-zero</td></tr>
+    <tr><td style="padding:8px">Rollback simplicity</td><td style="padding:8px">Very simple (switch back)</td><td style="padding:8px">Moderate — may need to roll back partially replaced hosts</td><td style="padding:8px">Easy if limited canary size; easier to stop</td></tr>
+    <tr><td style="padding:8px">Cost</td><td style="padding:8px">Higher (duplicate infra while green exists)</td><td style="padding:8px">Lower (reuse infra)</td><td style="padding:8px">Low-to-medium (small canary footprint)</td></tr>
+    <tr><td style="padding:8px">Use when</td><td style="padding:8px">Critical safety, complex releases, or when you need quick rollback</td><td style="padding:8px">Large clusters where duplicating infra is expensive</td><td style="padding:8px">Want to validate behavior on small traffic cohorts</td></tr>
+  </table>
+
+  <h2>When to use each</h2>
+  <ul>
+    <li><strong>Blue-Green:</strong> Use when you need a guaranteed quick rollback and can afford duplicate resources (e.g., major version upgrade, risky changes). Great with database-compatible, read-only releases or when feature flagging isn't enough.</li>
+    <li><strong>Rolling:</strong> Use when cost constraints exist and you have robust health checks and readiness probes. Common in Kubernetes `RollingUpdate` strategy.</li>
+    <li><strong>Canary:</strong> Use for incremental validation with monitoring-driven promotion. Ideal for user-facing changes where you want to measure behavior before full rollout.</li>
+  </ul>
+
+  <h2>Database and state considerations</h2>
+  <p>All deployment types need careful DB migration planning:</p>
+  <ul>
+    <li>Prefer additive, backward-compatible migrations.</li>
+    <li>Use feature flags for DB-driven features to avoid coupling deploy+migration.</li>
+    <li>For destructive schema changes, consider maintenance window or multi-step migrations with backfills.</li>
+  </ul>
+
+  <h2>Example tools and AWS mappings</h2>
+  <ul>
+    <li><strong>Blue-Green:</strong> Elastic Beanstalk environment swap, CodeDeploy ECS blue-green, ALB target group switching, Route53 weighted/CNAME swap.</li>
+    <li><strong>Rolling:</strong> Kubernetes rolling updates (kubectl rollout), ECS rolling deployments, Auto Scaling groups with instance replacement.</li>
+    <li><strong>Canary:</strong> CodeDeploy for Lambda Canary/Linear, Service Mesh (Istio/Linkerd) weighted routing, ALB weighted target groups with traffic shifting, Argo Rollouts.</li>
+  </ul>
+
+  <h2>Subquestions & answers</h2>
+  <h3>Q: Which strategy has the lowest risk?</h3>
+  <p>A: Canary is often the least risky because it limits exposure initially; blue-green gives the most reliable rollback. Rolling is riskier if you can't quickly revert changes.</p>
+
+  <h3>Q: How to decide between them?</h3>
+  <p>A: Consider risk tolerance, cost, time-to-rollback, and complexity of orchestration. For fast, safe experimentation choose canary + feature flags; for large breaking changes choose blue-green.</p>
+
+  <h2>Closing</h2>
+  <p>There is no one-size-fits-all. Combine patterns: for example, deploy using a rolling update into a small canary cohort, validate, then promote via rolling or blue-green pattern depending on results. Tie deployment strategy to test coverage, monitoring, and feature-flagging policies.</p>
+</body>
+</html>

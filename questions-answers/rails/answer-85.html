@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Difference Between includes and eager_load in Rails</title>
+<style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.6; padding:28px; color:#111; background:#fff; }
+    .container{max-width:980px;margin:0 auto;}
+    header{border-bottom:1px solid #e6e6e6;margin-bottom:18px;padding-bottom:8px;}
+    h1{font-size:26px;margin:0 0 6px 0;}
+    h2{font-size:18px;margin-top:18px;color:#0b69ff;}
+    h3{font-size:15px;margin-top:14px;color:#0b69ff;}
+    p{margin:8px 0;}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:4px;}
+    ul{margin:8px 0 8px 20px;}
+    table{border-collapse:collapse;width:100%;margin:8px 0;}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+    .muted{color:#666;font-size:13px;}
+    footer{border-top:1px solid #e6e6e6;margin-top:22px;padding-top:12px;color:#666;font-size:13px;}
+    </style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>Difference Between includes and eager_load in Rails</h1>
+<p class="muted">Prepared by: Senior Software Engineer &amp; System Architect — Rails / AWS / SQL / Vue.js</p>
+<p class="muted">Date: 2025-09-10 (UTC)</p>
+</header>
+
+<p class="muted"><strong>Overview</strong></p>
+<p>Detailed differences between ActiveRecord's includes, preload, and eager_load, and when to use each.</p>
+
+<section><h2>Overview</h2>
+<p>ActiveRecord offers three main ways to avoid N+1:</p>
+<ul>
+<li><code>preload</code> — always issues separate queries for associations.</li>
+<li><code>eager_load</code> — forces a LEFT OUTER JOIN and loads everything in a single (bigger) query.</li>
+<li><code>includes</code> — intelligent: chooses between <code>preload</code> or <code>eager_load</code> depending on subsequent query constraints.</li>
+</ul>
+</section>
+<section><h2>Behavioral differences</h2>
+<table>
+<tr><th>Method</th><th>SQL</th><th>When to use</th></tr>
+<tr><td>preload</td><td>Multiple SELECTs</td><td>When joins are unnecessary and you want separate queries to keep joins out of critical paths.</td></tr>
+<tr><td>eager_load</td><td>LEFT OUTER JOIN</td><td>When you need to filter/order by associated table columns (useful for complex filtering).</td></tr>
+<tr><td>includes</td><td>Either preload or eager_load based on query</td><td>Default convenience — use when unsure and ActiveRecord can decide automatically.</td></tr>
+</table>
+</section>
+<section><h2>Performance tradeoffs</h2>
+<ul>
+<li><strong>JOIN size:</strong> eager_load produces joined rows (cartesian growth) which can blow up result sets if associations are 1:N.</li>
+<li><strong>Separate queries:</strong> preload keeps row counts smaller but executes multiple queries.</li>
+<li><strong>Indexes:</strong> Ensure associated tables have proper indexes for JOIN/filter operations.</li>
+</ul>
+</section>
+<section><h2>Examples</h2>
+<pre><code># includes (Auto chooses)
+User.includes(:posts).where(posts: { published: true }) 
+# ActiveRecord will use LEFT OUTER JOIN under the hood (eager_load behavior)
+
+# preload (always separate queries)
+User.preload(:posts).to_a
+
+# eager_load (force join)
+User.eager_load(:posts).where("posts.created_at > ?", 1.week.ago)
+</code></pre>
+</section>
+<section><h2>Subquestions you should expect</h2>
+<ol>
+<li><strong>When does includes choose preload vs eager_load?</strong><br/>When you reference the associated table in WHERE/ORDER/GROUP clauses, includes will use eager_load (JOIN). Otherwise it will use preload.</li>
+<li><strong>When to use joins?</strong><br/>Use <code>joins</code> when you want filtering based on associated tables and don't need the association objects loaded.</li>
+</ol>
+</section>
+
+
+<footer>
+I can analyze a few slow queries and recommend whether to use preload, eager_load, or manual SQL for best performance.
+</footer>
+</div>
+</body>
+</html>

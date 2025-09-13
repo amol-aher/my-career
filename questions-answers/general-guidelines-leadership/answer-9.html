@@ -1,0 +1,69 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Feature Flags — Usage & Use Cases</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>body{font-family:Arial, sans-serif;margin:24px;color:#111}h1{font-size:24px}h2{font-size:20px}pre{background:#f5f5f5;padding:12px;border-radius:6px}</style>
+</head>
+<body>
+  <h1>Feature Flags — Usage & Use Cases</h1>
+  <section>
+    <h2>Experience Summary</h2>
+    <p>I have used feature flags extensively (Flipper, LaunchDarkly, custom-built toggles) to decouple deployment from release, perform A/B tests, enable gradual rollouts, and run dark launches.</p>
+  </section>
+
+  <section>
+    <h2>Common Use Cases</h2>
+    <ul>
+      <li><strong>Gradual rollouts:</strong> Enable a feature for 1% → 10% → 100% of users while monitoring metrics.</li>
+      <li><strong>Dark launches:</strong> Deploy backend changes without enabling UI, to warm caches or run background jobs.</li>
+      <li><strong>Kill switches:</strong> Rapidly disable a problematic feature in production.</li>
+      <li><strong>A/B testing & experiments:</strong> Serve different logic to cohorts and measure conversion.</li>
+      <li><strong>Permissioning & tiers:</strong> Expose features to paid tiers only.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Implementation — Example with Flipper</h2>
+    <pre><code># Gemfile
+gem 'flipper'
+gem 'flipper-active_record'
+
+# in an initializer
+Flipper.configure do |config|
+  config.default do
+    adapter = Flipper::Adapters::ActiveRecord.new
+    Flipper.new(adapter)
+  end
+end
+
+# usage in controller
+if Flipper.enabled?(:new_checkout, current_user)
+  render :new_checkout
+else
+  render :legacy_checkout
+end</code></pre>
+  </section>
+
+  <section>
+    <h2>Best Practices</h2>
+    <ul>
+      <li>Use descriptive flag names and a flag lifecycle: create → roll out → remove.</li>
+      <li>Store flag state in a durable store and avoid spread throughout many code paths — centralize the decision if possible.</li>
+      <li>Document flags and tie to tickets so old flags can be deleted.</li>
+      <li>Monitor metrics and create automated rollback triggers for anomalies.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Subquestions & Answers</h2>
+    <h3>When to remove a flag?</h3>
+    <p>Once the feature is stable and fully rolled out, remove the flag and related branching code to reduce technical debt — typically within 2–4 sprints after full rollout.</p>
+
+    <h3>How do you avoid flag sprawl?</h3>
+    <p>Enforce a lifecycle policy, regular audits, and a small owner team responsible for flag hygiene.</p>
+  </section>
+</body>
+</html>

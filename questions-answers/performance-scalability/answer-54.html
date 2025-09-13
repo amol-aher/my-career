@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Distributed Tracing — How It Helps</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Distributed Tracing (Jaeger, OpenTelemetry, AWS X-Ray)</h1>
+
+  <h2>What tracing provides</h2>
+  <ul>
+    <li>End-to-end request flows across services</li>
+    <li>Per-span timings (DB, external calls)</li>
+    <li>Error propagation and root-cause identification</li>
+  </ul>
+
+  <h2>How it helps debugging</h2>
+  <ul>
+    <li>Pinpoint which service or external call causes p99 latency</li>
+    <li>Visualize dependency graphs and hotspots</li>
+    <li>Correlate traces with logs and metrics</li>
+  </ul>
+
+  <h2>Implementation notes</h2>
+  <ul>
+    <li>Use OpenTelemetry SDKs to instrument HTTP clients, frameworks, DB drivers</li>
+    <li>Propagate trace context headers (W3C Trace Context)</li>
+    <li>Sample intelligently (tail-based sampling for p99)</li>
+  </ul>
+</body>
+</html>

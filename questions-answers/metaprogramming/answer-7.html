@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Trade-offs of Metaprogramming</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:18px;color:#111}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{font-family:monospace}
+    h1{color:#1a56db}
+    h2{color:#0b5a78}
+  </style>
+</head>
+<body>
+  <h1>Trade-offs of using metaprogramming (readability, debugging, performance)</h1>
+
+  <p>Metaprogramming brings benefits (DRY, DSLs, flexibility) but has costs. Below is a detailed breakdown and practical mitigation strategies.</p>
+
+  <h2>1. Readability & Maintainability</h2>
+  <p><strong>Cost:</strong> Code that writes code is less obvious to readers, especially newcomers. It's harder to navigate, and common IDE features (go-to-definition, find usages) may not work well.</p>
+  <p><strong>Mitigation:</strong></p>
+  <ul>
+    <li>Document generated methods explicitly in README or via YARD tags.</li>
+    <li>Provide examples and tests that show the generated behavior.</li>
+    <li>Limit the surface area: keep metaprogramming localized to small modules.</li>
+  </ul>
+
+  <h2>2. Debugging & Tooling</h2>
+  <p><strong>Cost:</strong> Stack traces can become confusing, introspection tools may not list virtual methods, and static analyzers may fail.</p>
+  <p><strong>Mitigation:</strong></p>
+  <ul>
+    <li>Prefer <code>define_method</code> over string <code>eval</code> so line numbers and closures are clearer.</li>
+    <li>Use define-on-first-call to convert dynamic dispatch into normal methods once invoked.</li>
+    <li>Write robust unit tests that cover dynamic paths.</li>
+  </ul>
+
+  <h2>3. Performance</h2>
+  <p><strong>Cost:</strong> <code>method_missing</code> dispatch and reflective checks are slower than direct method calls. Excessive runtime generation may also cost memory.</p>
+  <p><strong>Mitigation:</strong></p>
+  <ul>
+    <li>Use define-on-first-call to pay one-time cost and achieve later fast calls.</li>
+    <li>Benchmark hotspots and avoid dynamic dispatch in critical loops.</li>
+  </ul>
+
+  <h2>4. Security</h2>
+  <p><strong>Cost:</strong> Using <code>eval</code> or generating code from untrusted input can introduce code injection vulnerabilities.</p>
+  <p><strong>Mitigation:</strong> Avoid <code>eval</code>, sanitize inputs, and prefer closures (<code>define_method</code>) or template engines.</p>
+
+  <h2>5. Compatibility & Future Changes</h2>
+  <p><strong>Cost:</strong> Relying on private behavior of language internals can break across versions.</p>
+  <p><strong>Mitigation:</strong> Prefer public APIs, add integration tests across platforms, and lock down the abstraction layer so the rest of the system isn't exposed.</p>
+
+  <h2>Checklist before using metaprogramming</h2>
+  <ol>
+    <li>Is there a clear benefit (DRY, DSL expressiveness)?</li>
+    <li>Can we document and test the dynamic behavior?</li>
+    <li>Are there performance implications? Have you benchmarked alternatives?</li>
+    <li>Can you limit the scope to a small module or helper?</li>
+  </ol>
+
+  <h2>Conclusion</h2>
+  <p>Metaprogramming is powerful but should be used where it delivers tangible benefit. When used carefully (documented, tested, localized), its benefits outweigh the costs.</p>
+</body>
+</html>

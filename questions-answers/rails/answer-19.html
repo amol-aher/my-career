@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polymorphic Associations in Rails</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; margin-top: 30px; }
+        .section { background-color: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .code-block { background-color: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto; margin: 15px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<h1>Polymorphic Associations in Rails</h1>
+
+<div class="section">
+    <h2>Concept and Implementation</h2>
+    
+    <h3>What are Polymorphic Associations?</h3>
+    <p>A way to associate a single model with multiple other models using a single foreign key field.</p>
+    
+    <h3>When to Use Them</h3>
+    <ul>
+        <li>Comments on posts, photos, and videos</li>
+        <li>Attachments to different resource types</li>
+        <li>Tags across various models</li>
+    </ul>
+    
+    <h3>Database Schema</h3>
+    <div class="code-block"># Migration example
+create_table :comments do |t|
+  t.text :content
+  t.references :commentable, polymorphic: true
+end</div>
+    
+    <h3>Model Definitions</h3>
+    <div class="code-block"># Post model
+class Post < ApplicationRecord
+  has_many :comments, as: :commentable, dependent: :destroy
+end
+
+# Photo model
+class Photo < ApplicationRecord
+  has_many :comments, as: :commentable, dependent: :destroy
+end
+
+# Comment model
+class Comment < ApplicationRecord
+  belongs_to :commentable, polymorphic: true
+end</div>
+    
+    <h3>Querying Polymorphic Data</h3>
+    <div class="code-block"># Finding comments on any commentable
+Comment.where(commentable_type: 'Post')
+
+# Eager loading
+Comment.includes(:commentable)
+
+# Creating new comments
+comment = Comment.new(content: "Great post!")
+comment.commentable = post  # or photo, etc.
+comment.save</div>
+    
+    <h3>Advantages Over STI (Single Table Inheritance)</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Feature</th>
+                <th>Polymorphic Associations</th>
+                <th>STI</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Schema Complexity</td>
+                <td>Simple (single table)</td>
+                <td>Complex (multiple tables)</td>
+            </tr>
+            <tr>
+                <td>Query Flexibility</td>
+                <td>More flexible querying</td>
+                <td>Stricter type-based queries</td>
+            </tr>
+            <tr>
+                <td>Storage Efficiency</td>
+                <td>Better for sparse attributes</td>
+                <td>Better for dense attribute sets</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h3>Potential Challenges</h3>
+    <ul>
+        <li>Complex querying with conditions on both sides</li>
+        <li>Indexing considerations for polymorphic type column</li>
+        <li>Serialization/deserialization complexities</li>
+    </ul>
+</div>
+
+</body>
+</html>

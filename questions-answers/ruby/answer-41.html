@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 41</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 41: Have you used procs and lambdas in Ruby?</h1>
+<h2>Concept</h2>
+<p>Procs and lambdas are callable objects (closures) in Ruby. They capture surrounding variables, can be stored in variables, passed to methods, and invoked with <code>call</code>.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Yes — I use lambdas when I want strict arity and method-like behavior, and Procs for flexible argument passing or when closures are needed. Both are useful in callbacks, functional-style code, and DSLs.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>How to call them?</strong> — <code>p = proc { |x| x*2 }; p.call(3)</code>.</li>
+<li><strong>Arity differences?</strong> — Lambdas enforce arity; Procs are lenient.</li>
+<li><strong>Return behavior?</strong> — <code>return</code> inside a Proc can return from the enclosing method; inside a lambda it returns from the lambda only.</li>
+</ul>
+
+<h2>Example</h2>
+<pre><code class="language-ruby">arr = [1,2,3]
+d = ->(x){ x * 2 }
+arr.map(&d) # => [2,4,6]
+
+p = proc { |x, y| [x, y] }
+p.call(1) # => [1, nil]</code></pre>
+
+<h2>Best practices / Pitfalls</h2>
+<ul>
+<li>Prefer lambdas for predictable behavior in APIs; use Proc when you intentionally want flexible arity.</li>
+<li>Avoid unexpected <code>return</code> semantics from Procs in library code.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 41</footer>
+</body></html>

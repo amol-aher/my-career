@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Synchronous vs Asynchronous Communication</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Synchronous vs Asynchronous Communication</h1>
+
+  <h2>Synchronous (REST/gRPC)</h2>
+  <ul>
+    <li><strong>Characteristics:</strong> Immediate request/response, simple semantics, easier for simple APIs.</li>
+    <li><strong>Pros:</strong> Simpler debugging, immediate consistency where needed.</li>
+    <li><strong>Cons:</strong> Tight coupling, higher latency, risks cascading failures.</li>
+  </ul>
+  <pre><code>// Example gRPC proto (snippet)
+service OrderService {
+  rpc CreateOrder (CreateOrderRequest) returns (CreateOrderResponse);
+}
+  </code></pre>
+
+  <h2>Asynchronous (message queues, Kafka, SQS)</h2>
+  <ul>
+    <li><strong>Characteristics:</strong> Producers publish events or messages, consumers process in background.</li>
+    <li><strong>Pros:</strong> Loose coupling, resilience to spikes, better throughput.</li>
+    <li><strong>Cons:</strong> Increased complexity, eventual consistency, ordering and idempotency concerns.</li>
+  </ul>
+  <pre><code>// Pseudocode: publish event to Kafka
+producer.send(topic: 'orders.created', value: order_json)
+  </code></pre>
+
+  <h2>When to use which</h2>
+  <ul>
+    <li>Use synchronous for user-facing interactions needing immediate response (login, payment auth).</li>
+    <li>Use asynchronous for long-running, high-throughput, or decoupled workflows (notifications, analytics, fulfillment).</li>
+  </ul>
+</body>
+</html>

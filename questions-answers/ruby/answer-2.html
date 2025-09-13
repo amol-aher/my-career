@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"/><title>Answer 2</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6; color:#111 }
+pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto }
+code { font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace }
+h1,h2,h3 { color:#0b5394 }
+footer { color:#666; font-size:0.9em }
+</style></head><body>
+<h1>Question 2: Can you explain Turbo/Hotwire in Rails 7?</h1>
+<h2>Concept</h2>
+<p><strong>Hotwire</strong> is a set of techniques (and libraries) for building modern, fast web apps with minimal JavaScript by sending HTML over the wire. In Rails 7, the Hotwire stack centers on <strong>Turbo</strong> (Drive, Frames, Streams) and pairs well with Stimulus for client behavior.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Turbo minimizes client-side JS by accelerating navigation (Turbo Drive), enabling partial DOM updates (Turbo Frames), and pushing real-time changes (Turbo Streams). It favors server-rendered HTML and smaller JS controllers (Stimulus) for behavior.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>Turbo Drive:</strong> intercepts link/form navigation to fetch HTML and replace the body for faster navigation.</li>
+<li><strong>Turbo Frames:</strong> allow partial updates by targeting a named frame; you can update a portion of a page without a full reload.</li>
+<li><strong>Turbo Streams:</strong> let the server broadcast DOM changes (append/replace/remove) over ActionCable or other adapters.</li>
+<li><strong>When to use Turbo vs SPA:</strong> Use Turbo for CRUD-heavy apps with server-rendered UIs. Use an SPA when you need complex client-side state management or offline-first behavior.</li>
+</ul>
+
+<h2>Example</h2>
+<pre><code class="language-ruby">&lt;!-- form inside a frame --&gt;
+&lt;turbo-frame id="comment_form"&gt;
+  &lt;%= form_with model: @comment, local: false do |f| %&gt;
+    &lt;%= f.text_area :body %&gt;
+    &lt;%= f.submit "Post" %&gt;
+  &lt;% end %&gt;
+&lt;/turbo-frame&gt;</code></pre>
+
+<h2>Best practices / Pitfalls</h2>
+<ul>
+<li>Keep frames focused and small to avoid complex update logic.</li>
+<li>Test Turbo Streams and broadcasting paths thoroughly — race conditions can occur with concurrent updates.</li>
+<li>Combine with Stimulus for client-side behaviors that need lifecycle hooks.</li>
+</ul>
+
+<hr/>
+<footer>Generated HTML for question 2</footer>
+</body></html>

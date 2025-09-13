@@ -1,0 +1,72 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Using AWS CodeBuild for Automated Tests</title>
+  <style>
+    body{font-family:Georgia,serif;margin:24px;color:#222;line-height:1.6}
+    h1{background:#0d6efd;color:#fff;padding:12px;border-radius:8px}
+    h2{color:#0d6efd;margin-top:18px}
+    pre{background:#f1f5ff;padding:12px;border-radius:6px;overflow:auto}
+    ul{margin:8px 0 8px 20px}
+  </style>
+</head>
+<body>
+  <h1>How to Use AWS CodeBuild for Running Automated Tests</h1>
+
+  <h2>Overview</h2>
+  <p>CodeBuild is a fully-managed build service that runs builds/tests specified by a buildspec.yml. It can be invoked standalone or as part of CodePipeline. CodeBuild supports managed images or custom Docker images for consistent environments.</p>
+
+  <h2>buildspec.yml — example for Rails tests</h2>
+  <pre><code>version: 0.2
+phases:
+  install:
+    runtime-versions:
+      ruby: 3.1
+    commands:
+      - gem install bundler
+      - bundle install --path vendor/bundle
+  pre_build:
+    commands:
+      - bundle exec rake db:create db:schema:load RAILS_ENV=test
+  build:
+    commands:
+      - bundle exec rspec --format RspecJunitFormatter --out test_results/rspec.xml
+reports:
+  rspec_reports:
+    files:
+      - test_results/rspec.xml</code></pre>
+
+  <h2>Key features for testing</h2>
+  <ul>
+    <li><strong>Reports:</strong> Publish JUnit test reports to the CodeBuild console for easy failure triage.</li>
+    <li><strong>Caching:</strong> Cache dependencies (e.g., bundler, node_modules) to speed up builds.</li>
+    <li><strong>Custom images:</strong> Bring your own Docker image with pre-installed dependencies.</li>
+    <li><strong>Parallel builds:</strong> Run multiple CodeBuild projects in parallel for test sharding.</li>
+    <li><strong>Environment variables & secrets:</strong> Inject from the console, CodePipeline, or Secrets Manager (encrypted).</li>
+  </ul>
+
+  <h2>Integration with CodePipeline</h2>
+  <p>CodeBuild acts as the Build action in CodePipeline. The pipeline passes source artifacts to CodeBuild and consumes build artifacts for subsequent deploy actions.</p>
+
+  <h2>Best practices</h2>
+  <ul>
+    <li>Use managed images for simplicity, custom images for reproducibility and speed.</li>
+    <li>Upload test artifacts and reports for visibility.</li>
+    <li>Use caches for package managers and large dependencies.</li>
+    <li>Limit privileges — give CodeBuild an IAM role with least privilege for the tasks it performs.</li>
+  </ul>
+
+  <h2>Subquestions & answers</h2>
+  <h3>Q: Can CodeBuild run Docker-in-Docker?</h3>
+  <p>A: Yes — use privileged mode or use prebuilt images that include Docker if you need to build images inside CodeBuild.</p>
+
+  <h3>Q: How to speed up CodeBuild tests?</h3>
+  <p>A: Use caching, pre-baked images, and test sharding. Reduce install times by caching dependencies and reuse layers for Docker image builds.</p>
+
+  <h2>Conclusion</h2>
+  <p>CodeBuild is a robust service to run automated tests in the cloud. Use buildspec.yml to define the lifecycle, publish test reports for triage, and integrate with CodePipeline to form a complete CI/CD workflow.</p>
+</body>
+</html>

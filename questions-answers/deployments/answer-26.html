@@ -1,0 +1,62 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>How AWS CodePipeline Works</title>
+  <style>
+    body{font-family:Inter,Arial,Helvetica,sans-serif;margin:24px;color:#222;line-height:1.6}
+    h1{background:#6610f2;color:#fff;padding:12px;border-radius:8px}
+    h2{color:#6610f2;margin-top:18px}
+    pre{background:#f5f3ff;padding:12px;border-radius:6px;overflow:auto}
+    ul{margin:8px 0 8px 20px}
+  </style>
+</head>
+<body>
+  <h1>How AWS CodePipeline Works</h1>
+
+  <h2>Overview</h2>
+  <p>AWS CodePipeline is a fully-managed continuous delivery service that orchestrates build, test, and deploy stages for application release workflows. Pipelines are defined as a sequence of stages containing actions (Source, Build, Deploy, Invoke, Approval, etc.).</p>
+
+  <h2>Core concepts</h2>
+  <ul>
+    <li><strong>Stage:</strong> Logical grouping of actions (e.g., Source, Build, Deploy).</li>
+    <li><strong>Action:</strong> Unit of work in a stage (e.g., CodeBuild project, Lambda invocation, manual approval).</li>
+    <li><strong>Artifact:</strong> Files produced by one action and consumed by the next (zipped source, build outputs).</li>
+    <li><strong>Provider:</strong> Integration point (CodeBuild, CodeDeploy, CloudFormation, third-party through CodeStar connections).</li>
+  </ul>
+
+  <h2>Typical flow</h2>
+  <ol>
+    <li><strong>Source action:</strong> Detects changes from GitHub, CodeCommit, S3, or CodeStar connection.</li>
+    <li><strong>Build action (CodeBuild):</strong> Compiles, runs tests, and produces artifacts.</li>
+    <li><strong>Approval:</strong> Optional manual step for compliance or signoff.</li>
+    <li><strong>Deploy action (CodeDeploy/CloudFormation):</strong> Deploys built artifacts to target infrastructure.</li>
+    <li><strong>Post-deploy testing:</strong> Run smoke tests or integration tests as subsequent actions.</li>
+  </ol>
+
+  <h2>Integration & extensibility</h2>
+  <ul>
+    <li>Supports CodeBuild, CodeDeploy, CloudFormation, Lambda, and third-party tools via CodeStar connections.</li>
+    <li>Artifacts are stored temporarily in S3 during pipeline execution.</li>
+    <li>Use CloudWatch Events (EventBridge) to trigger or react to pipeline events.</li>
+  </ul>
+
+  <h2>Pipeline as code</h2>
+  <p>Define pipelines using CloudFormation, CDK, or the CodePipeline console. Use templates to enforce standard pipeline structure across teams.</p>
+
+  <h2>Security & IAM</h2>
+  <p>Pipeline execution uses an IAM service role; each action may require additional service roles. Grant minimum permissions for actions and resources.</p>
+
+  <h2>Subquestions & answers</h2>
+  <h3>Q: How are artifacts passed between stages?</h3>
+  <p>A: Actions write artifacts to S3 and provide metadata to the next action. Artifacts are versioned during pipeline execution.</p>
+
+  <h3>Q: Does CodePipeline support parallel branches?</h3>
+  <p>A: Yes — you can have parallel actions within stages and multiple stages that run sequentially; design your pipeline to parallelize independent tasks.</p>
+
+  <h2>Conclusion</h2>
+  <p>CodePipeline offers an AWS-native orchestration layer for CI/CD that integrates tightly with CodeBuild/CodeDeploy and other AWS services, enabling you to build end-to-end pipelines with managed infrastructure.</p>
+</body>
+</html>

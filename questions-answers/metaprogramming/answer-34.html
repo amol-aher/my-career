@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Memory leaks and GC issues from metaprogramming</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:20px;color:#111}
+    h1{color:#1a56db} h2{color:#0b5a78}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <h1>Memory leaks and GC issues caused by metaprogramming — examples and fixes</h1>
+
+  <p>Yes — metaprogramming can cause leaks. Below are typical patterns I've encountered in production and how I fixed them.</p>
+
+  <h2>Common causes</h2>
+  <ul>
+    <li><strong>Massive creation of anonymous classes/modules</strong> (Class.new inside loops) — each class remains reachable if referenced or constantized.</li>
+    <li><strong>Per-object singleton classes</strong> for many objects (heavy use of <code>define_singleton_method</code> or <code>extend</code>).</li>
+    <li><strong>Closures holding large objects</strong> (blocks capturing big arrays or DB connections).</li>
+    <li><strong>Persistent caches</strong> keyed by dynamic method names or objects without eviction.</li>
+  </ul>
+
+  <h2>Diagnosis techniques</h2>
+  <ul>
+    <li>Use <code>ObjectSpace.each_object(Class).count</code> or <code>ObjectSpace.each_object(Module)</code> to find class churn.</li>
+    <li>Use memory profilers: <code>memory_profiler</code>, <code>derailed_benchmarks</code>, or Ruby's <code>ObjectSpace</code> for heap dumps.</li>
+    <li>Check GC stats: <code>GC.stat</code>, and use flamegraphs for allocations.</li>
+  </ul>
+
+  <h2>Concrete fixes with examples</h2>
+  <h3>1) Reuse classes or modules instead of creating many</h3>
+  <pre><code class="language-ruby"># Bad: inside a loop
+1000.times do |i|
+  klass = Class.new { define_method(:foo) { i } }
+  # storing klass somewhere keeps it alive
+end
+
+# Fix: reuse or store only necessary behavior
+shared_module = Module.new do
+  def foo; @i end
+end
+# then use lightweight objects with instance variables rather than generating classes</code></pre>
+
+  <h3>2) Avoid capturing large objects in closures</h3>
+  <pre><code class="language-ruby"># Bad
+big = BigObject.load!
+define_method(:use_big) { big.do_something } # big stays alive
+
+# Fix: copy minimal needed data
+min = big.minimal_representation
+define_method(:use_big) { min.process }</code></pre>
+
+  <h3>3) Use WeakRef for caches that should not keep objects alive</h3>
+  <pre><code class="language-ruby">require 'weakref'
+cache = {}
+obj = SomeBig.new
+cache[:obj] = WeakRef.new(obj)
+# later
+begin
+  strong = cache[:obj].__getobj__
+rescue WeakRef::RefError
+  # object collected
+end</code></pre>
+
+  <h3>4) Remove dynamically defined constants when no longer needed</h3>
+  <pre><code class="language-ruby">k = Object.const_set("TmpClass#{i}", Class.new)
+# use it
+Object.send(:remove_const, "TmpClass#{i}") if Object.const_defined?("TmpClass#{i}")</code></pre>
+
+  <h2>Operational mitigations</h2>
+  <ul>
+    <li>Limit lifetime of dynamic objects (scoped work in background job with process restart).</li>
+    <li>Use process recycling for long-lived servers (Puma phased restart, Kubernetes pod restarts) when leaks can't be eliminated quickly.</li>
+    <li>Tune GC settings (RUBY_GC_HEAP_* and others) and consider using jemalloc.</li>
+  </ul>
+
+  <h2>Summary</h2>
+  <p>Metaprogramming can create memory pressure but with monitoring (ObjectSpace, profilers), safer patterns (reuse, WeakRef), and lifecycle management you can eliminate or mitigate leaks.</p>
+</body>
+</html>

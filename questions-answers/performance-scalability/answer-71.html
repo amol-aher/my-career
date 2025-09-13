@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Multi-AZ vs Multi-Region Deployments</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Multi-AZ vs Multi-Region Deployments</h1>
+
+  <h2>Multi-AZ (Availability Zones)</h2>
+  <p>Provides high availability within a single AWS region. Services replicate synchronously or semi-synchronously across AZs (RDS Multi-AZ, ElastiCache Multi-AZ). Failover is typically automatic and fast (seconds to minutes).</p>
+
+  <h2>Multi-Region</h2>
+  <p>Deploys across geographic regions (e.g., us-east-1 and eu-west-1). Protects against region-wide outages and reduces latency for global users. Involves async replication and manual/automated failover, higher RPO/RTO concerns and complexity.</p>
+
+  <h2>When to use</h2>
+  <ul>
+    <li>Use Multi-AZ by default for HA inside region.</li>
+    <li>Add Multi-Region if you require regional isolation, compliance, or improved global latency and can bear the complexity.</li>
+  </ul>
+</body>
+</html>

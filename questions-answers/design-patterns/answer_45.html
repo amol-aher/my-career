@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ActiveSupport::Concern and the Mixin pattern</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>ActiveSupport::Concern & the Mixin / Module pattern</h1>
+
+    <p><strong>Summary</strong>: <code>ActiveSupport::Concern</code> is a Rails helper for writing modules (mixins) that cleanly separate behavior for reuse across models/controllers. It provides structured hooks for <code>included</code> and class methods and encourages small, composable behavior units.</p>
+
+    <h2>Example</h2>
+    <pre><code>module Archivable
+  extend ActiveSupport::Concern
+
+  included do
+    scope :archived, -> { where.not(archived_at: nil) }
+    scope :active, -> { where(archived_at: nil) }
+  end
+
+  def archive!
+    update!(archived_at: Time.current)
+  end
+
+  class_methods do
+    def archive_all
+      update_all(archived_at: Time.current)
+    end
+  end
+end
+
+class Post &lt; ApplicationRecord
+  include Archivable
+end
+</code></pre>
+
+    <h2>How it maps to Mixin pattern</h2>
+    <ul>
+      <li>Mixins allow composition of behavior without inheritance.</li>
+      <li><code>ActiveSupport::Concern</code> adds syntactic niceties (automatic import of class methods and included hooks).</li>
+      <li>Concerns are best for small, focused behaviors (taggable, searchable, archivable).</li>
+    </ul>
+
+    <h2>Best practices</h2>
+    <ul>
+      <li>Keep concerns small and single-purpose (SRP).</li>
+      <li>Document expectations and required methods (use <code>ActiveSupport::Concern</code> to define required hooks).</li>
+      <li>Avoid overusing concerns as a catch-all — they can become a God module.</li>
+    </ul>
+
+    <h2>Interview tip</h2>
+    <p>Discuss a refactor where you extracted shared behavior into concerns, and how it improved code reuse and testability while noting how you avoided large, unmaintainable concern modules.</p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,77 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>How I Deploy Applications</title>
+  <style>
+    body{font-family:Georgia,serif;margin:26px;color:#1a1a1a;line-height:1.65}
+    h1{background:#4caf50;color:#fff;padding:12px;border-radius:8px}
+    h2{color:#4caf50;margin-top:20px}
+    pre{background:#f4f7f6;padding:12px;border-radius:6px;overflow:auto}
+    code{background:#eee;padding:2px 6px;border-radius:4px}
+    .example{background:#fff8e1;border-left:4px solid #ffb300;padding:10px;margin:10px 0;border-radius:6px}
+  </style>
+</head>
+<body>
+  <h1>How I Deploy Applications</h1>
+  <h2>High-level strategy</h2>
+  <p>I follow an automated, repeatable and observable deployment pipeline backed by Infrastructure as Code. Key pillars are: CI for build & test, CD for automated promotion, immutable artifacts (containers), secure secret management, and robust monitoring/rollback.</p>
+
+  <h2>Typical CI/CD pipeline I use</h2>
+  <ol>
+    <li><strong>PR validation:</strong> Run unit tests and linters on pull requests.</li>
+    <li><strong>Main branch build:</strong> On merge, run full test suite and create a build artifact (docker image or serverless package).</li>
+    <li><strong>Artifact storage:</strong> Push container images to ECR or artifacts to S3/Artifactory with semantic tags.</li>
+    <li><strong>Deployment to staging:</strong> Terraform/Helm apply via pipeline or GitOps (ArgoCD/Flux) to staging environment. Run integration tests.</li>
+    <li><strong>Automated promotion:</strong> After approvals and smoke tests, promote artifact to production using controlled traffic shifting.</li>
+    <li><strong>Post-deploy verification:</strong> Run synthetic transactions and compare metrics (error rates, latency) to baseline.</li>
+  </ol>
+
+  <h2>Tooling examples</h2>
+  <div class="example">
+    <strong>GitHub Actions snippet (build & push image to ECR)</strong>
+    <pre><code name="yaml">name: CI
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::123456789012:role/ci-build-role
+      - name: Build and push
+        run: |
+          docker build -t myapp:${{ github.sha }} .
+          aws ecr get-login-password | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
+          docker tag myapp:${{ github.sha }} ${{ env.ECR_REGISTRY }}/myapp:${{ github.sha }}
+          docker push ${{ env.ECR_REGISTRY }}/myapp:${{ github.sha }}</code></pre>
+  </div>
+
+  <h2>Infrastructure-as-Code approach</h2>
+  <p>I prefer Terraform for multi-cloud portability and CDK/CloudFormation where deep AWS integration is needed. Key practices:</p>
+  <ul>
+    <li>Modularize infrastructure (VPC module, database module, cluster module).</li>
+    <li>State locking with remote state (S3 + DynamoDB for Terraform).</li>
+    <li>Peer reviews for infra changes; CI runs a plan and diffs are reviewed before apply.</li>
+  </ul>
+
+  <h2>Observability and runbooks</h2>
+  <p>Every application has dashboards for key metrics and runbooks for common incidents. Alerts are routed to PagerDuty/Slack with playbooks that include a rollback plan.</p>
+
+  <h2>Example rollback strategy</h2>
+  <p>For containerized services, I keep the previous task definition or deployment version ready. If the new deployment fails health checks or metrics cross thresholds, the pipeline triggers a rollback to the prior version automatically and opens an incident for post-mortem.</p>
+
+  <h2>Security & compliance during deployment</h2>
+  <ul>
+    <li>Artifacts scanned for vulnerabilities; failed scans block promotion.</li>
+    <li>Signing artifacts and enforcing signed deploys for production.</li>
+    <li>Secrets injected at deployment time; no secrets in code or image.</li>
+  </ul>
+
+  <p style="margin-top:20px">If you'd like deeper examples (full Terraform + Helm + GitHub Actions setup) I can generate a sample repo scaffold tailored to Rails + Vue.js microservices.</p>
+</body>
+</html>

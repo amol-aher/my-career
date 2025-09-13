@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Scaling Monolithic Rails Apps Horizontally</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Scaling Monolithic Rails Apps Horizontally & Load Balancing</h1>
+  <p>Rails monoliths are common but they can scale horizontally when designed for statelessness and with appropriate architecture. Below are practical strategies, trade-offs, and concrete examples.</p>
+
+  <h2>1. Make the app stateless</h2>
+  <p>Move session state to Redis (or signed cookies), store uploads in S3, and use external caches so any web process can serve any request.</p>
+  <pre><code># Example: cookie_store (signed) or Redis session store
+Rails.application.config.session_store :cache_store, key: '_myapp_session'
+# or use redis-session-store gem
+  </code></pre>
+
+  <h2>2. Horizontal scaling patterns</h2>
+  <ul>
+    <li><strong>Multiple app instances behind a load balancer:</strong> Use AWS ALB, Nginx, or HAProxy to distribute traffic.</li>
+    <li><strong>Autoscaling groups / containers:</strong> Deploy Puma/Unicorn processes in autoscaling groups or Kubernetes pods.</li>
+    <li><strong>Use services for heavy concerns:</strong> Extract heavy compute, file processing, or real-time features into services if needed.</li>
+  </ul>
+
+  <h2>3. Connection management & Puma tuning</h2>
+  <p>Balance Puma workers & threads against DB pool size. Example calculation:</p>
+  <pre><code># For a host:
+# workers = 2, threads = 5 -> possible concurrent threads = 10
+# DB pool should be >= threads per worker (5) to avoid starvation for each worker process
+  </code></pre>
+
+  <h2>4. Load balancing considerations</h2>
+  <ul>
+    <li>Use sticky sessions only if necessary — prefer stateless tokens.</li>
+    <li>Health checks: readiness and liveness endpoints to avoid routing to unhealthy instances.</li>
+    <li>Graceful shutdown: SIGTERM should be handled to stop accepting new requests and finish in-flight ones.</li>
+  </ul>
+
+  <h2>5. Caching & read scaling</h2>
+  <p>Use Redis and CDN. Offload read traffic to read replicas for DB heavy reads.</p>
+
+  <h2>6. Background jobs & queues</h2>
+  <p>Offload non-critical sync work to Sidekiq/ActiveJob. Create separate worker pools for heavy jobs.</p>
+
+  <h2>7. Rolling deployments & zero downtime</h2>
+  <p>Use blue-green or rolling with health checks; ensure DB migrations are backward-compatible when you have multiple app versions running.</p>
+
+  <h2>8. When to split into services</h2>
+  <p>Start with horizontal scaling. If deployment times, release coordination, or scaling characteristics differ greatly, consider splitting by bounded contexts into microservices.</p>
+</body>
+</html>

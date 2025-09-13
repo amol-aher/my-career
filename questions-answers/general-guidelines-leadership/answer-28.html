@@ -1,0 +1,47 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Thoughts on Test-Driven Development (TDD)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <style>body{font-family:Arial,sans-serif;margin:24px;color:#111}h1{font-size:24px}h2{font-size:20px}pre{background:#f5f5f5;padding:12px;border-radius:6px;overflow:auto}</style>
+</head>
+<body>
+  <h1>Test-Driven Development (TDD) — Thoughts & Practice</h1>
+
+  <section>
+    <h2>Philosophy</h2>
+    <p>I practice TDD in scenarios where correctness is critical (core business logic, financial transactions, APIs). TDD improves design clarity and reduces regressions, but I apply it pragmatically — not dogmatically.</p>
+  </section>
+
+  <section>
+    <h2>Benefits</h2>
+    <ul>
+      <li>Clearer requirements: writing tests forces clarity.</li>
+      <li>Confidence in refactoring: tests safeguard behavior.</li>
+      <li>Smaller, decoupled design: encourages modular code.</li>
+    </ul>
+
+    <h2>Challenges</h2>
+    <ul>
+      <li>Slower initial velocity.</li>
+      <li>UI-heavy flows can be harder to test-first.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Example</h2>
+    <pre><code># Example: TDD for order discount logic (Rails RSpec)
+describe OrderCalculator do
+  it "applies discount for premium users" do
+    user = create(:user, premium: true)
+    order = create(:order, user: user, amount: 100)
+    calc = OrderCalculator.new(order)
+    expect(calc.total).to eq(90) # 10% discount
+  end
+end
+</code></pre>
+  </section>
+</body>
+</html>

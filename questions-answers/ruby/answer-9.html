@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"/><title>Answer 9</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6; color:#111 }
+pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto }
+code { font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace }
+h1,h2,h3 { color:#0b5394 }
+footer { color:#666; font-size:0.9em }
+</style></head><body>
+<h1>Question 9: Can you tell me something about Ruby’s journey (not Rails) — improvements from 1.8 to 3.0/3.2?</h1>
+<h2>Concept</h2>
+<p>Ruby evolved significantly: 1.9 introduced YARV and encoding; 2.x refined performance and language features; 3.x focused on performance (3x goal), concurrency, and tooling (RBS/type support).</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Key milestones: YARV VM (1.9) for speed; encoding and fiber improvements; keyword argument changes; incremental GC and memory improvements; RBS/type tooling and fiber scheduler in Ruby 3.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>YARV:</strong> major speed-up over 1.8's interpreter.</li>
+<li><strong>Keyword args:</strong> behavior changed across 2.7→3.0 — positional vs keyword separation.</li>
+<li><strong>Tooling:</strong> RBS and TypeProf support static typing/analysis.</li>
+<li><strong>Performance:</strong> GC and method dispatch improvements, optional JIT experiments.</li>
+</ul>
+
+<h2>Best practices / Pitfalls</h2>
+<ul>
+<li>Test your gem compatibilities when upgrading between major Ruby versions.</li>
+<li>Watch for keyword arg deprecation warnings migrating 2.7→3.0.</li>
+</ul>
+
+<hr/>
+<footer>Generated HTML for question 9</footer>
+</body></html>

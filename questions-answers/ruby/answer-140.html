@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 140</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 140: How would you implement lock-free or wait-free algorithms in Ruby? When is it reasonable?</h1>
+<h2>Concept</h2>
+<p>Lock-free/wait-free algorithms avoid blocking locks, using atomic primitives for coordination. Ruby's standard runtime lacks low-level atomics in core, but libraries (concurrent-ruby) provide atomic types; JRuby can use java.util.concurrent atomics.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Implement lock-free algorithms only for performance-critical low-level components, using Atomic classes or JVM atomics. For most applications, mutexes or higher-level abstractions are reasonable and simpler.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>When reasonable?</strong> — high-throughput, low-latency systems where lock contention is measurable and problematic.</li>
+<li><strong>Implementation:</strong> use Compare-And-Swap (CAS) primitives via concurrent-ruby or Java interop in JRuby.</li>
+</ul>
+
+<h2>Example</h2>
+<pre><code class="language-ruby">require 'concurrent-ruby'
+atomic = Concurrent::AtomicFixnum.new(0)
+threads = 10.times.map { Thread.new { 1000.times { atomic.increment } } }
+threads.each(&:join)
+puts atomic.value</code></pre>
+
+<h2>Best practices / Pitfalls</h2>
+<ul>
+<li>Lock-free code is complex and error-prone; profile first and prefer simpler synchronization if sufficient.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 140</footer>
+</body></html>

@@ -1,0 +1,46 @@
+
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Alternatives to Full Normalization for Performance</title>
+  <style>
+    body {font-family: Arial, sans-serif; margin:40px;}
+    h1 {color:#1f4e79;}
+  </style>
+</head>
+<body>
+  <h1>Alternatives to Full Normalization for Performance</h1>
+
+  <h2>1. Denormalization</h2>
+  <p>Duplicate critical read fields to avoid joins. Keep them in sync via background jobs or triggers.</p>
+
+  <h2>2. Materialized Views</h2>
+  <p>Precompute heavy joins/aggregates and refresh periodically or incrementally.</p>
+
+  <h2>3. Read Replicas and Read-Optimized Stores</h2>
+  <p>Use replicas for reporting and heavy read analytics. Consider a separate read-optimized database (columnar).</p>
+
+  <h2>4. Caching Layers</h2>
+  <p>Cache computed results and fragments at app or CDN layer.</p>
+
+  <h2>5. Sharding and Partitioning</h2>
+  <p>Split large tables by key or time to reduce the working set per query.</p>
+
+  <h2>6. Query Refactoring</h2>
+  <p>Use pagination, projection (select only necessary columns), and indexes to make queries efficient without schema changes.</p>
+
+  <h2>7. Event Sourcing / CQRS</h2>
+  <p>Store events in append-only store and project read models tailored for queries.</p>
+
+  <h2>8. Example: Materialized View in Postgres</h2>
+  <pre><code>CREATE MATERIALIZED VIEW daily_sales AS
+SELECT date_trunc('day', created_at) AS day, product_id, sum(amount) AS total
+FROM sales
+GROUP BY day, product_id;
+
+-- Refresh
+REFRESH MATERIALIZED VIEW CONCURRENTLY daily_sales;
+  </code></pre>
+</body>
+</html>

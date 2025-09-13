@@ -1,0 +1,109 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Integrating Automated Tests in Pipelines</title>
+  <style>
+    body{font-family:Inter,Arial,Helvetica,sans-serif;margin:24px;color:#222;line-height:1.6}
+    h1{background:#0b7285;color:#fff;padding:12px;border-radius:8px}
+    h2{color:#0b7285;margin-top:18px}
+    pre{background:#f7fbfc;padding:12px;border-radius:6px;overflow:auto}
+    code{background:#eef;padding:2px 6px;border-radius:4px}
+    ul{margin:8px 0 8px 20px}
+    .note{background:#fff8e6;padding:10px;border-left:4px solid #ffb400;border-radius:6px}
+  </style>
+</head>
+<body>
+  <h1>Integrating Automated Tests (unit, integration, smoke) in Pipelines</h1>
+
+  <h2>Executive summary</h2>
+  <p>Automated tests are the backbone of reliable CI/CD. Integrate fast, deterministic unit tests early (PR stage), integration tests in a gated environment (merge/main branch), and smoke tests post-deploy. Design pipelines to provide rapid feedback to developers while running broader, slower suites in parallel or as scheduled jobs.</p>
+
+  <h2>Common test tiers and placement</h2>
+  <ul>
+    <li><strong>Unit tests</strong> — run on every PR; fast, isolated, and deterministic.</li>
+    <li><strong>Integration tests</strong> — run after build, against ephemeral or shared test services that simulate real dependencies (DB, cache, message queues).</li>
+    <li><strong>Smoke tests</strong> — quick verification of critical flows after deployment to staging/production (health endpoints, essential APIs).</li>
+    <li><strong>End-to-end (E2E) tests</strong> — run in staging; might run less frequently or as nightly suites.</li>
+    <li><strong>Performance/Load tests</strong> — run in dedicated environments to avoid noisy neighbors and cost impact.</li>
+  </ul>
+
+  <h2>Practical pipeline integration pattern</h2>
+  <ol>
+    <li><strong>PR validation</strong>: run unit tests and linters (fast feedback & block merge on failures).</li>
+    <li><strong>Main branch build</strong>: run the full test matrix including integration tests that require ephemeral services.</li>
+    <li><strong>Deploy to staging</strong>: deploy the artifact from build to staging (immutable artifact promotion).</li>
+    <li><strong>Run smoke tests</strong>: validate critical endpoints and flows automatically; mark pipeline success/failure.</li>
+    <li><strong>Post-deploy tests</strong>: run E2E and acceptance tests; if they pass, enable manual/automated promotion to production.</li>
+  </ol>
+
+  <h2>Implementation tips</h2>
+  <ul>
+    <li><strong>Make unit tests fast:</strong> mock external calls and avoid hitting slow services.</li>
+    <li><strong>Use test tagging and selective runs:</strong> run fast tests on PRs; run heavyweight tests on merges/nightly.</li>
+    <li><strong>Use ephemeral test environments:</strong> spin up disposable DBs/queues (Docker Compose, Testcontainers, ephemeral k8s namespaces) to avoid shared-state flakiness.</li>
+    <li><strong>Report test results:</strong> publish JUnit reports and code coverage artifacts to pipeline UI so failures are easy to triage.</li>
+    <li><strong>Parallelize tests:</strong> shard test suites across runners to reduce runtime.</li>
+  </ul>
+
+  <h2>Sample GitHub Actions matrix with unit + integration + smoke</h2>
+  <pre><code>name: CI
+on: [pull_request, push]
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run unit tests
+        run: bundle exec rspec --tag ~integration
+
+  integration-tests:
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Start ephemeral services (docker-compose)
+        run: docker-compose -f docker-compose.test.yml up -d
+      - name: Run integration tests
+        run: bundle exec rspec --tag integration
+
+  deploy-and-smoke:
+    needs: [unit-tests, integration-tests]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy to staging
+        run: ./deploy.sh staging
+      - name: Run smoke tests
+        run: ./smoke_tests.sh</code></pre>
+
+  <h2>How to manage test data</h2>
+  <ul>
+    <li>Use fixtures and factories — keep them small and fast.</li>
+    <li>Use ephemeral DBs for integration tests and seed only what is necessary.</li>
+    <li>When testing against shared systems, reset state between runs (truncate tables, use namespaces).</li>
+  </ul>
+
+  <h2>Handling flakiness</h2>
+  <ul>
+    <li>Tag flaky tests and quarantine them until fixed.</li>
+    <li>Record and analyze flakiness metrics (failure rate per test) and prioritize fixes.</li>
+    <li>Retries as a temporary mitigation but avoid masking root causes.</li>
+  </ul>
+
+  <h2>Subquestions you may be asked (and answers)</h2>
+  <h3>Q: How do you parallelize tests?</h3>
+  <p>A: Split tests into shards based on historical runtime or file patterns. Use CI runners with caching and multiple executors or use test-runner features (RSpec parallel tests, pytest-xdist).</p>
+
+  <h3>Q: How do you run integration tests that require external APIs?</h3>
+  <p>A: Use mocks/stubs for most unit tests. For integration tests, spin up compatible emulators (localstack for AWS) or use contract tests and provider verification (Pact) so you don't rely on external services for CI speed and determinism.</p>
+
+  <h3>Q: Where do smoke tests run?</h3>
+  <p>A: Immediately after deployment to staging — they run against the deployed environment and verify critical user journeys. Some teams also run a small set of smoke checks post-production deploy for extra safety.</p>
+
+  <h2>Conclusion</h2>
+  <p>Design test strategy to maximize developer feedback while minimizing pipeline runtime: fast checks on PRs, heavier suites on merge or schedules, ephemeral environments to avoid shared-state issues, and robust reporting so failures are actionable.</p>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!doctype html><html><head><meta charset='utf-8'><title>Difficult issue handled & proactively solved problems</title>
+<style>
+body{font-family:Segoe UI,Arial,Helvetica,sans-serif;line-height:1.6;padding:24px;max-width:900px;margin:auto;color:#111}
+header{border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:18px}
+h1{font-size:20px;margin:0 0 6px 0}
+.role{color:#555;font-size:13px;margin-bottom:6px}
+pre{background:#f6f6f6;padding:12px;border-radius:6px;overflow:auto}
+code{font-family:monospace;font-size:13px}
+section{margin-bottom:18px}
+.sub{font-weight:600;margin-top:8px}
+ul{margin-left:18px}
+ol{margin-left:18px}
+</style></head><body><header><h1>Difficult issue handled & proactively solved problems</h1><div class='role'>System architect · Technical lead · Senior software engineer (Ruby on Rails, AWS, SQL, Vue.js)</div></header>
+<section>
+<p><strong>Difficult issue (incident):</strong> A cascading failure due to a bad schema migration that caused background jobs to crash and created a backlog of failed work.</p>
+
+<div class='sub'>Why it was difficult</div>
+<ul>
+<li>Multiple services relied on the schema.</li>
+<li>Backlog of jobs could cause duplicated downstream effects on users.</li>
+<li>Hard to rollback without data loss.</li>
+</ul>
+
+<div class='sub'>How I handled it</div>
+<ol>
+<li>Immediate triage: paused job processors, assessed error surface, and collected metrics.</li>
+<li>Rollback strategy: applied a safe migration to restore compatibility while preserving data.</li>
+<li>Backfill plan: wrote an idempotent backfill job that processed failed items in controlled batches with checkpoints.</li>
+<li>Postmortem & prevention: added migration checklists, pre-production dry runs, and stronger migration tests.</li>
+</ol>
+
+<div class='sub'>Example backfill pattern (Ruby)</div>
+<pre><code>class BackfillOrdersState
+  BATCH_SIZE = 1000
+
+  def perform
+    loop do
+      batch = Order.where(state: nil).limit(BATCH_SIZE).pluck(:id)
+      break if batch.empty?
+
+      Order.where(id: batch).find_each do |order|
+        # idempotent compute
+        order.update_columns(state: compute_state(order))
+      end
+      sleep 0.5 # reduce DB pressure
+    end
+  end
+end</code></pre>
+
+<div class='sub'>Unsolicited improvement I implemented</div>
+<p>I introduced a migration safety harness: test runner that runs migrations in a clone of production DB (sanitized) and runs a suite of smoke checks before allowing deployment.</p>
+</section>
+</body></html>

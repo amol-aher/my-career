@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rails Middleware Explained</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; }
+        .subquestion { margin-top: 30px; padding-left: 15px; border-left: 3px solid #3498db; }
+        .code-block { background-color: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; padding: 12px; margin: 15px 0; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>Rails Middleware Explained</h1>
+
+    <p>Rails middleware are modular components that sit between the web server and your Rails application. They process HTTP requests and responses, enabling cross-cutting concerns like authentication, logging, and parameter parsing.</p>
+
+    <h2>Core Concepts:</h2>
+
+    <ol>
+        <li><strong>Request Flow:</strong> Middlewares form a stack where each processes the request before passing it to the next</li>
+        <li><strong>Response Flow:</strong> Responses travel back through the stack in reverse order</li>
+        <li><strong>Rack Compliance:</strong> Rails middlewares adhere to Rack specifications</li>
+    </ol>
+
+    <h2>Common Built-in Middlewares:</h2>
+
+    <ul>
+        <li><strong>ActionDispatch::RequestId:</strong> Adds unique request ID for traceability</li>
+        <li><strong>Rack::Runtime:</strong> Measures request processing time</li>
+        <li><strong>ActionDispatch::Flash:</strong> Manages flash messages between requests</li>
+        <li><strong>Rack::MethodOverride:</strong> Supports HTTP method overrides</li>
+        <li><strong>ActionDispatch::Cookies:</strong> Handles cookie management</li>
+    </ul>
+
+    <div class="subquestion">
+        <h2>Sub-question: How to create custom middleware?</h2>
+        <p>There are two primary ways to create middleware in Rails:</p>
+        
+        <h3>1. Class-based Middleware</h3>
+        <pre class="code-block"># app/middleware/request_logger.rb
+class RequestLogger
+  def initialize(app)
+    @app = app
+  end
+
+  def call(env)
+    start_time = Time.now
+    status, headers, response = @app.call(env)
+    duration = Time.now - start_time
+    
+    Rails.logger.info("Request #{env['REQUEST_METHOD']} #{env['PATH_INFO']} completed in #{duration.round(2)}s")
+    
+    [status, headers, response]
+  end
+end</pre>
+        
+        <h3>2. Block-based Middleware</h3>
+        <pre class="code-block"># config/application.rb
+config.middleware.use lambda { |env|
+  # Custom logic here
+  @app.call(env)
+}</pre>
+        
+        <p>To add your middleware to the stack:</p>
+        <pre class="code-block"># config/application.rb
+config.middleware.insert_before ActionDispatch::Static, RequestLogger</pre>
+    </div>
+
+    <div class="subquestion">
+        <h2>Sub-question: When should you use middleware vs controllers?</h2>
+        <table>
+            <tr>
+                <th>Aspect</th>
+                <th>Middleware</th>
+                <th>Controller</th>
+            </tr>
+            <tr>
+                <td>Scope</td>
+                <td>Global application-wide</td>
+                <td>Per-controller basis</td>
+            </tr>
+            <tr>
+                <td>Timing</td>
+                <td>Before/after request processing</td>
+                <td>During request handling</td>
+            </tr>
+            <tr>
+                <td>Access</td>
+                <td>Limited access to request/response</td>
+                <td>Full access to params, session, etc.</td>
+            </tr>
+            <tr>
+                <td>Use Cases</td>
+                <td>Authentication, logging, compression</td>
+                <td>Business logic, data manipulation</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="subquestion">
+        <h2>Sub-question: How to test middleware?</h2>
+        <p>Testing involves simulating requests through the middleware stack:</p>
+        <pre class="code-block"># spec/middleware/request_logger_spec.rb
+require 'rails_helper'
+
+RSpec.describe RequestLogger do
+  let(:app) { ->(env) { [200, {'Content-Type' => 'text/plain'}, ['OK']] } }
+  let(:middleware) { RequestLogger.new(app) }
+
+  it 'logs request information' do
+    expect(Rails.logger).to receive(:info).with(/Request GET .* completed in/)
+    middleware.call({'REQUEST_METHOD' => 'GET', 'PATH_INFO' => '/test'})
+  end
+end</pre>
+    </div>
+</body>
+</html>

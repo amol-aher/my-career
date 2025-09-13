@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 65</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 65: How does Ruby handle method lookup (method resolution order)?</h1>
+<h2>Concept</h2>
+<p>Ruby looks up methods starting from the object's singleton class, then the class, then included modules (in reverse include order), then superclasses and their included modules, up the chain to BasicObject.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Lookup order: singleton class → class → included modules (last included searched first) → superclass → ... → BasicObject. Prepend changes this by inserting modules earlier.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>Method_missing:</strong> called when lookup fails; can be used to implement dynamic behavior.</li>
+<li><strong>ancestors:</strong> use <code>Class.ancestors</code> to inspect lookup chain.</li>
+</ul>
+
+<h2>Example</h2>
+<pre><code class="language-ruby">module A; end
+class C; include A; end
+C.ancestors # => [C, A, Object, Kernel, BasicObject]</code></pre>
+
+<h2>Best practices / Pitfalls</h2>
+<ul>
+<li>Inspect ancestors when debugging method resolution. Avoid complex include/prepend patterns that complicate reasoning.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 65</footer>
+</body></html>

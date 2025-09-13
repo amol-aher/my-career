@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>When to use metaprogramming vs design patterns</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:18px;color:#111}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{font-family:monospace}
+    h1{color:#1a56db}
+    h2{color:#0b5a78}
+  </style>
+</head>
+<body>
+  <h1>When to use metaprogramming over conventional design patterns</h1>
+
+  <p>Metaprogramming is a powerful tool but should be used judiciously. Below are scenarios where metaprogramming often wins, and alternatives where conventional patterns are preferable.</p>
+
+  <h2>Scenarios that favor metaprogramming</h2>
+  <ul>
+    <li><strong>DSLs (Domain Specific Languages):</strong> Creating internal DSLs (e.g., Rails routes, RSpec) is easier and more natural with <code>instance_eval</code>, <code>method_missing</code>, and <code>define_method</code>.</li>
+    <li><strong>Reducing repetitive boilerplate:</strong> When many methods follow identical patterns (attributes, delegators, serializers), metaprogramming can generate them succinctly rather than write many copies.</li>
+    <li><strong>Frameworks and libraries:</strong> ORMs (ActiveRecord), serializers, and validators often need to map schema to methods dynamically.</li>
+    <li><strong>Proxies & dynamic dispatch:</strong> When you need transparent forwarding (e.g., network proxies, RPC stubs, test doubles), <code>method_missing</code> can help.</li>
+    <li><strong>Hyper-DRY factories:</strong> Generating factories/test helpers programmatically.</li>
+  </ul>
+
+  <h2>When to prefer conventional design patterns</h2>
+  <ul>
+    <li><strong>Clear public API:</strong> If you need predictable, discoverable APIs for external users, explicit methods are often better.</li>
+    <li><strong>Performance sensitive code:</strong> Metaprogramming (especially <code>method_missing</code> heavy approaches) can have overhead—prefer explicit code or define-on-first-call patterns.</li>
+    <li><strong>Large teams / maintenance:</strong> Non-trivial metaprogramming can be harder for new devs to understand. Use explicit patterns when clarity is paramount.</li>
+    <li><strong>Static analysis / toolchain requirements:</strong> If your CI or code generators require static method lists, avoid dynamic definition unless you also generate static hooks.</li>
+  </ul>
+
+  <h2>Decision checklist</h2>
+  <ol>
+    <li>Will metaprogramming significantly reduce duplication? If yes, proceed but keep small and documented.</li>
+    <li>Will it make tests harder? If yes, add tests that describe the dynamic behavior explicitly.</li>
+    <li>Is performance critical? Consider define-on-first-call.</li>
+    <li>Is discoverability important for external users? Document and consider providing explicit aliases.</li>
+  </ol>
+
+  <h2>Example: Transforming a pattern</h2>
+  <pre><code class="language-ruby"># Repetitive
+class Resource
+  def create_user(params); ... end
+  def create_project(params); ... end
+  def create_task(params); ... end
+end
+
+# Metaprogrammed
+class Resource
+  %w[user project task].each do |t|
+    define_method("create_#{t}") do |params|
+      create_generic(t, params)
+    end
+  end
+end</code></pre>
+
+  <h2>Summary</h2>
+  <p>Use metaprogramming when it provides clear DRY benefits, enables expressive DSLs, or removes boilerplate in frameworks. Prefer conventional patterns when clarity, performance, or tooling come first.</p>
+</body>
+</html>

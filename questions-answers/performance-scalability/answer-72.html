@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Active-Active vs Active-Passive Architectures</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Active-Active vs Active-Passive Architectures</h1>
+
+  <h2>Active-Active</h2>
+  <p>All regions are serving traffic simultaneously. Requires data replication (multi-master or eventual consistency) and conflict resolution. Use DynamoDB Global Tables, CockroachDB, or design for commutative operations.</p>
+
+  <h2>Active-Passive</h2>
+  <p>Primary serves all traffic; secondary remains on standby and is promoted on failover. Easier to reason about data consistency, often implemented with cross-region read replicas and promotion scripts.</p>
+
+  <h2>Implementation steps (example)</h2>
+  <h3>Active-active with DynamoDB Global Tables</h3>
+  <pre><code>1. Create DynamoDB tables as global tables across regions.
+2. Deploy app instances in both regions and use latency-based routing.
+3. Ensure operations are idempotent and resolve conflicts if necessary.
+  </code></pre>
+
+  <h3>Active-passive with Aurora</h3>
+  <pre><code>1. Aurora cluster in primary region with Global DB replication to secondary region.
+2. Route traffic to primary via Route53. Monitor health.
+3. On failover, promote secondary and update DNS to point to new writer.
+  </code></pre>
+
+  <h2>Considerations</h2>
+  <ul>
+    <li>Active-active reduces RTO but increases complexity (conflict handling).</li>
+    <li>Active-passive is simpler but may have higher RTO and longer failover processes.</li>
+  </ul>
+</body>
+</html>

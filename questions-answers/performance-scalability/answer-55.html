@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Benchmarking and Load Testing Individual Services</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Benchmarking & Load-Testing Services</h1>
+
+  <h2>Approach</h2>
+  <ol>
+    <li>Define goals: throughput, latency SLOs, failure modes to test.</li>
+    <li>Prepare realistic datasets and test harness (auth, rate limits, etc.).</li>
+    <li>Use tools: k6, Gatling, Locust, siege for HTTP; kafka-producer performance tools for streams.</li>
+    <li>Run incremental tests: smoke, soak (long), stress (push to breaking), spike.</li>
+    <li>Measure resource usage and bottlenecks, iterate.</li>
+  </ol>
+
+  <h2>Example k6 script (snippet)</h2>
+  <pre><code>import http from 'k6/http';
+import { sleep } from 'k6';
+export let options = { vus: 50, duration: '1m' };
+export default function () {
+  http.get('https://api.example.com/v1/orders');
+  sleep(1);
+}
+  </code></pre>
+
+  <h2>What to observe</h2>
+  <ul>
+    <li>Latency percentiles</li>
+    <li>CPU/memory/disk/DB metrics</li>
+    <li>Errors and timeouts</li>
+    <li>Autoscaling behavior</li>
+  </ul>
+</body>
+</html>

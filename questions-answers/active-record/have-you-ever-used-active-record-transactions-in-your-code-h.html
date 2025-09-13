@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Have you ever used Active Record transactions in your code? How can the record fail?</title>
+<style>
+body{font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; max-width:900px; margin:24px auto; line-height:1.6; padding:20px}
+h1{font-size:22px;margin-bottom:6px}
+h2{font-size:18px;margin-top:18px}
+pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+code{background:#f1f1f1;padding:2px 4px;border-radius:4px}
+.section{margin-bottom:18px}
+</style>
+</head>
+<body>
+<h1>Have you ever used Active Record transactions in your code? How can the record fail?</h1>
+<h2>Summary</h2>
+<p>Yes — I regularly use ActiveRecord transactions to ensure atomicity of multi-step database operations. Transactions group several DB changes so they either all succeed (commit) or none do (rollback). Records can fail for multiple reasons: validation failures, database constraint violations (uniqueness, NOT NULL, foreign key), exceptions raised in callbacks, deadlocks, connection issues, or explicit rollback commands.</p>
+
+<h2>Deep dive — How records can fail inside transactions</h2>
+<ul>
+  <li><strong>Model validations:</strong> Calling <code>save</code> (non-bang) returns <code>false</code> if validations fail. If not handled, you might think the transaction succeeded while changes were not persisted.</li>
+  <li><strong>Bang methods and exceptions:</strong> <code>save!</code>, <code>create!</code>, <code>update!</code> raise <code>ActiveRecord::RecordInvalid</code> on validation failures — these exceptions will by default cause the transaction to rollback when uncaught.</li>
+  <li><strong>Database-level constraints:</strong> Uniqueness, NOT NULL, foreign key constraints cause DB errors (e.g., <code>PG::UniqueViolation</code>) which raise exceptions and trigger rollback.</li>
+  <li><strong>Callback errors:</strong> If an ActiveRecord callback (before_save, before_create) raises an exception or returns false (in older Rails), it can prevent persistence or cause a rollback.</li>
+  <li><strong>Deadlocks & connection errors:</strong> DB deadlocks or lost connections raise exceptions from the adapter which cause rollback.</li>
+  <li><strong>Manual rollback:</strong> Calling <code>raise ActiveRecord::Rollback</code> or other exceptions inside a transaction will roll the transaction back (behavior differs slightly depending on how you raise/handle exceptions — see below).</li>
+</ul>
+
+<h2>Practical examples</h2>
+<pre><code># Using bang methods — exceptions will rollback by default
+ActiveRecord::Base.transaction do
+  user = User.create!(email: 'a@example.com')
+  account = Account.create!(user: user, balance: 0)
+  # If any create! raises, the whole transaction is rolled back
+end
+
+# Using non-bang methods — you must check return values
+ActiveRecord::Base.transaction do
+  user = User.create(email: 'a@example.com') # returns user, but user.persisted? may be false
+  unless user.persisted?
+    # explicitly rollback
+    raise ActiveRecord::Rollback, "user invalid"
+  end
+  account = Account.create(email: nil) # might fail DB constraint and raise
+end</code></pre>
+
+<h2>Interviewer follow-ups (and answers)</h2>
+<ul>
+  <li><strong>Q: Which failures are better detected at app level vs DB level?</strong><br><em>A: Use model validations for user-friendly messages and DB constraints for enforcing invariants (defense in depth). Always rely on DB constraints for critical invariants like uniqueness in concurrent environments.</em></li>
+  <li><strong>Q: How do you avoid deadlocks?</strong><br><em>A: Keep transactions short, access rows in a consistent order, use appropriate isolation levels, and retry transient deadlock errors with backoff.</em></li>
+</ul>
+
+<hr>
+<p style="color:#666;font-size:0.9em">Generated on 2025-09-10T08:32:28.839757</p>
+</body>
+</html>

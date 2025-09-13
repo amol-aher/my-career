@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 114</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 114: Explain how Ruby MRI’s Global VM Lock (GVL): history, purpose, implications, and current behavior.</h1>
+<h2>Concept</h2>
+<p>The GVL (also called GIL) is a global lock in MRI to simplify internal C API and extension safety by ensuring only one thread executes Ruby VM bytecode at a time.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>GVL was introduced to protect VM internals and simplify extension development. It limits concurrency for Ruby-level code but MRI still allows parallelism for IO and when C extensions release the GVL. Ongoing efforts reduce contention for better concurrency (e.g., more granular locking).</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>Why keep GVL?</strong> — compatibility and C-extension ecosystem. Removing it requires reengineering many assumptions.</li>
+<li><strong>Current behavior:</strong> VM allows native threads but serializes Ruby bytecode execution; IO and GVL-releasing extensions run concurrently.</li>
+</ul>
+
+<h2>Best practices</h2>
+<ul>
+<li>For CPU-bound tasks on MRI, use processes or alternative runtimes; leverage C-extensions or native libraries that release the GVL if needed.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 114</footer>
+</body></html>

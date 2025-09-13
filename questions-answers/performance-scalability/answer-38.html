@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Designing a Rails App to Handle 1M+ Requests per Day</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Designing a Rails App to Handle 1M+ Requests per Day</h1>
+  <p>1,000,000 requests/day is an average of ~11.6 req/s, but you must plan for peak traffic, burstiness, and scaling. Below is a practical architecture and techniques to ensure reliability and cost-effectiveness.</p>
+
+  <h2>High-level architecture</h2>
+  <pre><code>Users -> CDN (CloudFront) -> API Gateway / ALB -> App pool (Puma) -> Redis cache / Read replicas -> Primary DB (writes)
+                          \-> Event bus (Kafka) -> Worker pool -> Data warehouse / analytics
+  </code></pre>
+
+  <h2>Key strategies</h2>
+  <ul>
+    <li><strong>Edge caching:</strong> Cache public and semi-public responses at CDN to cut origin load significantly.</li>
+    <li><strong>Aggressive caching:</strong> Use Redis/Memcached for query results, and cache rendered pages where possible.</li>
+    <li><strong>Autoscaling:</strong> Scale app instances on latency and queue depth for workers, not just CPU.</li>
+    <li><strong>Offload heavy processing:</strong> Move non-urgent tasks to background workers and make them idempotent.</li>
+    <li><strong>DB optimization:</strong> Read replicas for read scaling, partitioning/sharding for large tables, pgbouncer for connection pooling.</li>
+    <li><strong>API rate limiting:</strong> Protect system from abusive clients using rate limits (Rack::Attack).</li>
+    <li><strong>Observability:</strong> Track p50/p95/p99, queue lag, cache hit ratio, and DB metrics; set SLOs.</li>
+  </ul>
+
+  <h2>Capacity planning example</h2>
+  <p>If peak is 200 req/s, and average app instance handles ~50 req/s (after caching), you'll need around 4 app instances plus buffer and autoscaling to cover traffic spikes.</p>
+
+  <h2>Database considerations</h2>
+  <ul>
+    <li>Separate read and write workloads (use read replicas).</li>
+    <li>Use materialized views or precomputed aggregates for heavy queries.</li>
+    <li>Consider denormalization for critical read paths.</li>
+  </ul>
+
+  <h2>Testing & validation</h2>
+  <p>Load-test with k6 or Gatling to simulate peak and burst traffic. Use chaos testing to validate resilience.</p>
+
+  <h2>Cost optimization</h2>
+  <ul>
+    <li>Cache aggressively to reduce compute and DB costs.</li>
+    <li>Right-size instances and use spot instances for non-critical workers.</li>
+  </ul>
+
+  <h2>Summary</h2>
+  <p>Handling 1M+ requests/day is achievable with good caching, autoscaling, decoupling via queues, DB read scaling, and careful monitoring. Focus on peak capacity and failure modes rather than daily average.</p>
+</body>
+</html>

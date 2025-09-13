@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Singleton pattern in Ruby</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Implementing the Singleton pattern in Ruby</h1>
+
+    <p><strong>Goal</strong>: ensure only one instance of a class exists and provide a global access point to it.</p>
+
+    <h2>When to use</h2>
+    <ul>
+      <li>Shared resource managers (connection pools, configuration, logger wrappers)</li>
+      <li>Cross-cutting single instances like a global cache adapter</li>
+    </ul>
+
+    <h2>Approach 1 — Ruby's standard Singleton module</h2>
+    <pre><code>require 'singleton'
+
+class AppConfig
+  include Singleton
+
+  attr_accessor :settings
+
+  def initialize
+    @settings = load_defaults
+  end
+
+  def load_defaults
+    {timeout: 5, retries: 3}
+  end
+end
+
+# usage
+cfg = AppConfig.instance
+cfg.settings[:timeout] = 10
+</code></pre>
+
+    <p>The <code>singleton</code> module provides <code>instance</code> and prevents direct <code>.new</code> calls. It is simple, thread-safe on MRI, but lacks flexibility (hard to subclass).</p>
+
+    <h2>Approach 2 — Manual implementation (more control, easier to test)</h2>
+    <pre><code>class LoggerSingleton
+  @instance_mutex = Mutex.new
+
+  class << self
+    def instance
+      return @instance if @instance
+      @instance_mutex.synchronize do
+        @instance ||= new
+      end
+      @instance
+    end
+
+    private :new
+  end
+
+  def log(msg)
+    puts "[LOG] #{msg}"
+  end
+end
+
+# usage
+LoggerSingleton.instance.log('started')
+</code></pre>
+
+    <p>This gives thread-safe lazy initialization and hides <code>new</code> by making it private. It’s easy to mock in tests by stubbing <code>.instance</code>.</p>
+
+    <h2>Approach 3 — Dependency injection preferred for testability</h2>
+    <p>Singletons introduce global state which can make testing and reasoning harder. Prefer to inject shared instances into components, and use a composition root (an initializer) to wire the singleton in production:</p>
+    <pre><code># in initializer (e.g., config/initializers)
+LOGGER = LoggerSingleton.instance
+
+# in classes
+class OrderService
+  def initialize(logger: LOGGER)
+    @logger = logger
+  end
+end
+</code></pre>
+
+    <h2>Trade-offs & best practices</h2>
+    <ul>
+      <li>Singletons provide convenience but create hidden dependencies—use DI where practical.</li>
+      <li>Prefer private <code>new</code> + <code>.instance</code> pattern if you need control over instantiation.</li>
+      <li>Keep singleton state minimal and immutable when possible to avoid surprising side-effects across tests.</li>
+      <li>When writing libraries, avoid global singletons to not pollute consumer apps' global state.</li>
+    </ul>
+
+    <h2>Interview tips</h2>
+    <p>Explain why you might avoid globals in large systems, show both <code>Singleton</code> module and manual implementations, and mention dependency injection as a more testable alternative.</p>
+  </div>
+</body>
+</html>

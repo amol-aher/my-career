@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Implementing Caching for Frequently Used Queries</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Implementing Caching for Frequently Used Queries</h1>
+  <p>Caching reduces database load and decreases latency. Below are practical approaches and code samples for Rails apps.</p>
+
+  <h2>1. Low-level cache (Rails.cache)</h2>
+  <pre><code>Rails.cache.fetch("top_products/v1", expires_in: 10.minutes) do
+  Product.order(sales_count: :desc).limit(50).to_a
+end
+  </code></pre>
+
+  <h2>2. Fragment caching (views)</h2>
+  <pre><code><% cache product do %>
+  &lt;%= render partial: 'product', locals: {product: product} %&gt;
+<% end %>
+  </code></pre>
+
+  <h2>3. Russian doll caching</h2>
+  <p>Nest fragments so parent caches expire when child fragments change. Use cache keys with timestamps.</p>
+  <pre><code># In Product model
+def cache_key
+  "#{super}-#{updated_at.to_i}"
+end
+  </code></pre>
+
+  <h2>4. HTTP-level caching & CDN</h2>
+  <p>Set Cache-Control, ETag headers and use CloudFront or Fastly for edge caching.</p>
+
+  <h2>5. Query result caching vs object caching</h2>
+  <p>Cache serialized results (JSON) for APIs to avoid object instantiation overhead.</p>
+
+  <h2>6. Cache invalidation strategies</h2>
+  <ul>
+    <li>TTL-based expiry for eventual consistency.</li>
+    <li>Explicit key invalidation on writes (touch/expire).</li>
+    <li>Versioned keys (incrementing version in namespace) for mass expire.</li>
+  </ul>
+
+  <h2>7. Example: Background refresh with stale-while-revalidate</h2>
+  <pre><code>value = Rails.cache.fetch(key, expires_in: 5.minutes) do
+  # compute and return fresh value
+end
+# In parallel, kick off a background job to warm cache before expiry if needed
+  </code></pre>
+</body>
+</html>

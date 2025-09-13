@@ -1,0 +1,290 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Locking: Optimistic vs Pessimistic</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #2980b9;
+            margin-top: 25px;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .comparison-table th,
+        .comparison-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .comparison-table th {
+            background-color: #f2f2f2;
+        }
+        .key-point {
+            background-color: #e8f4fd;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .subquestion {
+            background-color: #f0f7ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Database Locking: Optimistic vs Pessimistic</h1>
+    
+    <p>Database locking is a concurrency control mechanism used to ensure data integrity when multiple users or processes attempt to access or modify shared data simultaneously. Two primary approaches exist: optimistic locking and pessimistic locking, each with distinct characteristics and suitable use cases.</p>
+
+    <h2>1. Optimistic Locking</h2>
+    <p>Optimistic locking operates under the assumption that concurrent access conflicts are rare. Instead of locking resources preemptively, it allows transactions to proceed without restrictions and only checks for conflicts at commit time.</p>
+    
+    <h3>How It Works:</h3>
+    <ol>
+        <li>A version number or timestamp column is added to the table being locked</li>
+        <li>When reading data, the current version/timestamp is recorded</li>
+        <li>During update, the system compares the stored version with the current version</li>
+        <li>If versions match, the update proceeds and the version is incremented</li>
+        <li>If versions differ, the update fails (indicating a conflict)</li>
+    </ol>
+    
+    <div class="code-block">
+        <pre>-- Example table structure with version column
+CREATE TABLE products (
+    id INT PRIMARY KEY,
+    name VARCHAR(255),
+    price DECIMAL(10,2),
+    version INT DEFAULT 0
+);
+
+-- Update operation with optimistic locking
+UPDATE products 
+SET price = 19.99, version = version + 1
+WHERE id = 123 AND version = @current_version;</pre>
+    </div>
+    
+    <h3>Advantages:</h3>
+    <ul>
+        <li>No locking overhead during read operations</li>
+        <li>Better performance in low-concurrency scenarios</li>
+        <li>Simpler implementation than pessimistic locking</li>
+        <li>Reduced risk of deadlocks</li>
+    </ul>
+    
+    <h3>Disadvantages:</h3>
+    <ul>
+        <li>Update conflicts require application-level resolution</li>
+        <li>Potential for failed transactions requiring retries</li>
+        <li>Not suitable for high-contention scenarios</li>
+    </ul>
+    
+    <h2>2. Pessimistic Locking</h2>
+    <p>Pessimistic locking takes a conservative approach by acquiring exclusive locks on resources before any modification occurs. It prevents other transactions from accessing the locked resource until the lock is released.</p>
+    
+    <h3>How It Works:</h3>
+    <ol>
+        <li>Before reading/modifying data, a lock is explicitly acquired</li>
+        <li>The lock remains active until the transaction completes</li>
+        <li>Other transactions attempting to access locked resources must wait</li>
+        <li>Locks are typically released automatically when the transaction commits or rolls back</li>
+    </ol>
+    
+    <div class="code-block">
+        <pre>-- Acquiring a pessimistic lock in SQL
+SELECT * FROM products WHERE id = 123 FOR UPDATE;
+
+-- The row is now locked exclusively until the transaction ends</pre>
+    </div>
+    
+    <h3>Advantages:</h3>
+    <ul>
+        <li>Guarantees no conflicting modifications</li>
+        <li>Suitable for high-contention scenarios</li>
+        <li>Prevents lost updates and dirty reads</li>
+    </ul>
+    
+    <h3>Disadvantages:</h3>
+    <ul>
+        <li>Increased blocking and waiting times</li>
+        <li>Risk of deadlocks if not managed carefully</li>
+        <li>Reduced concurrency and throughput</li>
+        <li>More complex implementation</li>
+    </ul>
+    
+    <h2>Comparison Table</h2>
+    <table class="comparison-table">
+        <thead>
+            <tr>
+                <th>Feature</th>
+                <th>Optimistic Locking</th>
+                <th>Pessimistic Locking</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Concurrency Assumption</td>
+                <td>Rare conflicts</td>
+                <td>Frequent conflicts</td>
+            </tr>
+            <tr>
+                <td>Lock Acquisition</td>
+                <td>At commit time</td>
+                <td>Before read/modify</td>
+            </tr>
+            <tr>
+                <td>Performance</td>
+                <td>Higher in low-contention</td>
+                <td>Lower due to blocking</td>
+            </tr>
+            <tr>
+                <td>Conflict Handling</td>
+                <td>Application-level resolution</td>
+                <td>Automatic prevention</td>
+            </tr>
+            <tr>
+                <td>Deadlock Risk</td>
+                <td>Very low</td>
+                <td>High (requires management)</td>
+            </tr>
+            <tr>
+                <td>Implementation Complexity</td>
+                <td>Simple</td>
+                <td>Complex</td>
+            </tr>
+            <tr>
+                <td>Ideal Use Cases</td>
+                <td>Read-heavy applications, low-write scenarios</td>
+                <td>Financial systems, inventory management</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h2>When to Use Each Approach</h2>
+    <ul>
+        <li><strong>Optimistic Locking:</strong> Web applications with mostly read operations, collaborative editing tools, e-commerce product catalogs</li>
+        <li><strong>Pessimistic Locking:</strong> Banking transactions, reservation systems, auction platforms, inventory management</li>
+    </ul>
+    
+    <h2>Subquestions and Detailed Answers</h2>
+    
+    <div class="subquestion">
+        <h3>How does optimistic locking handle concurrent updates?</h3>
+        <div class="key-point">
+            <p>When two transactions attempt to update the same record concurrently:</p>
+            <ol>
+                <li>Both transactions read the record with its current version number</li>
+                <li>The first transaction to commit succeeds, incrementing the version number</li>
+                <li>The second transaction fails because its version check detects a mismatch</li>
+                <li>The application must then reload the updated data and retry the operation</li>
+            </ol>
+            <p>This approach ensures data consistency but requires application-level conflict resolution logic.</p>
+        </div>
+    </div>
+    
+    <div class="subquestion">
+        <h3>What are common deadlock scenarios in pessimistic locking and how to avoid them?</h3>
+        <div class="key-point">
+            <p>Common deadlock scenarios include:</p>
+            <ul>
+                <li><strong>Circular waits:</strong> Transaction A holds lock on Resource 1 and waits for Resource 2; Transaction B holds lock on Resource 2 and waits for Resource 1</li>
+                <li><strong>Resource ordering:</strong> Transactions acquiring locks in different orders</li>
+                <li><strong>Long-running transactions:</strong> Holding locks for extended periods</li>
+            </ul>
+            <p>Avoidance strategies:</p>
+            <ul>
+                <li>Always acquire locks in a consistent order across transactions</li>
+                <li>Keep transactions as short as possible</li>
+                <li>Implement timeout mechanisms for lock acquisition</li>
+                <li>Use deadlock detection algorithms provided by the database</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="subquestion">
+        <h3>How do modern ORMs like ActiveRecord implement these locking strategies?</h3>
+        <div class="key-point">
+            <p>ActiveRecord implements both approaches:</p>
+            <h4>Optimistic Locking:</h4>
+            <ul>
+                <li>Adds a <code>lock_version</code> integer column to models</li>
+                <li>Automatically increments version on save</li>
+                <li>Raises <code>ActiveRecord::StaleObjectError</code> on version mismatch</li>
+                <li>Enabled with <code>has_optimistic_locking</code></li>
+            </ul>
+            
+            <h4>Pessimistic Locking:</h4>
+            <ul>
+                <li>Provides <code>lock</code> method (<code>Model.lock</code>)</li>
+                <li>Supports <code>FOR UPDATE</code> clauses in SQL</li>
+                <li>Can lock multiple records with <code>ids_in_list.lock</code></li>
+                <li>Locks are held until transaction completion</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="subquestion">
+        <h3>What performance considerations should be made when choosing between these approaches?</h3>
+        <div class="key-point">
+            <p>Performance trade-offs:</p>
+            <ul>
+                <li><strong>Optimistic Locking:</strong>
+                    <ul>
+                        <li>Lower overhead for read operations</li>
+                        <li>Higher throughput in low-contention scenarios</li>
+                        <li>Retries may increase network round trips</li>
+                        <li>Version checking adds minimal overhead</li>
+                    </ul>
+                </li>
+                <li><strong>Pessimistic Locking:</strong>
+                    <ul>
+                        <li>Blocking reduces overall throughput</li>
+                        <li>Lock management consumes database resources</li>
+                        <li>Longer transaction durations impact performance</li>
+                        <li>Deadlock resolution adds complexity</li>
+                    </ul>
+                </li>
+            </ul>
+            <p>The choice depends on the expected concurrency level and acceptable failure rates for your application.</p>
+        </div>
+    </div>
+    
+    <div class="subquestion">
+        <h3>How do these locking strategies interact with database isolation levels?</h3>
+        <div class="key-point">
+            <p>Interaction with isolation levels:</p>
+            <ul>
+                <li><strong>Optimistic Locking:</strong> Often combined with READ COMMITTED isolation to allow non-blocking reads while ensuring write consistency through version checks</li>
+                <li><strong>Pessimistic Locking:</strong> Typically used with REPEATABLE READ or SERIALIZABLE isolation to prevent phantom reads and ensure consistent views</li>
+                <li>Both approaches can coexist within the same application, applied selectively based on data sensitivity</li>
+                <li>The chosen isolation level affects visibility of uncommitted changes but doesn't replace explicit locking mechanisms</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

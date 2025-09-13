@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Callbacks vs Observer pattern in Rails</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Callbacks vs Observer pattern in Rails</h1>
+
+    <p><strong>Short answer</strong>: ActiveRecord callbacks are lifecycle hooks on a model (tight coupling). The Observer pattern decouples producers and consumers — observers subscribe to events and react independently. Rails provides both callbacks and higher-level pub/sub via <code>ActiveSupport::Notifications</code> or explicit observer classes.</p>
+
+    <h2>ActiveRecord callbacks</h2>
+    <p>Callbacks are methods defined on the model and invoked at lifecycle points: <code>before_validation</code>, <code>before_save</code>, <code>after_commit</code>, etc.</p>
+    <pre><code>class Order &lt; ApplicationRecord
+  before_validation :set_order_number
+  after_commit :enqueue_fulfillment_job, on: :create
+
+  private
+
+  def set_order_number
+    self.number ||= SecureRandom.hex(6)
+  end
+
+  def enqueue_fulfillment_job
+    FulfillmentJob.perform_later(id)
+  end
+end
+</code></pre>
+
+    <h2>Observer pattern & decoupling</h2>
+    <p>Observers are external classes or subscribers that listen for model events and handle side effects. They remove responsibilities from the model and enable multiple subscribers.</p>
+    <pre><code># using ActiveSupport::Notifications
+class Order &lt; ApplicationRecord
+  after_commit :publish_created_event, on: :create
+  def publish_created_event
+    ActiveSupport::Notifications.instrument('order.created', order_id: id)
+  end
+end
+
+# subscriber (initializer)
+ActiveSupport::Notifications.subscribe('order.created') do |*args|
+  event = ActiveSupport::Notifications::Event.new(*args)
+  OrderMailer.with(order_id: event.payload[:order_id]).confirmation.deliver_later
+  Analytics.track('order_created', event.payload)
+end
+</code></pre>
+
+    <h2>Comparison table</h2>
+    <table>
+      <tr><th>Aspect</th><th>Callback</th><th>Observer / Notifications</th></tr>
+      <tr><td>Coupling</td><td>Tight — on model</td><td>Loose — external subscribers</td></tr>
+      <tr><td>Testability</td><td>Model tests include side effects</td><td>Can test subscribers separately</td></tr>
+      <tr><td>Multiplicity</td><td>Single inline handlers</td><td>Multiple subscribers easily</td></tr>
+      <tr><td>Use case</td><td>Simple lifecycle maintenance</td><td>Metrics, emails, integrations, cross-cutting concerns</td></tr>
+    </table>
+
+    <h2>Best practices</h2>
+    <ul>
+      <li>Use callbacks for model-intrinsic logic (setting defaults, validation-related state).</li>
+      <li>Prefer observers/notifications for side effects (emails, metrics, integrations).</li>
+      <li>Use <code>after_commit</code> when publishing events to ensure DB transaction success.</li>
+      <li>Keep callbacks small — delegate complex work to services or background jobs.</li>
+    </ul>
+
+    <h2>Interview follow-ups</h2>
+    <ul>
+      <li><strong>Q: How to avoid ordering issues with multiple subscribers?</strong> Use durable queues (Sidekiq), ensure idempotency, and design for eventual consistency.</li>
+      <li><strong>Q: When to use Rails observers gem?</strong> Historically there was an observer pattern gem; today <code>ActiveSupport::Notifications</code> or explicit subscriber classes are recommended.</li>
+    </ul>
+
+    <p style="color:#666">Explain with examples from projects where moving side-effects out of models improved maintainability and reduced surprises during refactors.</p>
+  </div>
+</body>
+</html>

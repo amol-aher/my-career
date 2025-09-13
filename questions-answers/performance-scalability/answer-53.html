@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Metrics to Monitor for Microservices Performance</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Key Metrics to Monitor for Microservices</h1>
+
+  <h2>Three golden signals</h2>
+  <ul>
+    <li><strong>Latency:</strong> p50, p95, p99 for requests and RPCs.</li>
+    <li><strong>Traffic / Throughput:</strong> requests per second, messages per second.</li>
+    <li><strong>Errors:</strong> error rates, 5xx, retries, failed jobs.</li>
+  </ul>
+
+  <h2>Other important metrics</h2>
+  <ul>
+    <li>Resource saturation: CPU, memory, disk IO.</li>
+    <li>DB metrics: connection count, slow queries, locks.</li>
+    <li>Queue metrics: queue depth, consumer lag, lag growth rate.</li>
+    <li>Circuit breaker states and counts.</li>
+    <li>Service-level SLOs and budget burn rate.</li>
+  </ul>
+
+  <h2>Logging & traces</h2>
+  <p>Correlation IDs, traces (sampled), and structured logs for root-cause analysis.</p>
+</body>
+</html>

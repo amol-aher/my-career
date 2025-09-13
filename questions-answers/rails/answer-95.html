@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Deadlocks in Multithreaded Rails Applications — Explanation and Prevention</title><style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.6; padding:28px; color:#111; background:#fff; }
+    .container{max-width:980px;margin:0 auto;}
+    header{border-bottom:1px solid #e6e6e6;margin-bottom:18px;padding-bottom:8px;}
+    h1{font-size:26px;margin:0 0 6px 0;}
+    h2{font-size:18px;margin-top:18px;color:#0b69ff;}
+    h3{font-size:15px;margin-top:14px;color:#0b69ff;}
+    p{margin:8px 0;}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:4px;}
+    ul{margin:8px 0 8px 20px;}
+    table{border-collapse:collapse;width:100%;margin:8px 0;}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+    .muted{color:#666;font-size:13px;}
+    footer{border-top:1px solid #e6e6e6;margin-top:22px;padding-top:12px;color:#666;font-size:13px;}
+    .kbd{background:#f4f4f4;padding:2px 6px;border-radius:4px;font-family:monospace;}
+    </style></head>
+<body>
+<div class="container">
+<header>
+<h1>Deadlocks in Multithreaded Rails Applications — Explanation and Prevention</h1>
+<p class="muted">Prepared by: Senior Software Engineer &amp; System Architect — Rails / AWS / SQL / Vue.js</p>
+<p class="muted">Date: 2025-09-10 (UTC)</p>
+</header>
+
+<p class="muted"><strong>Overview</strong></p>
+<p>Deadlocks can occur at DB level (row locks) or application level (Ruby threads & mutexes). This file explains causes, detection, and mitigation strategies.</p>
+
+<section><h2>Types of deadlocks</h2>
+<ul>
+<li><strong>Database deadlocks:</strong> Two transactions wait on locks held by each other (e.g., Tx A holds row 1 and waits for row 2; Tx B holds row 2 and waits for row 1).</li>
+<li><strong>Application-level deadlocks:</strong> Ruby threads waiting on mutexes in inconsistent order causing cyclic waits.</li>
+<li><strong>Connection pool deadlocks:</strong> All DB connections are checked out and threads block waiting for connections while holding other locks or resources.</li>
+</ul>
+</section>
+<section><h2>How DB deadlocks happen in Rails</h2>
+<ul>
+<li>Common when using <code>SELECT ... FOR UPDATE</code>, performing multiple updates in different orders across requests, or long transactions that lock many rows.</li>
+<li>Different SQL statement order across code paths is a frequent cause.</li>
+</ul>
+</section>
+<section><h2>How to detect deadlocks</h2>
+<ul>
+<li>Database logs (Postgres detects deadlock and aborts one transaction; look for deadlock messages in the DB logs).</li>
+<li>Application monitoring: threads stuck, connection pool exhaustion, increasing latency for acquiring locks.</li>
+<li>Use APM/tracing to find long-running transactions and lock waits.</li>
+</ul>
+</section>
+<section><h2>Preventing and mitigating deadlocks</h2>
+<ul>
+<li><strong>Consistent lock ordering:</strong> Always acquire locks in the same order across code paths.</li>
+<li><strong>Keep transactions short:</strong> Avoid complex logic inside transactions; move non-essential work outside transaction boundaries.</li>
+<li><strong>Use SELECT FOR UPDATE sparingly:</strong> Consider optimistic locking (lock_version) or retry loops on serialization failures.</li>
+<li><strong>Set reasonable statement_timeout / lock_timeout:</strong> Fail fast and retry rather than block indefinitely.</li>
+<li><strong>Monitor connection pool:</strong> Ensure pool size >= threads and long-running jobs don't hold connections unnecessarily.</li>
+<li><strong>Retry strategies:</strong> On serialization errors or deadlock errors, implement idempotent retries with backoff.</li>
+</ul>
+</section>
+<section><h2>Example: avoid deadlock with consistent order</h2>
+<pre><code># BAD: may deadlock if two threads lock in opposite order
+tx1: lock account A, then lock account B
+tx2: lock account B, then lock account A
+
+# GOOD: always lock by id order
+ids = [a.id, b.id].sort
+accounts = Account.where(id: ids).order(:id).lock
+# process accounts in sorted order
+</code></pre>
+</section>
+<section><h2>Subquestions you should expect</h2>
+<ol>
+<li><strong>How to size DB connection pools?</strong><br/>Match pool size to concurrency (threads per process * processes) but be mindful of DB capacity. Use separate DB user pools for heavy background workers if necessary.</li>
+<li><strong>What about optimistic locking?</strong><br/>Optimistic locking is great for low-conflict scenarios and avoids DB-level locks; use <code>lock_version</code> and handle conflicts with retries.</li>
+</ol>
+</section>
+
+
+<footer>I can provide a small diagnostic script to scan for long-running transactions and simulate lock patterns against a staging DB.</footer>
+</div>
+</body>
+</html>

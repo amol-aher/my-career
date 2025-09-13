@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 33</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 33: Have you come across a use case where you had to override that limitation and extract all the CPU power?</h1>
+<h2>Concept</h2>
+<p>To extract full CPU power on MRI, you generally use multiple processes (fork) or run compute-heavy parts in native extensions that release the GVL. Alternatively, use JRuby/TruffleRuby which allow true parallel threads.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Yes — for CPU-bound workloads, I used process pools (forked workers) and native extensions (C) that release the GVL, and in some cases moved services to JRuby for parallel execution.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>Native C extensions:</strong> Implement heavy algorithms in C and release the GVL during computation.</li>
+<li><strong>Process pools:</strong> Use Process.fork, worker supervisors, or job systems (Sidekiq with multiple processes) to parallelize across cores.</li>
+<li><strong>Offload:</strong> Consider moving heavy tasks to a service written in a language with native parallelism (Go, Java).</li>
+</ul>
+
+<h2>Example</h2>
+<pre><code class="language-ruby"># using Process.fork to parallelize CPU work
+jobs = (1..8).to_a
+workers = 4.times.map do
+  fork do
+    jobs.each_slice(2) do |slice|
+      slice.each { |j| heavy_compute(j) }
+    end
+    exit 0
+  end
+end
+Process.waitall</code></pre>
+
+<h2>Best practices / Pitfalls</h2>
+<ul>
+<li>Forking has overhead — balance number of processes vs available memory.</li>
+<li>Beware shared resources (DB connections) which may need reconnection after fork.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 33</footer>
+</body></html>

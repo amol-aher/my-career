@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adding Indexes to Large Tables</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px; }
+        .method-box { background-color: #e8f4fd; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .sql-code { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0; font-family: monospace; }
+        .warning { background-color: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <h1>Adding Indexes to Large Tables Without Downtime</h1>
+
+    <div class="method-box">
+        <h2>Traditional Approach (With Potential Downtime)</h2>
+        <p>Simple `ADD INDEX` command locks the table during creation:</p>
+        <div class="sql-code">
+            <pre>ALTER TABLE orders ADD INDEX idx_customer_id (customer_id);</pre>
+        </div>
+        <p><strong>Problem:</strong> For tables with billions of rows, this can take hours and block writes.</p>
+    </div>
+
+    <div class="method-box">
+        <h2>Solution 1: Online Index Creation (Database-Specific)</h2>
+        <h3>PostgreSQL (v11+):</h3>
+        <div class="sql-code">
+            <pre>CREATE INDEX CONCURRENTLY idx_orders_customer ON orders(customer_id);</pre>
+        </div>
+        <p><strong>How it works:</strong> Builds index without locking reads/writes, but requires double disk space temporarily.</p>
+
+        <h3>MySQL (InnoDB):</h3>
+        <div class="sql-code">
+            <pre>ALTER TABLE orders ADD INDEX idx_customer_id (customer_id) ALGORITHM=INPLACE;</pre>
+        </div>
+        <p><strong>Note:</strong> Still causes brief metadata lock - test thoroughly in staging.</p>
+    </div>
+
+    <div class="method-box">
+        <h2>Solution 2: Shadow Table Technique</h2>
+        <ol>
+            <li>Create new table with desired index:
+                <div class="sql-code">
+                    <pre>CREATE TABLE orders_new LIKE orders;
+ALTER TABLE orders_new ADD INDEX idx_customer_id (customer_id);</pre>
+                </div>
+            </li>
+            <li>Populate with data (can run concurrently):
+                <div class="sql-code">
+                    <pre>INSERT INTO orders_new SELECT * FROM orders;</pre>
+                </div>
+            </li>
+            <li>Swap tables atomically:
+                <div class="sql-code">
+                    <pre>RENAME TABLE orders TO orders_old, orders_new TO orders;</pre>
+                </div>
+            </li>
+            <li>Drop old table after verification</li>
+        </ol>
+    </div>
+
+    <div class="method-box">
+        <h2>Solution 3: Partitioning Strategy</h2>
+        <p>For time-series data, add index to partitions individually:</p>
+        <div class="sql-code">
+            <pre>-- Create partitioned table
+CREATE TABLE orders_partitioned (
+  id INT PRIMARY KEY,
+  customer_id INT,
+  created_at DATETIME
+) PARTITION BY RANGE (YEAR(created_at));
+
+-- Add index to each partition
+ALTER TABLE orders_partitioned_2023 ADD INDEX idx_customer_id (customer_id);
+ALTER TABLE orders_partitioned_2024 ADD INDEX idx_customer_id (customer_id);</pre>
+        </div>
+    </div>
+
+    <div class="method-box">
+        <h2>Solution 4: Incremental Index Building</h2>
+        <p>Use specialized tools for zero-downtime indexing:</p>
+        <ul>
+            <li><strong>pt-online-schema-change (Percona):</strong> Modifies table structure without locking</li>
+            <li><strong>gh-ost (GitHub):</strong> Swaps tables with minimal locking</li>
+            <li><strong>pg_repack (PostgreSQL):</strong> Rebuilds tables/indexes online</li>
+        </ul>
+    </div>
+
+    <div class="warning">
+        <h2>No-Downtime Implementation Checklist</h2>
+        <ul>
+            <li>Test in staging with production-sized dataset</li>
+            <li>Monitor disk space (index building requires ~2x storage)</li>
+            <li>Set up read replicas to offload traffic</li>
+            <li>Implement circuit breakers around affected queries</li>
+            <li>Have rollback plan ready (keep original table accessible)</li>
+        </ul>
+    </div>
+
+    <div class="solution">
+        <h2>Recommendation Based on Scenario</h2>
+        <table style="width:100%; border-collapse: collapse;">
+            <tr style="background-color: #f2f2f2;">
+                <th>Scenario</th>
+                <th>Best Solution</th>
+            </tr>
+            <tr>
+                <td>PostgreSQL database</td>
+                <td>CONCURRENTLY index creation</td>
+            </tr>
+            <tr>
+                <td>MySQL with InnoDB</td>
+                <td>ALGORITHM=INPLACE + shadow table fallback</td>
+            </tr>
+            <tr>
+                <td>Time-partitioned data</td>
+                <td>Partition-wise indexing</td>
+            </tr>
+            <tr>
+                <td>Critical systems</td>
+                <td>gh-ost/pt-online-schema-change</td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

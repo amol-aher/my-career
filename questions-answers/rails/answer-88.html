@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Rate Limiting and Throttling API Requests — Strategies and Implementations</title>
+<style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.6; padding:28px; color:#111; background:#fff; }
+    .container{max-width:980px;margin:0 auto;}
+    header{border-bottom:1px solid #e6e6e6;margin-bottom:18px;padding-bottom:8px;}
+    h1{font-size:26px;margin:0 0 6px 0;}
+    h2{font-size:18px;margin-top:18px;color:#0b69ff;}
+    h3{font-size:15px;margin-top:14px;color:#0b69ff;}
+    p{margin:8px 0;}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:4px;}
+    ul{margin:8px 0 8px 20px;}
+    table{border-collapse:collapse;width:100%;margin:8px 0;}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+    .muted{color:#666;font-size:13px;}
+    footer{border-top:1px solid #e6e6e6;margin-top:22px;padding-top:12px;color:#666;font-size:13px;}
+    </style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>Rate Limiting and Throttling API Requests — Strategies and Implementations</h1>
+<p class="muted">Prepared by: Senior Software Engineer &amp; System Architect — Rails / AWS / SQL / Vue.js</p>
+<p class="muted">Date: 2025-09-10 (UTC)</p>
+</header>
+
+<p class="muted"><strong>Overview</strong></p>
+<p>How to implement rate limiting at different layers: edge (CDN/API gateway), app (Rack::Attack), and per-user quotas; algorithms and best practices.</p>
+
+<section><h2>Why rate limit</h2>
+<ul>
+<li>Protect backend from abuse and DoS.</li>
+<li>Enforce fair use and tiered quotas for customers.</li>
+<li>Prevent downstream API overload and maintain SLOs.</li>
+</ul>
+</section>
+<section><h2>Algorithms</h2>
+<ul>
+<li><strong>Fixed window:</strong> simple but can burst at window edges.</li>
+<li><strong>Sliding window:</strong> smoother than fixed windows.</li>
+<li><strong>Leaky bucket / token bucket:</strong> supports smoothing and burst control; token bucket is widely used.</li>
+</ul>
+</section>
+<section><h2>Implementation options</h2>
+<ul>
+<li><strong>Edge / CDN:</strong> Use CloudFront + WAF or API Gateway throttling to block bad actors early.</li>
+<li><strong>Application:</strong> Rack::Attack with Redis counters for per-IP or per-api-key limits.</li>
+<li><strong>Distributed rate limiting:</strong> Use Redis with Lua scripts or use Consul/Envoy rate limiting service for multi-node accuracy.</li>
+</ul>
+<pre><code># simple Rack::Attack throttle
+Rack::Attack.throttle('req/ip', limit: 100, period: 60) do |req|
+  req.ip
+end
+</code></pre>
+</section>
+<section><h2>Quotas and billing</h2>
+<p>Keep track of usage metrics and enforce daily/monthly quotas. Return <code>429 Too Many Requests</code> with <code>Retry-After</code> and X-RateLimit-* headers.</p>
+</section>
+<section><h2>Best practices</h2>
+<ul>
+<li>Differentiate by consumer (API key, user id) instead of only IP to support NAT-ed users.</li>
+<li>Graceful degradation and soft-limits for premium customers.</li>
+<li>Expose rate limit headers so clients can back off gracefully.</li>
+<li>Monitor and tune limits; provide an appeals/override process for false positives.</li>
+</ul>
+</section>
+<section><h2>Subquestions you should expect</h2>
+<ol>
+<li><strong>How to prevent spoofing IPs?</strong><br/>Use API keys/auth and base limits on authenticated identity; use trusted proxies and <code>X-Forwarded-For</code> carefully.</li>
+<li><strong>How to handle distributed counters?</strong><br/>Use Redis with atomic increment and TTL or a token-bucket implementation with Lua scripts to ensure atomicity.</li>
+</ol>
+</section>
+
+
+<footer>
+I can provide a production-ready Rack::Attack config with Redis and rate-limit headers integrated into your Rails app.
+</footer>
+</div>
+</body>
+</html>

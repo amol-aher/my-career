@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 72</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 72: How do reduce / inject work in Ruby?</h1>
+<h2>Concept</h2>
+<p><code>reduce</code> (aka <code>inject</code>) combines all elements of an enumerable into a single value using an accumulator and a block.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p><code>reduce</code> and <code>inject</code> are the same. They take an optional initial value and apply the block to accumulate results.</p>
+
+<h2>Example</h2>
+<pre><code class="language-ruby">[1,2,3,4].reduce(0) { |sum, x| sum + x } # => 10
+[1,2,3,4].inject(:+)                     # => 10</code></pre>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>Initial value?</strong> — If omitted, the first element is used as accumulator.</li>
+<li><strong>Symbol form?</strong> — <code>inject(:+)</code> uses <code>+</code> as block.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 72</footer>
+</body></html>

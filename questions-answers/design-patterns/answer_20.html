@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Design patterns and their usefulness in Ruby</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px}
+    h2{font-size:18px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    ul{line-height:1.5}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Design patterns — what they are and why they matter in Ruby</h1>
+
+    <p><strong>Definition</strong>: Design patterns are repeatable, language-agnostic solutions to common software design problems. They provide a shared vocabulary and a set of trade-offs for structuring code.</p>
+
+    <h2>Categories</h2>
+    <ul>
+      <li><strong>Creational</strong> — Factory, Builder, Singleton.</li>
+      <li><strong>Structural</strong> — Adapter, Facade, Decorator, Composite.</li>
+      <li><strong>Behavioral</strong> — Strategy, Observer, Command, Template Method.</li>
+    </ul>
+
+    <h2>Why patterns are useful in Ruby specifically</h2>
+    <ul>
+      <li><strong>Communication</strong> — saying "Decorator" or "Strategy" conveys intent quickly in code reviews and interviews.</li>
+      <li><strong>Idiomatic implementations</strong> — Ruby’s dynamic features (mixins, blocks, metaprogramming) let patterns be implemented elegantly and with less boilerplate than in static languages.</li>
+      <li><strong>Maintainability</strong> — patterns encourage separation of concerns and testability.</li>
+      <li><strong>Flexibility</strong> — Ruby’s duck typing makes interface conformance lightweight; you can swap strategies with minimal ceremony.</li>
+    </ul>
+
+    <h2>Common patterns you’ll use in Rails apps</h2>
+    <ul>
+      <li><strong>Service Objects</strong> — encapsulate business operations (single responsibility) instead of bloated models or controllers.</li>
+      <li><strong>Repository / Query Object</strong> — encapsulate DB queries for testability and separation from domain logic.</li>
+      <li><strong>Decorator / Presenter</strong> — wrap models for view-specific presentation logic (Draper is a common gem).</li>
+      <li><strong>Strategy</strong> — for interchangeable behaviors like payment gateways or export formats.</li>
+      <li><strong>Null Object</strong> — avoid nil checks by providing a no-op object implementation.</li>
+    </ul>
+
+    <h2>Ruby example — Strategy pattern (payment gateways)</h2>
+    <pre><code>module PaymentGateway
+  def charge(amount, currency); raise NotImplementedError; end
+end
+
+class StripeGateway
+  include PaymentGateway
+  def charge(amount, currency)
+    Stripe::Charge.create(amount: amount, currency: currency)
+  end
+end
+
+class AmazonPayGateway
+  include PaymentGateway
+  def charge(amount, currency)
+    # Amazon SDK call
+  end
+end
+
+class PaymentService
+  def initialize(gateway:)
+    @gateway = gateway
+  end
+  def pay(amount, currency)
+    @gateway.charge(amount, currency)
+  end
+end
+</code></pre>
+
+    <h2>When not to use patterns</h2>
+    <ul>
+      <li>Don’t over-engineer: avoid introducing patterns for trivial problems — YAGNI applies.</li>
+      <li>Avoid pattern soup: prefer simple readable code over forcing many patterns where unnecessary.</li>
+    </ul>
+
+    <h2>Interview follow-ups</h2>
+    <ul>
+      <li><strong>Q: How do you choose a pattern?</strong> Identify the problem domain: is it object creation, composition, or behavior? Then pick a pattern that reduces coupling and improves clarity.</li>
+      <li><strong>Q: How to test patterns?</strong> Unit test concrete implementations independently and verify interactions through mocks when appropriate.</li>
+    </ul>
+
+    <p style="color:#666;margin-top:12px">In interviews, cite concrete examples where applying a pattern reduced code complexity, improved testability, or enabled a plug-in integration. Ruby’s expressiveness often means simpler, idiomatic implementations of classic patterns.</p>
+  </div>
+</body>
+</

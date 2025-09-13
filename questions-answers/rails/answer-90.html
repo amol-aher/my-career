@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Deciding Where to Put Indexes in a Database — Practical Guidance</title>
+<style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.6; padding:28px; color:#111; background:#fff; }
+    .container{max-width:980px;margin:0 auto;}
+    header{border-bottom:1px solid #e6e6e6;margin-bottom:18px;padding-bottom:8px;}
+    h1{font-size:26px;margin:0 0 6px 0;}
+    h2{font-size:18px;margin-top:18px;color:#0b69ff;}
+    h3{font-size:15px;margin-top:14px;color:#0b69ff;}
+    p{margin:8px 0;}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:4px;}
+    ul{margin:8px 0 8px 20px;}
+    table{border-collapse:collapse;width:100%;margin:8px 0;}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+    .muted{color:#666;font-size:13px;}
+    footer{border-top:1px solid #e6e6e6;margin-top:22px;padding-top:12px;color:#666;font-size:13px;}
+    </style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>Deciding Where to Put Indexes in a Database — Practical Guidance</h1>
+<p class="muted">Prepared by: Senior Software Engineer &amp; System Architect — Rails / AWS / SQL / Vue.js</p>
+<p class="muted">Date: 2025-09-10 (UTC)</p>
+</header>
+
+<p class="muted"><strong>Overview</strong></p>
+<p>How to choose indexes: analyze query patterns, cardinality, selectivity, composite indexes, covering indexes, maintenance costs, and monitoring.</p>
+
+<section><h2>Why indexes matter</h2>
+<p>Indexes speed up reads by avoiding full table scans but add write overhead and storage costs. Use them where query performance benefits outweigh maintenance costs.</p>
+</section>
+<section><h2>What to look for before adding an index</h2>
+<ul>
+<li>Slow queries from EXPLAIN or slow query logs.</li>
+<li>Columns used in WHERE, JOIN, ORDER BY, and GROUP BY clauses.</li>
+<li>Cardinality & selectivity — high-cardinality columns benefit more from indexes.</li>
+<li>Query frequency and read vs write ratio.</li>
+</ul>
+</section>
+<section><h2>Composite and covering indexes</h2>
+<p>Composite indexes cover multiple columns and should be ordered based on how queries use them (left-most prefix rule). A covering index contains all columns needed for a query so the DB can satisfy the query from the index alone.</p>
+<pre><code>-- Example: queries filtering by user_id and status, ordering by created_at
+CREATE INDEX index_orders_on_user_id_status_created_at ON orders (user_id, status, created_at DESC);
+</code></pre>
+</section>
+<section><h2>Partial and expression indexes</h2>
+<ul>
+<li><strong>Partial indexes:</strong> Index only rows that matter (Postgres supports WHERE clauses on indexes).</li>
+<li><strong>Expression indexes:</strong> Index on expressions (lower(email) for case-insensitive search).</li>
+</ul>
+<pre><code>CREATE INDEX index_users_on_lower_email ON users (lower(email));
+CREATE INDEX index_active_orders_on_user ON orders (user_id) WHERE status = 'active';
+</code></pre>
+</section>
+<section><h2>When not to add an index</h2>
+<ul>
+<li>Low-selectivity columns (boolean flags with 90/10 distribution) unless combined in a composite index.</li>
+<li>Tables with extremely high write rates where indexes cause write amplification unless necessary.</li>
+<li>Don't index columns only used in occasional ad-hoc queries without profiling evidence.</li>
+</ul>
+</section>
+<section><h2>Operational considerations</h2>
+<ul>
+<li>Monitor index usage with Postgres pg_stat_user_indexes and pg_stat_all_indexes.</li>
+<li>Use CONCURRENTLY flag for creating/dropping indexes in production to avoid locks.</li>
+<li>Consider index bloat and periodic maintenance (REINDEX, pg_repack).</li>
+</ul>
+</section>
+<section><h2>Subquestions you should expect</h2>
+<ol>
+<li><strong>How to pick index column order?</strong><br/>Put the most selective column first and match common query patterns (where + order by).</li>
+<li><strong>How to measure index effectiveness?</strong><br/>Use EXPLAIN ANALYZE, check index scans vs seq scans, and monitor performance before and after adding indexes.</li>
+</ol>
+</section>
+
+
+<footer>
+I can review your slow queries and propose a set of targeted indexes and migration scripts using CREATE INDEX CONCURRENTLY.
+</footer>
+</div>
+</body>
+</html>

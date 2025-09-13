@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dead Letter Queues in SQS — What They Are and How To Use Them</title>
+<style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.6; padding:28px; color:#111; background:#fff; }
+    .container{max-width:980px;margin:0 auto;}
+    header{border-bottom:1px solid #e6e6e6;margin-bottom:18px;padding-bottom:8px;}
+    h1{font-size:26px;margin:0 0 6px 0;}
+    h2{font-size:18px;margin-top:18px;color:#0b69ff;}
+    h3{font-size:15px;margin-top:14px;color:#0b69ff;}
+    p{margin:8px 0;}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:4px;}
+    ul{margin:8px 0 8px 20px;}
+    table{border-collapse:collapse;width:100%;margin:8px 0;}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+    .muted{color:#666;font-size:13px;}
+    footer{border-top:1px solid #e6e6e6;margin-top:22px;padding-top:12px;color:#666;font-size:13px;}
+    </style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>Dead Letter Queues in SQS — What They Are and How To Use Them</h1>
+<p class="muted">Prepared by: Senior Software Engineer &amp; System Architect — Rails / AWS / SQL / Vue.js</p>
+<p class="muted">Date: 2025-09-10 (UTC)</p>
+</header>
+
+<p class="muted"><strong>Overview</strong></p>
+<p>Detailed explanation of SQS Dead Letter Queues (DLQs): how messages get there, redrive policy, monitoring, troubleshooting, and best practices for handling poison messages.</p>
+
+<section><h2>What is a Dead Letter Queue (DLQ)?</h2>
+<p>A DLQ is a secondary SQS queue where messages are moved after failing processing repeatedly. It isolates poison messages so they don't block normal processing and helps you debug problematic payloads.</p>
+</section>
+<section><h2>How messages end up in a DLQ</h2>
+<ul>
+<li>Configure a redrive policy on the primary queue that references a DLQ and a <code>maxReceiveCount</code> (e.g., 5).</li>
+<li>Each time a message is received but not deleted (consumer fails), its receive count increments.</li>
+<li>When receive count &gt; maxReceiveCount, SQS moves the message to the DLQ automatically.</li>
+</ul>
+</section>
+<section><h2>Important configuration parameters</h2>
+<ul>
+<li><strong>maxReceiveCount:</strong> How many times a message can be received before being moved to DLQ.</li>
+<li><strong>VisibilityTimeout:</strong> Must be long enough for your consumer to process the message.</li>
+<li><strong>RetentionPeriod:</strong> How long messages are kept in DLQ (default 4 days, max 14 days).</li>
+</ul>
+</section>
+<section><h2>How to handle DLQ messages</h2>
+<ul>
+<li><strong>Inspect &amp; diagnose:</strong> Pull messages from DLQ and examine payload, headers, and processing errors.</li>
+<li><strong>Fix &amp; redrive:</strong> After fixing the root cause, you can redrive messages back to the source queue with the AWS Console, CLI, or programmatically.</li>
+<li><strong>Automate alerts:</strong> Create CloudWatch alarms on <code>ApproximateNumberOfMessagesVisible</code> for the DLQ to notify the team when messages appear.</li>
+<li><strong>Store metadata:</strong> Log failure reasons and stack traces in a structured store (S3, DynamoDB) with correlation IDs to trace upstream producers.</li>
+</ul>
+</section>
+<section><h2>Best practices and patterns</h2>
+<ul>
+<li>Set conservative <code>maxReceiveCount</code> (3–10) depending on transient error expectations.</li>
+<li>Avoid automatic redrive until you have telemetry and a human-in-the-loop for critical flows.</li>
+<li>Keep DLQ messages immutable — record original metadata and failure context for debugging.</li>
+<li>Consider archiving DLQ messages in S3 for long-term analysis.</li>
+</ul>
+</section>
+<section><h2>Subquestions and answers</h2>
+<ol>
+<li><strong>What if DLQ fills up quickly?</strong><br/>Investigate the root cause — common causes are schema changes, consumer code bugs, permission issues, or malformed messages. Use CloudWatch logs and the DLQ payloads to triage.</li>
+
+<li><strong>Can Sidekiq use SQS DLQ?</strong><br/>Sidekiq doesn't consume SQS directly. If using an SQS->Sidekiq bridge, DLQs are managed by SQS and the bridge should surface failures to application logs and monitoring. Alternatively, use Shoryuken which works with SQS and DLQs directly.</li>
+</ol>
+</section>
+
+
+<footer>
+I can provide a small script to batch-inspect DLQ messages and either archive or redrive them once fixed.
+</footer>
+</div>
+</body>
+</html>

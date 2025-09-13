@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 38</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 38: Have you used benchmarking tools in Ruby to measure performance?</h1>
+<h2>Concept</h2>
+<p>Benchmarking measures code performance. Ruby has stdlib Benchmark and other tools (benchmark-ips, ruby-prof) for micro and macro profiling.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Yes — use Benchmark/Benchmark.ips for microbenchmarks and ruby-prof, stackprof, or async-profiler (for JRuby) for profiling CPU and memory.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>Benchmark vs Benchmark.ips:</strong> Benchmark.ips measures iterations per second and is useful for comparing implementations.</li>
+<li><strong>Profilers:</strong> ruby-prof and stackprof for sampling/profiling; async-profiler for JVM/JRuby.</li>
+<li><strong>Noise:</strong> run benchmarks in isolated environments and warm up the VM.</li>
+</ul>
+
+<h2>Example</h2>
+<pre><code class="language-ruby">require 'benchmark/ips'
+Benchmark.ips do |x|
+  x.report('map') { (1..100).map { |i| i * 2 } }
+  x.report('each') { (1..100).each { |i| i * 2 } }
+  x.compare!
+end</code></pre>
+
+<h2>Best practices / Pitfalls</h2>
+<ul>
+<li>Warm up the VM, minimize background noise, and run multiple iterations.</li>
+<li>Use realistic inputs that represent production workloads.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 38</footer>
+</body></html>

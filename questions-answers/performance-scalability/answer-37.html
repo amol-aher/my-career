@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>API Versioning Strategies in Rails for Backward Compatibility</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>API Versioning Strategies in Rails for Backward Compatibility</h1>
+  <p>Versioning ensures clients continue working when you evolve APIs. There are multiple patterns with trade-offs.</p>
+
+  <h2>Common versioning approaches</h2>
+  <ul>
+    <li><strong>URL versioning:</strong> /api/v1/users — explicit, easy to route, cacheable; easiest to implement.</li>
+    <li><strong>Header versioning:</strong> Use custom Accept header (Accept: application/vnd.myapp.v1+json) — cleaner URLs but harder for some clients and caching.</li>
+    <li><strong>Query param:</strong> ?version=1 — simple but not ideal for caching and opaque.</li>
+  </ul>
+
+  <h2>Rails implementation patterns</h2>
+  <h3>Namespaces for controllers</h3>
+  <pre><code># config/routes.rb
+namespace :api do
+  namespace :v1 do
+    resources :users
+  end
+  namespace :v2 do
+    resources :users
+  end
+end
+  </code></pre>
+
+  <h3>Header-based routing middleware</h3>
+  <pre><code>class ApiVersion
+  def self.call(req)
+    accept = req.get_header('HTTP_ACCEPT')
+    if accept&.include?('application/vnd.myapp.v2+json')
+      'v2'
+    else
+      'v1'
+    end
+  end
+end
+  </code></pre>
+
+  <h2>Backward compatibility best practices</h2>
+  <ul>
+    <li>Additive changes (new fields) are safe; removing or changing semantics requires version bump.</li>
+    <li>Deprecation warnings in responses and migration guides for clients.</li>
+    <li>Keep old versions running as long as necessary based on client usage metrics.</li>
+  </ul>
+
+  <h2>Deprecation process</h2>
+  <ol>
+    <li>Announce deprecation and date.</li>
+    <li>Provide migration guides and examples.</li>
+    <li>Monitor client usage and send reminders.</li>
+    <li>Shutdown old version after notice period and low usage.</li>
+  </ol>
+
+  <h2>Summary</h2>
+  <p>URL versioning via namespaces is the simplest and most common in Rails. Combine with clear deprecation process and metrics to avoid breaking clients unexpectedly.</p>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 74</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 74: How do symbols help with memory optimization?</h1>
+<h2>Concept</h2>
+<p>Symbols are immutable and reused (interned). Unlike strings, they don't allocate new objects each time, which reduces memory usage when the same identifier is repeated often.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Symbols save memory and comparison cost since they're interned. Use them for identifiers/keys. Modern Ruby also has symbol GC.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>Comparison speed?</strong> — Symbols compare by identity, so it's faster than string comparison.</li>
+<li><strong>Risk?</strong> — Avoid creating many dynamic symbols in old Ruby versions (before symbol GC).</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 74</footer>
+</body></html>

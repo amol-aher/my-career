@@ -1,0 +1,82 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Troubleshooting a Half-Failed Deployment</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:24px;color:#222;line-height:1.6}
+    h1{background:#dc3545;color:#fff;padding:12px;border-radius:8px}
+    h2{color:#dc3545;margin-top:18px}
+    pre{background:#fff1f2;padding:12px;border-radius:6px;overflow:auto}
+    ul{margin:8px 0 8px 20px}
+  </style>
+</head>
+<body>
+  <h1>How to Troubleshoot a Deployment That Failed Halfway Through</h1>
+
+  <h2>Immediate steps (incident triage)</h2>
+  <ol>
+    <li><strong>Stop further changes:</strong> Prevent additional deployments or CI runs that may worsen the state.</li>
+    <li><strong>Set incident channel:</strong> Open Slack/PagerDuty incident and notify stakeholders and on-call engineers.</li>
+    <li><strong>Record timeframe & versions:</strong> Note artifact IDs, commit SHAs and pipeline execution IDs.</li>
+  </ol>
+
+  <h2>Gather data</h2>
+  <ul>
+    <li>Pipeline logs: CodePipeline/CodeBuild/CodeDeploy logs; CI runner logs.</li>
+    <li>Service logs: CloudWatch, application logs, and container logs (kubectl logs).</li>
+    <li>Deployment/platform status: <code>kubectl rollout status</code>, <code>aws ecs describe-services</code>, or CodeDeploy console.</li>
+    <li>Health & metrics: CloudWatch / Prometheus dashboards (error rate, latency, CPU).</li>
+    <li>Events: CloudTrail, Kubernetes events, load balancer health check failures.</li>
+  </ul>
+
+  <h2>Common root causes</h2>
+  <ul>
+    <li>Failed health checks causing new instances/pods to be terminated.</li>
+    <li>Schema or migration causing runtime exceptions.</li>
+    <li>Missing environment variables or secrets leading to crashes.</li>
+    <li>Dependency or upstream service failure.</li>
+    <li>IAM permissions or role misconfiguration blocking API calls.</li>
+  </ul>
+
+  <h2>Recovery actions</h2>
+  <ul>
+    <li><strong>Rollback:</strong> If safe, roll back to the last known good artifact (ECS task revision, kubectl rollout undo, previous Lambda alias).</li>
+    <li><strong>Manual remediate:</strong> If rollback unsafe (db changes), fix the issue (e.g., restore secrets, increase resource limits) and redeploy patch.</li>
+    <li><strong>Scale up:</strong> If resource exhaustion, increase capacity temporarily.</li>
+  </ul>
+
+  <h2>Commands & checks (examples)</h2>
+  <pre><code># Kubernetes
+kubectl get pods -n production
+kubectl describe pod myapp-abc -n production
+kubectl logs myapp-abc -n production
+
+# ECS
+aws ecs describe-services --cluster mycluster --services myservice
+aws ecs describe-tasks --cluster mycluster --tasks <task-ids>
+
+# CodeDeploy / CodePipeline
+aws deploy list-deployments --application-name MyApp
+aws codepipeline get-pipeline-execution --pipeline-name MyPipeline --pipeline-execution-id <id></code></pre>
+
+  <h2>After action: Postmortem</h2>
+  <ul>
+    <li>Write a blameless postmortem: timeline, root cause, remediation, and preventive actions.</li>
+    <li>Apply fixes: improve tests, tighten deployment gates, add monitoring and alerts.</li>
+    <li>Practice runbooks and drills for similar incidents.</li>
+  </ul>
+
+  <h2>Prevention</h2>
+  <ul>
+    <li>Use canary or blue-green to reduce blast radius.</li>
+    <li>Require smoke tests and automatic verification before switching traffic.</li>
+    <li>Automate pre-deploy checks for DB migrations, secrets and IAM permissions.</li>
+  </ul>
+
+  <h2>Conclusion</h2>
+  <p>Triage quickly, gather logs and metrics, decide whether to rollback or remediate, and after recovery perform a thorough postmortem with actionable preventions to reduce recurrence.</p>
+</body>
+</html>

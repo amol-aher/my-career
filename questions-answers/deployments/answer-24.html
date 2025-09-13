@@ -1,0 +1,57 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Pipeline as Code Practices</title>
+  <style>
+    body{font-family:Inter,Arial,Helvetica,sans-serif;margin:24px;color:#222;line-height:1.6}
+    h1{background:#20c997;color:#fff;padding:12px;border-radius:8px}
+    h2{color:#20c997;margin-top:18px}
+    pre{background:#f1fff9;padding:12px;border-radius:6px;overflow:auto}
+    ul{margin:8px 0 8px 20px}
+  </style>
+</head>
+<body>
+  <h1>Pipeline as Code Practices</h1>
+
+  <h2>What is Pipeline-as-Code?</h2>
+  <p>Pipeline-as-Code means storing pipeline definitions (build, test, deployment steps) in version control as code (YAML, DSL, or a script). Examples: Jenkinsfile, .github/workflows/*.yml, .gitlab-ci.yml, or CodePipeline CloudFormation templates.</p>
+
+  <h2>Benefits</h2>
+  <ul>
+    <li>Versioned changes and peer review (PRs) for pipeline changes.</li>
+    <li>Reproducibility across environments and teams.</li>
+    <li>Standardization and reuse through templating and shared libraries.</li>
+    <li>Ability to test pipeline code and roll back to prior versions.</li>
+  </ul>
+
+  <h2>Best practices</h2>
+  <ul>
+    <li><strong>Keep pipelines in repo:</strong> Co-locate pipeline definitions with application code.</li>
+    <li><strong>Use modular templates:</strong> Share reusable steps/actions via templates or composite actions.</li>
+    <li><strong>Parameterize safely:</strong> Use environment files and secrets management rather than hardcoding values.</li>
+    <li><strong>Lint and validate:</strong> Use pipeline linters and unit tests for pipeline DSLs.</li>
+    <li><strong>Secure pipelines:</strong> Restrict who can update pipeline definitions and require reviews.</li>
+    <li><strong>Document and provide examples:</strong> Make it easy for engineers to create new pipelines using templates.</li>
+  </ul>
+
+  <h2>Examples & patterns</h2>
+  <h3>Shared templates</h3>
+  <p>Create a library repo with reusable steps (build, test, deployment) that multiple teams reference. In GitHub Actions, this could be composite actions; in Jenkins, shared libraries.</p>
+
+  <h3>Testing pipelines</h3>
+  <p>Run pipeline validation in CI (e.g., dry-run, syntax checks). Use ephemeral environments to run actual pipeline steps for integration tests.</p>
+
+  <h2>Subquestions & answers</h2>
+  <h3>How do you handle secrets in pipeline-as-code?</h3>
+  <p>Never store secrets in repo. Use secret stores (GitHub Secrets, AWS Secrets Manager via OIDC, Vault). Use environment-specific secrets injected at runtime.</p>
+
+  <h3>How to manage pipeline drift and upgrades?</h3>
+  <p>Track pipeline versions in Git, use blue/green or canary rollouts for pipeline agent changes (e.g., migrating runners), and keep CI/CD tooling updated in a controlled manner.</p>
+
+  <h2>Conclusion</h2>
+  <p>Pipeline-as-Code is essential for modern DevOps — it brings code quality practices, security controls, and repeatability to your delivery pipelines. Treat pipeline code like application code with PR reviews, tests, and documentation.</p>
+</body>
+</html>

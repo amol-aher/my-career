@@ -1,0 +1,71 @@
+<!doctype html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Making metaprogramming code more transparent</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:20px;color:#111}
+    h1{color:#1a56db} h2{color:#0b5a78}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <h1>Making metaprogramming code more transparent for debugging</h1>
+
+  <p>Transparency helps debugging and makes the code safe to operate. These techniques let you trace and inspect dynamically defined methods.</p>
+
+  <h2>1. Record where and when methods are defined</h2>
+  <pre><code class="language-ruby">def log_define(klass, name)
+  file, line = caller_locations(1,1)[0].path, caller_locations(1,1)[0].lineno
+  puts "Defining \#{klass}##{name} at \#{file}:\#{line}"
+end
+
+klass.define_method(:foo) { ... }
+log_define(klass, :foo)</code></pre>
+
+  <h2>2. Use TracePoint to catch :class and :end events</h2>
+  <pre><code class="language-ruby">TracePoint.trace(:class, :end, :define) do |tp|
+  puts "#{tp.event} #{tp.self} #{tp.path}:#{tp.lineno}"
+end</code></pre>
+
+  <h2>3. Use <code>method_added</code> / <code>singleton_method_added</code></h2>
+  <pre><code class="language-ruby">module MonitorMethods
+  def method_added(name)
+    super
+    puts "method_added: \#{self}##{name} defined at #{caller_locations(1,1)[0]}"
+  end
+end
+
+class Foo
+  extend MonitorMethods
+  def bar; end
+end</code></pre>
+
+  <h2>4. Attach metadata or documentation to generated methods</h2>
+  <p>When you define a method dynamically, store metadata in a registry or annotate the class with a descriptive comment file. This improves discoverability and automates documentation generation.</p>
+
+  <h2>5. Emit generated code to a file</h2>
+  <p>Allow a "dump" mode that writes the materialized methods or classes to disk so reviewers can read the code as if it were static.</p>
+
+  <h2>6. Surface method origins via helper APIs</h2>
+  <pre><code class="language-ruby">class Module
+  def defined_methods_with_metadata
+    instance_methods(false).map do |m|
+      {name: m, owner: instance_method(m).owner, src: instance_method(m).source_location}
+    end
+  end
+end</code></pre>
+
+  <h2>7. Use logging levels and feature flags</h2>
+  <p>Enable verbose tracing only in dev/test and provide a controlled switch for production troubleshooting.</p>
+
+  <h2>8. Educate and document</h2>
+  <p>Maintain a README describing where metaprogramming lives, how to trace it, and how to dump generated artifacts.</p>
+
+  <h2>Summary</h2>
+  <p>Combining trace hooks, method_added, method metadata, and "dump" options gives you a powerful toolkit to make metaprogrammed behavior visible and debuggable.</p>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Balancing metaprogramming elegance with maintainability</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:20px;color:#111}
+    h1{color:#1a56db} h2{color:#0b5a78}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <h1>Balancing the elegance of metaprogramming with maintainability</h1>
+
+  <p>As a technical lead, I advocate for pragmatic metaprogramming: use it to eliminate repetitive boilerplate and to provide ergonomics—but enforce constraints and practices so teams can maintain the code.</p>
+
+  <h2>Principles</h2>
+  <ul>
+    <li><strong>Localize metaprogramming:</strong> keep it in small, well‑documented modules rather than spread everywhere.</li>
+    <li><strong>Limit surface area:</strong> only expose a small, stable public API to consumers.</li>
+    <li><strong>Document and test:</strong> document generated behavior and add robust unit/integration tests.</li>
+    <li><strong>Code review discipline:</strong> require more than one reviewer for metaprogramming changes and include examples/docs in PRs.</li>
+    <li><strong>Onboarding and knowledge-sharing:</strong> training sessions and tech notes for team members to understand the patterns used.</li>
+  </ul>
+
+  <h2>Practices</h2>
+  <ol>
+    <li><strong>Provide "what you see" artifacts:</strong> option to dump or generate the concrete methods/artifacts the metaprogramming would create.</li>
+    <li><strong>Prefer explicit generation over magic:</strong> where a small script can generate readable code checked into repo, prefer generation over runtime magic.</li>
+    <li><strong>Use feature flags:</strong> when changing metaprogramming paths, roll out gradually and monitor.</li>
+    <li><strong>Linting and patterns:</strong> add RuboCop rules and PR templates for metaprogramming usage.</li>
+    <li><strong>Performance gates:</strong> benchmark changes and require performance tests for code touching hot paths.</li>
+  </ol>
+
+  <h2>Example team rule set</h2>
+  <ul>
+    <li>Metaprogramming confined to /lib/dsl and /lib/orm modules.</li>
+    <li>All dynamic methods must implement <code>respond_to_missing?</code> or be materialized with <code>define_method</code>.</li>
+    <li>Each metaprogramming PR must include generated output example and unit tests.</li>
+    <li>Pair-review required for changes to core metaprogramming modules.</li>
+  </ul>
+
+  <h2>Tooling & automation</h2>
+  <ul>
+    <li>Use code generation scripts to produce human-readable code where possible.</li>
+    <li>Add automated checks to ensure no usage of <code>eval</code> or limited use flagged.</li>
+    <li>Include documentation generation (README, YARD) with examples.</li>
+  </ul>
+
+  <h2>Summary</h2>
+  <p>Keep metaprogramming focused, documented, tested, and governed. With the right processes and tooling you can keep the codebase elegant without sacrificing maintainability.</p>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!doctype html><html><head><meta charset='utf-8'><title>Sizing sub-tasks</title>
+<style>
+body{font-family:Segoe UI,Arial,Helvetica,sans-serif;line-height:1.5;padding:24px;max-width:900px;margin:auto;color:#111}
+header{border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:18px}
+h1{font-size:20px;margin:0 0 6px 0}
+.role{color:#555;font-size:13px;margin-bottom:6px}
+pre{background:#f6f6f6;padding:12px;border-radius:6px;overflow:auto}
+code{font-family:monospace;font-size:13px}
+section{margin-bottom:18px}
+.sub{font-weight:600;margin-top:8px}
+ul{margin-left:18px}
+ol{margin-left:18px}
+</style></head><body><header><h1>Sizing sub-tasks</h1><div class='role'>System architect · Technical lead · Senior software engineer (Ruby on Rails, AWS, SQL, Vue.js)</div></header>
+<section>
+<p><strong>Summary:</strong> Sub-tasks are sized for single-developer completion and ideally less than 1–2 days. If a sub-task exceeds that, it should be split further.</p>
+
+<div class='sub'>Sizing heuristics</div>
+<ul>
+<li><strong>Micro:</strong> &lt; 4 hours — quick fixes, small UI tweaks</li>
+<li><strong>Small:</strong> 4–16 hours — single feature + tests</li>
+<li><strong>Medium:</strong> 2–3 days — multiple components, moderate risk</li>
+<li><strong>Large:</strong> &gt; 3 days — split into smaller tasks or create a spike</li>
+</ul>
+
+<div class='sub'>Sizing checklist</div>
+<ul>
+<li>Has clear acceptance criteria?</li>
+<li>Is it possible to test in isolation?</li>
+<li>Any external dependencies or environment setup?</li>
+<li>Does it include code, tests, infra changes, and docs?</li>
+</ul>
+
+<div class='sub'>Example of a sub-task description</div>
+<pre><code>Title: Implement POST /api/v1/addresses
+Estimate: 8h
+Description:
+- Add controller endpoint and strong params
+- Create Address model validations
+- Add serializer and policy checks
+- Add unit and request specs
+- Update API docs</code></pre>
+</section>
+</body></html>

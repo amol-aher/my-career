@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Rails Caching Types — Low-level, Fragment, Russian Doll, Page Caching</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Rails Caching Types — Explained</h1>
+  <p>Rails offers multiple caching techniques. Choosing the right one depends on page dynamics, personalization, and cache invalidation complexity.</p>
+
+  <h2>Low-level caching</h2>
+  <p>Generic key-value caching via <code>Rails.cache</code>. Good for any computed value.</p>
+  <pre><code>Rails.cache.fetch("some_key") { expensive_computation }
+  </code></pre>
+
+  <h2>Fragment caching</h2>
+  <p>Cache parts of a view (partials) to avoid re-rendering expensive templates. Use <code>cache</code> helper in views.</p>
+  <pre><code><% cache product do %>
+  &lt;%= render 'product', product: product %&gt;
+<% end %>
+  </code></pre>
+
+  <h2>Russian doll caching</h2>
+  <p>Nested fragments where parent caches reference child caches. When a child changes, only that child's cache key changes and parent can remain valid if designed well using keys/versioning.</p>
+  <pre><code># parent view
+<% cache [@category, @category.updated_at] do %>
+  &lt;%= render collection: @category.products, partial: 'product' %&gt;
+<% end %>
+  </code></pre>
+
+  <h2>Page caching</h2>
+  <p>Serve full HTML pages directly from the cache (often done at CDN or proxy layer). Rare in modern Rails apps because of personalization. Works best for truly public pages.</p>
+
+  <h2>Comparison table</h2>
+  <ul>
+    <li><strong>Low-level:</strong> flexible, key-value, good for API results.</li>
+    <li><strong>Fragment:</strong> view-level, good for parts of pages.</li>
+    <li><strong>Russian doll:</strong> efficient nested invalidation and partial updates.</li>
+    <li><strong>Page:</strong> fastest for public content, complex for per-user personalization.</li>
+  </ul>
+</body>
+</html>

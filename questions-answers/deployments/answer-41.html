@@ -1,0 +1,109 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Implementing Feature Flags in AWS Deployments</title>
+  <style>
+    body{font-family:Inter,Arial,Helvetica,sans-serif;margin:22px;color:#222;line-height:1.65}
+    h1{background:#0b7285;color:white;padding:12px;border-radius:8px}
+    h2{color:#0b7285;margin-top:18px}
+    pre{background:#f3fbfc;padding:12px;border-radius:6px;overflow:auto}
+    code{background:#eef;padding:2px 6px;border-radius:4px}
+    ul{margin:8px 0 8px 20px}
+    .note{background:#fff8e6;border-left:4px solid #ffb400;padding:10px;border-radius:6px}
+  </style>
+</head>
+<body>
+  <h1>Implementing Feature Flags in AWS Deployments</h1>
+
+  <h2>Why use feature flags?</h2>
+  <p>Feature flags (toggles) let you decouple code deployment from feature release. They enable safe progressive rollout, A/B tests, instant kill-switch, staged rollout for DB-migrations, and rapid experiments without redeploying code.</p>
+
+  <h2>High-level options on AWS</h2>
+  <ul>
+    <li><strong>Managed SaaS:</strong> LaunchDarkly, Split, Flagsmith — full-featured, best UX and targeting.</li>
+    <li><strong>AWS native:</strong> <strong>AWS AppConfig</strong> (part of Systems Manager) for configuration / feature flags with validators and deployment strategies.</li>
+    <li><strong>Open-source:</strong> Unleash, Flagr — self-hosted control planes you can run on EKS.</li>
+    <li><strong>Lightweight:</strong> Use SSM Parameter Store, Secrets Manager or DynamoDB for simple toggles.</li>
+  </ul>
+
+  <h2>Design patterns</h2>
+  <ul>
+    <li><strong>Server-side flags:</strong> Evaluate flags in your backend (Rails, Node) and return UI controls or alter behavior server-side.</li>
+    <li><strong>Client-side flags:</strong> For frontends (Vue.js), fetch flags at boot or via SDK and toggle UI features locally.</li>
+    <li><strong>Percentage rollouts:</strong> Use hashed bucketing (user id → bucket) to deterministically assign users.</li>
+    <li><strong>Targeting & rules:</strong> Target by user attributes, region, plan, or device.</li>
+    <li><strong>Kill switches:</strong> Fast global toggle to switch a feature off immediately.</li>
+  </ul>
+
+  <h2>Recommended approach on AWS (practical)</h2>
+  <ol>
+    <li><strong>Pick control plane:</strong> AppConfig for infra-native, LaunchDarkly for advanced targeting, or Unleash if you want OSS.</li>
+    <li><strong>Use SDKs:</strong> Use the vendor SDK or lightweight fetch + caching for performance.</li>
+    <li><strong>Cache locally:</strong> Avoid synchronous network calls on every request — cache flags in memory with TTL; refresh on interval or listen for change events.</li>
+    <li><strong>Record telemetry:</strong> Emit impressions/changes to CloudWatch or vendor analytics to analyze impact.</li>
+    <li><strong>Integrate with CI/CD:</strong> Feature flags can be created/updated as part of release pipelines (promote config from staging to prod).</li>
+  </ol>
+
+  <h2>Example: AWS AppConfig + Lambda / Rails pattern</h2>
+  <p>AppConfig stores JSON configuration and supports validators + environment deployment strategies. A backend service fetches config via the AppConfig SDK or the Systems Manager Data client.</p>
+  <pre><code>// Pseudocode Ruby (conceptual)
+require 'aws-sdk-appconfigdata'
+client = Aws::AppConfigData::Client.new(region: 'us-east-1')
+
+session = client.start_configuration_session({
+  application_identifier: "myapp",
+  environment_identifier: "prod",
+  configuration_profile_identifier: "feature-flags-json"
+})
+
+token = session.initial_token
+resp = client.get_latest_configuration({ configuration_token: token })
+flags_json = JSON.parse(resp.content.read)</code></pre>
+
+  <h2>Frontend (Vue.js) integration</h2>
+  <ol>
+    <li>Fetch flags at app startup (or embed flags in server-side rendered HTML if using SSR).</li>
+    <li>Use a local store (Vuex or Pinia) to provide flags to components.</li>
+    <li>Use an update strategy (poll / push / websocket) and a short TTL.</li>
+  </ol>
+
+  <h2>Feature flag lifecycle & governance</h2>
+  <ul>
+    <li>Label flags with owner, creation date, purpose, and expected removal date.</li>
+    <li>Implement automated expiry reminders and cleanup (stale toggle removal).</li>
+    <li>Record who toggled what and when (audit logs).</li>
+  </ul>
+
+  <h2>Metrics & automatic rollouts</h2>
+  <p>Use CloudWatch metrics (errors, latency) or vendor analytics. For automatic gating, implement a small controller that watches metrics for the flagged cohort and rolls back or advances the rollout.</p>
+
+  <h2>Testing & local dev</h2>
+  <ul>
+    <li>Allow local overrides (environment variables) for dev/test.</li>
+    <li>Mock the flag service in unit tests; use integration tests with both flag-on and flag-off scenarios.</li>
+  </ul>
+
+  <h2>Security considerations</h2>
+  <ul>
+    <li>Authorize access to flag management interfaces.</li>
+    <li>Do not store secrets in flags.</li>
+    <li>Use IAM to control which CI/CD systems can update AppConfig or SSM keys.</li>
+  </ul>
+
+  <h2>Subquestions & answers</h2>
+  <h3>Q: When to use AppConfig vs LaunchDarkly?</h3>
+  <p>A: Use AppConfig when you want AWS-native, simple JSON configs with validation and deployment strategies. Use LaunchDarkly when you need advanced targeting, experimentation, and an enterprise UI/SDK ecosystem.</p>
+
+  <h3>Q: How to do percentage rollouts reliably?</h3>
+  <p>A: Use a hash of a stable key (user id) modulo 100 to determine bucket assignment. Ensure bucketing is deterministic across backend & frontend.</p>
+
+  <h3>Q: How to avoid performance penalties?</h3>
+  <p>A: Cache flags, fetch asynchronously, and design fallbacks if flag service is unavailable (default safe behavior).</p>
+
+  <h2>Final notes</h2>
+  <p>Feature flags are powerful but require governance: policies for creation, ownership, telemetry and timely cleanup. On AWS, AppConfig + a lightweight evaluation SDK + CI integration covers most internal use-cases; add a SaaS vendor for advanced experimentation.</p>
+</body>
+</html>

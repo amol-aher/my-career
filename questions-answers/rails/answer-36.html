@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GraphQL vs REST</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1, h2, h3 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .code-block { margin: 20px 0; }
+        .subquestion { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>GraphQL vs REST: Comparison and Preferences</h1>
+    
+    <h2>Core Differences</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Feature</th>
+                <th>REST</th>
+                <th>GraphQL</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Data Fetching</td>
+                <td>Fixed endpoints returning predefined data structures</td>
+                <td>Single endpoint with customizable queries</td>
+            </tr>
+            <tr>
+                <td>Over-fetching/Under-fetching</td>
+                <td>Common issue requiring multiple requests</td>
+                <td>Eliminated through precise data selection</td>
+            </tr>
+            <tr>
+                <td>Versioning</td>
+                <td>URL versioning (v1/users)</td>
+                <td>Schema evolution with deprecated fields</td>
+            </tr>
+            <tr>
+                <td>Caching</td>
+                <td>Leverages HTTP caching effectively</td>
+                <td>Requires custom implementation</td>
+            </tr>
+            <tr>
+                <td>Learning Curve</td>
+                <td>Lower barrier to entry</td>
+                <td>Steeper learning curve for complex schemas</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h2>When to Choose Each Approach</h2>
+    <h3>GraphQL Advantages:</h3>
+    <ul>
+        <li>Mobile applications needing minimal data transfers</li>
+        <li>Complex UIs requiring data from multiple sources</li>
+        <li>When schema changes frequently</li>
+        <li>Real-time applications with subscriptions</li>
+    </ul>
+    
+    <h3>REST Advantages:</h3>
+    <ul>
+        <li>Simple CRUD operations</li>
+        <li>Public APIs with clear documentation</li>
+        <li>Caching requirements</li>
+        <li>Simple integrations with existing systems</li>
+    </ul>
+    
+    <h2>My Preference: Context Matters</h2>
+    <p>I prefer <strong>REST for public APIs and microservices communication</strong> due to its simplicity, caching capabilities, and wide adoption. I prefer <strong>GraphQL for client-driven applications</strong> where mobile efficiency and flexible data fetching are paramount.</p>
+    
+    <h2>Hybrid Approach</h2>
+    <p>Many modern architectures combine both approaches:</p>
+    <ul>
+        <li>REST for backend-to-backend communication</li>
+        <li>GraphQL for frontend-to-backend communication</li>
+        <li>REST gateway pattern exposing GraphQL as REST endpoints</li>
+    </ul>
+    
+    <div class="subquestion">
+        <h3>Common Subquestions:</h3>
+        
+        <h4>Q: How do you handle authorization in GraphQL?</h4>
+        <p>Use resolver functions to check permissions before executing queries. Implement field-level authorization checks and integrate with OAuth/JWT.</p>
+        
+        <h4>Q: Can you explain GraphQL subscriptions?</h4>
+        <p>Subscriptions provide real-time data updates using WebSocket connections. They're ideal for chat apps, live dashboards, and collaborative tools.</p>
+        
+        <h4>Q: What are some performance considerations for GraphQL?</h4>
+        <p>N+1 query problem requires dataloader batching, complex queries need depth limiting, and schema complexity impacts cold starts in serverless environments.</p>
+    </div>
+</body>
+</html>

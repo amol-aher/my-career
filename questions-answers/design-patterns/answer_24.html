@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Decorator pattern in Ruby (without Rails)</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Implementing the Decorator pattern in Ruby (plain Ruby)</h1>
+
+    <p><strong>Intent</strong>: add responsibilities to objects dynamically without changing their class. Good for presentation concerns, logging, or adding cross-cutting behavior.</p>
+
+    <h2>Example: Decorating a simple Product presenter</h2>
+    <pre><code>class Product
+  attr_reader :name, :price
+  def initialize(name, price)
+    @name = name; @price = price
+  end
+end
+
+# base presenter
+class ProductPresenter
+  def initialize(product)
+    @product = product
+  end
+
+  def title
+    @product.name
+  end
+
+  def price
+    "$#{'%.2f' % (@product.price / 100.0)}"
+  end
+end
+
+# decorator that adds discount label
+class DiscountDecorator
+  def initialize(presenter, discount_percent)
+    @presenter = presenter
+    @discount_percent = discount_percent
+  end
+
+  def title
+    @presenter.title
+  end
+
+  def price
+    original = @presenter.price
+    # return both original and discounted price
+    discounted = (@presenter.instance_variable_get(:@product).price * (100 - @discount_percent) / 100.0).floor
+    "$#{'%.2f' % (discounted / 100.0)} (#{@discount_percent}% off)"
+  end
+end
+
+# usage
+product = Product.new('Widget', 1999)
+base = ProductPresenter.new(product)
+deco = DiscountDecorator.new(base, 20)
+puts deco.title
+puts deco.price
+</code></pre>
+
+    <h2>Notes</h2>
+    <ul>
+      <li>Decorators delegate to the wrapped object; keep the interface consistent.</li>
+      <li>Use Forwardable or SimpleDelegator from stdlib for convenience:</li>
+    </ul>
+    <pre><code>require 'delegate'
+class LoggingDecorator &lt; SimpleDelegator
+  def perform(*args)
+    puts "calling perform"
+    __getobj__.perform(*args)
+  end
+end
+</code></pre>
+
+    <h2>When to prefer Decorators</h2>
+    <ul>
+      <li>Presentation layer concerns (formatting) that shouldn't live in the domain model.</li>
+      <li>When you need to compose behaviors at runtime (e.g., add caching or logging around objects).</li>
+    </ul>
+
+    <h2>Trade-offs</h2>
+    <ul>
+      <li>Many wrapping layers can make debugging harder — keep decorators small and focused.</li>
+      <li>Consider using composition over inheritance; avoid modifying original class behavior in surprising ways.</li>
+    </ul>
+
+    <h2>Interview tip</h2>
+    <p>Show the SimpleDelegator example as a concise idiomatic Ruby solution and explain when to prefer decorators over presenters or helpers.</p>
+  </div>
+</body>
+</html>

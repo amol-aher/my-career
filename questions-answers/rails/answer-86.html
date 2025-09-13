@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Secure Authentication for Rails APIs Serving Web and Mobile Clients</title>
+<style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.6; padding:28px; color:#111; background:#fff; }
+    .container{max-width:980px;margin:0 auto;}
+    header{border-bottom:1px solid #e6e6e6;margin-bottom:18px;padding-bottom:8px;}
+    h1{font-size:26px;margin:0 0 6px 0;}
+    h2{font-size:18px;margin-top:18px;color:#0b69ff;}
+    h3{font-size:15px;margin-top:14px;color:#0b69ff;}
+    p{margin:8px 0;}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:4px;}
+    ul{margin:8px 0 8px 20px;}
+    table{border-collapse:collapse;width:100%;margin:8px 0;}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+    .muted{color:#666;font-size:13px;}
+    footer{border-top:1px solid #e6e6e6;margin-top:22px;padding-top:12px;color:#666;font-size:13px;}
+    </style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>Secure Authentication for Rails APIs Serving Web and Mobile Clients</h1>
+<p class="muted">Prepared by: Senior Software Engineer &amp; System Architect — Rails / AWS / SQL / Vue.js</p>
+<p class="muted">Date: 2025-09-10 (UTC)</p>
+</header>
+
+<p class="muted"><strong>Overview</strong></p>
+<p>Designing an authentication system that supports both browser-based web apps (cookie-based) and mobile/native clients (token-based) securely.</p>
+
+<section><h2>Goals & Threat Model</h2>
+<ul>
+<li>Protect user credentials and sessions from theft.</li>
+<li>Prevent CSRF for browser flows, prevent token reuse, and allow revocation and rotation.</li>
+<li>Support offline mobile clients and refresh tokens.</li>
+</ul>
+</section>
+<section><h2>Recommended approach (hybrid)</h2>
+<p>Use cookie-based sessions for web UI (same-site cookies + CSRF) and short-lived access tokens (JWT) with refresh tokens for mobile/third-party clients. Centralize auth in an Auth service or use Devise + Doorkeeper.</p>
+</section>
+<section><h2>Web flow (cookie-based)</h2>
+<ul>
+<li>Authenticate via username/password over TLS and set a session cookie with <code>HttpOnly</code>, <code>Secure</code>, and <code>SameSite=Lax/Strict</code>.</li>
+<li>Protect state-changing endpoints with CSRF tokens (Rails includes this by default).</li>
+<li>Use rotating session IDs and short session expiry + remember-me via secure refresh tokens.</li>
+</ul>
+</section>
+<section><h2>Mobile/API flow (token-based)</h2>
+<ul>
+<li>Issue a short-lived access token (JWT, 5–15 minutes) and a long-lived refresh token (secure, stored in secure storage on device).</li>
+<li>Use refresh tokens to obtain new access tokens; store refresh token identifiers server-side to allow revocation and detect theft.</li>
+<li>Implement token rotation: when refresh token is used, issue a new refresh token and revoke the old one to limit replay.</li>
+<li>Provide OAuth2/OpenID Connect flows using Doorkeeper or an external provider for third-party access.</li>
+</ul>
+</section>
+<section><h2>Server-side best practices</h2>
+<ul>
+<li>Keep JWTs short lived and validate signatures and claims. Prefer reference tokens for more control (store token metadata server-side).</li>
+<li>Use TLS everywhere, HSTS, and CORS configured properly for API endpoints.</li>
+<li>Store refresh token metadata (device_id, user_agent, ip) to detect anomalies.</li>
+<li>Allow per-device revocation and show active sessions in user settings.</li>
+</ul>
+</section>
+<section><h2>Additional security measures</h2>
+<ul>
+<li>Rate limit auth endpoints and instrument for brute-force detection.</li>
+<li>Enforce strong password policies and offer MFA (TOTP, WebAuthn).</li>
+<li>Use device trust and risk-based authentication for unusual logins.</li>
+</ul>
+</section>
+<section><h2>Subquestions you should expect</h2>
+<ol>
+<li><strong>Should I store JWTs in localStorage?</strong><br/>Avoid localStorage for web apps; prefer HttpOnly cookies to mitigate XSS. If using SPA with tokens, use Authorization header and implement appropriate XSS protections.</li>
+<li><strong>How to revoke tokens?</strong><br/>Store refresh token IDs or token version per user; increment token version on password reset or logout to invalidate older tokens.</li>
+<li><strong>OAuth2 vs custom tokens?</strong><br/>For third-party integrations prefer OAuth2/OpenID Connect; for first-party mobile apps, JWTs with server-side rotation are acceptable.</li>
+</ol>
+</section>
+
+
+<footer>
+I can scaffold a Doorkeeper-based OAuth2 server or a JWT refresh-token flow in Rails with sample controllers and tests.
+</footer>
+</div>
+</body>
+</html>

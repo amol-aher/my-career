@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Single Responsibility Principle and report generation</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;line-height:1.6;color:#111;background:#f6f8fb;padding:28px}
+    .container{max-width:900px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px}
+    h2{font-size:18px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Single Responsibility Principle (SRP) and report generation</h1>
+
+    <p><strong>Question</strong>: Is the report generation example an example of a single responsibility class from SOLID? <strong>Short answer</strong>: Not by default — report generation is usually an orchestration of multiple responsibilities. To follow SRP, split the pipeline into focused classes: data fetcher, aggregator/presenter, builder, exporter, and persistence/queuing. Each should have one reason to change.</p>
+
+    <h2>SRP recap</h2>
+    <p>SRP: A class/module should have one, and only one, reason to change. In practice we aim to minimize reasons to change by separating concerns such that each class is responsible for a single part of the behavior.</p>
+
+    <h2>Typical responsibilities in a report pipeline</h2>
+    <ul>
+      <li><strong>Input/Querying</strong> — building and executing DB queries, applying filters.</li>
+      <li><strong>Business aggregation</strong> — applying domain rules, calculations, roll-ups.</li>
+      <li><strong>Layout & composition</strong> — sections, headers, totals, page breaks.</li>
+      <li><strong>Serialization/export</strong> — CSV, XLSX, PDF, streaming logic.
+      <li><strong>Persistence/dispatch</strong> — save to S3, enqueue background job, or return HTTP stream.</li>
+    </ul>
+
+    <h2>How to refactor a monolithic ReportGenerator into SRP-compliant pieces</h2>
+    <ol>
+      <li>Introduce a Query Object for all DB interactions (unit-testable with factories).</li>
+      <li>Introduce an Aggregator/Presenter for domain logic (pure Ruby, no DB calls).</li>
+      <li>Use a Builder to compose the report structure (PORO representing the rendered model).</li>
+      <li>Use Exporter strategies for each output format.</li>
+      <li>Keep a thin Coordinator / Service that wires components and orchestrates the workflow.</li>
+    </ol>
+
+    <h3>Refactor example (Ruby sketch)</h3>
+    <pre><code># Query object
+class OrdersReportQuery
+  def initialize(params)
+    @params = params
+  end
+
+  def call
+    scope = Order.completed
+    scope = scope.where(user_id: @params[:user_id]) if @params[:user_id]
+    # more filters and joins
+    scope
+  end
+end
+
+# Aggregator (pure Ruby)
+class OrdersAggregator
+  def initialize(relation)
+    @relation = relation
+  end
+
+  def aggregate
+    # group, compute totals
+  end
+end
+
+# Exporter (Strategy)
+class CsvExporter
+  def export(report_pojo)
+    # produces CSV
+  end
+end
+
+# Orchestrator
+class OrdersReportService
+  def initialize(query:, aggregator:, builder:, exporter:)
+    @query = query
+    @aggregator = aggregator
+    @builder = builder
+    @exporter = exporter
+  end
+
+  def run
+    relation = @query.call
+    aggregated = @aggregator.new(relation).aggregate
+    report = @builder.build_from(aggregated)
+    @exporter.export(report)
+  end
+end
+</code></pre>
+
+    <h2>How SRP helps</h2>
+    <ul>
+      <li>Each component is small and focused — easier to reason about and test.</li>
+      <li>Changing how data is fetched does not affect how PDFs are generated, reducing regression risk.</li>
+      <li>Parallelization: exporter can run in a background worker without touching the query object implementation.</li>
+    </ul>
+
+    <h2>Practical guidelines / interview talking points</h2>
+    <ul>
+      <li>Explain SRP with "one reason to change" and show the mapping of reasons to classes.</li>
+      <li>Show how you would test each component independently. For instance, the Aggregator should be tested with in-memory arrays or stubs, not the DB.</li>
+      <li>Discuss performance considerations: keep large dataset handling in streaming or batched processing.</li>
+      <li>Mention real-world constraints: deadlines sometimes require pragmatic merges of responsibilities (trade-offs), but show how you'd refactor for maintainability.</li>
+    </ul>
+
+    <p style="color:#666">Overall: report generation is an orchestration; to adhere to SRP you should split responsibilities into small collaborating classes. This is a great chance in an interview to show design judgement — explain trade-offs and demonstrate sample tests and metrics you’d monitor.</p>
+  </div>
+</body>
+</html>

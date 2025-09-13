@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Splitting Monolithic Rails Applications</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px; }
+        .step-box { background-color: #e8f8f5; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .diagram { text-align: center; margin: 20px 0; }
+        .microservice-card { display: inline-block; width: 120px; height: 80px; background-color: #3498db; color: white; margin: 5px; padding: 10px; border-radius: 5px; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>Splitting Monolithic Rails Apps into Microservices</h1>
+
+    <div class="step-box">
+        <h2>Step 1: Identify Microservice Boundaries</h2>
+        <p>Use Domain-Driven Design principles to find natural separations:</p>
+        <ul>
+            <li><strong>Bounded Contexts:</strong> Identify distinct domains (e.g., Orders, Payments, Inventory)</li>
+            <li><strong>Transaction Boundaries:</strong> Look for operations requiring ACID properties</li>
+            <li><strong>Team Autonomy:</strong> Align with organizational structure (one team per service)</li>
+            <li><strong>Change Frequency:</strong> Services with independent release cycles</li>
+        </ul>
+        <div class="diagram">
+            <div class="microservice-card">Orders<br>(v1.2.3)</div>
+            <div class="microservice-card">Payments<br>(v3.1.0)</div>
+            <div class="microservice-card">Inventory<br>(v2.0.5)</div>
+        </div>
+    </div>
+
+    <div class="step-box">
+        <h2>Step 2: Extract Services Strategically</h2>
+        <p>Start with low-risk, well-defined services:</p>
+        <ol>
+            <li><strong>Identify Candidate Services:</strong> Look for cohesive modules with clear interfaces</li>
+            <li><strong>Create New Repository:</strong> Isolate service codebase</li>
+            <li><strong>Define API Contracts:</strong> Establish versioned REST/gRPC endpoints</li>
+            <li><strong>Implement Data Separation:</strong> Migrate related tables to new database</li>
+        </ol>
+        <p><strong>Example Extraction Flow:</strong></p>
+        <div class="sql-code">
+            <pre>// Step 1: Extract Orders service
+git filter-repo --path orders/
+
+// Step 2: Create new Rails app
+rails new orders_service
+
+// Step 3: Move models/controllers
+mv app/models/order.rb orders_service/app/models/
+mv app/controllers/orders_controller.rb orders_service/app/controllers/
+
+// Step 4: Define API endpoints
+# orders_service/config/routes.rb
+namespace :api do
+  namespace :v1 do
+    resources :orders
+  end
+end</pre>
+        </div>
+    </div>
+
+    <div class="step-box">
+        <h2>Step 3: Handle Data Separation</h2>
+        <p>Strategies for decoupling databases:</p>
+        <ul>
+            <li><strong>Schema Migration:</strong> Use database tools (pg_dump, mysqldump) to export/import tables</li>
+            <li><strong>Event Sourcing:</strong> Capture state changes as events for eventual consistency</li>
+            <li><strong>CQRS Pattern:</strong> Separate read/write models for performance</li>
+            <li><strong>Database Per Service:</strong> Dedicated DB instances for each microservice</li>
+        </ul>
+        <div class="warning">
+            <p><strong>Anti-Pattern Alert:</strong> Avoid shared databases - this negates microservice benefits!</p>
+        </div>
+    </div>
+
+    <div class="step-box">
+        <h2>Step 4: Implement Communication Layer</h2>
+        <p>Establish robust inter-service communication:</p>
+        <ul>
+            <li><strong>API Gateway:</strong> Central entry point routing requests (e.g., Kong, AWS API Gateway)</li>
+            <li><strong>Service Discovery:</strong> Dynamic endpoint resolution (Consul, Eureka)</li>
+            <li><strong>Circuit Breakers:</strong> Prevent cascading failures (Hystrix, Resilience4j)</li>
+            <li><strong>Monitoring:</span> Distributed tracing (Jaeger, Zipkin)</li>
+        </ul>
+    </div>
+
+    <div class="step-box">
+        <h2>Step 5: Deployment Pipeline</h2>
+        <p>Automate the transition process:</p>
+        <ol>
+            <li><strong>Feature Flags:</strong> Gradually route traffic to new services</li>
+            <li><strong>Canary Releases:</strong> Deploy to small subset of users first</li>
+            <li><strong>Rollback Plan:</strong> Maintain dual-write capability during cutover</li>
+            <li><strong>Chaos Engineering:</strong> Test failure recovery mechanisms</li>
+        </ol>
+    </div>
+
+    <div class="solution">
+        <h2>Key Success Factors</h2>
+        <ul>
+            <li>Invest in observability (logging, metrics, traces)</li>
+            <li>Establish clear ownership boundaries</li>
+            <li>Implement comprehensive contract testing</li>
+            <li>Plan for eventual consistency where needed</li>
+            <li>Allocate dedicated DevOps resources</li>
+        </ul>
+    </div>
+</body>
+</html>

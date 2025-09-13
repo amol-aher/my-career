@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Eigenclasses (singleton classes) in Ruby</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:18px;color:#111}
+    h1{color:#1a56db} h2{color:#0b5a78}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <h1>What are eigenclasses (singleton classes) in Ruby and how they enable metaprogramming</h1>
+
+  <p><strong>Definition:</strong> An eigenclass (or singleton class) is a hidden, anonymous class created by Ruby for each object that stores methods defined only for that specific object (singleton methods). It sits in the object's ancestor chain immediately above the object's original class.</p>
+
+  <h2>How to create / use an eigenclass</h2>
+  <pre><code class="language-ruby"># define a singleton method
+obj = Object.new
+def obj.greet; "hi" end
+obj.greet # => "hi"
+
+# open the singleton class
+class << obj
+  def another; "x" end
+end</code></pre>
+
+  <h2>Class methods are singleton methods on classes</h2>
+  <p>Classes are objects too. When you write <code>class A; def self.foo; end; end</code>, you're defining a singleton method on the class object — stored in the class's eigenclass. That's why eigenclasses are fundamental to how Ruby models 'class methods'.</p>
+
+  <h2>Method lookup chain</h2>
+  <p>When a message is sent to <code>obj</code>, Ruby first looks in the eigenclass for matching singleton methods, then proceeds down to the object's class, and then its ancestors.</p>
+
+  <h2>Use cases and metaprogramming patterns</h2>
+  <ul>
+    <li><strong>Per-object behavior:</strong> Add behavior to a single instance without affecting its class.</li>
+    <li><strong>Per-class behavior:</strong> Implement class methods, extend objects with modules by including them into eigenclass (<code>class << obj; include M; end</code>).</li>
+    <li><strong>Dynamic mixins:</strong> Extend a single object with a module at runtime using <code>object.extend(Module)</code> (which adds the module to the eigenclass).</li>
+    <li><strong>DSLs:</strong> Many DSLs define methods on a per-object basis so that each DSL invocation can alter only its context.</li>
+  </ul>
+
+  <h2>Example: extending single object</h2>
+  <pre><code class="language-ruby">module Greeting
+  def greet; "hello from module" end
+end
+
+o1 = Object.new
+o2 = Object.new
+
+o1.extend(Greeting)
+o1.greet # => "hello from module"
+# o2.greet would raise NoMethodError</code></pre>
+
+  <h2>Visualizing ancestry (pseudo)</h2>
+  <pre><code class="language-text">[obj eigenclass] &lt;-- methods defined for obj (singleton methods)
+[obj class] &lt;-- instance methods
+[parent class] &lt;-- ancestor chain
+Object
+BasicObject</code></pre>
+
+  <h2>Caveats</h2>
+  <ul>
+    <li>Singleton classes increase object memory usage slightly — avoid creating many singleton methods on huge numbers of objects unless needed.</li>
+    <li>Serialization and marshalling can be tricky if objects rely on eigenclass methods.</li>
+    <li>Singleton class method lookup can be surprising for developers unfamiliar with the concept — document per-object behavior clearly.</li>
+  </ul>
+
+  <h2>Conclusion</h2>
+  <p>Eigenclasses are a core enabler of Ruby's flexible object model — they allow per-object and per-class behavior, dynamic mixins, and are essential for advanced metaprogramming patterns.</p>
+</body>
+</html>

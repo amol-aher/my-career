@@ -1,0 +1,32 @@
+<!doctype html><html><head><meta charset='utf-8'><title>Identifying risks early in a project</title>
+<style>
+body{font-family:Segoe UI,Arial,Helvetica,sans-serif;line-height:1.6;padding:24px;max-width:900px;margin:auto;color:#111}
+header{border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:18px}
+h1{font-size:20px;margin:0 0 6px 0}
+.role{color:#555;font-size:13px;margin-bottom:6px}
+pre{background:#f6f6f6;padding:12px;border-radius:6px;overflow:auto}
+code{font-family:monospace;font-size:13px}
+section{margin-bottom:18px}
+.sub{font-weight:600;margin-top:8px}
+ul{margin-left:18px}
+ol{margin-left:18px}
+</style></head><body><header><h1>Identifying risks early in a project</h1><div class='role'>System architect · Technical lead · Senior software engineer (Ruby on Rails, AWS, SQL, Vue.js)</div></header>
+<section>
+<p><strong>Summary:</strong> Risks are identified through discovery workshops, technical spikes, dependency mapping, and regular risk reviews. Maintain a risk register with owners and mitigation plans.</p>
+
+<div class='sub'>Practical tactics</div>
+<ul>
+<li>Run pre-mortem to imagine failures and plan mitigations.</li>
+<li>Map external dependencies and SLAs (third-parties, infra teams).</li>
+<li>Perform architecture reviews and security assessments early.</li>
+<li>Create lightweight spikes for unknowns.</li>
+</ul>
+
+<div class='sub'>Risk register example</div>
+<pre><code>Risk: Third-party API rate limit
+Likelihood: High
+Impact: Medium (delays onboarding)
+Mitigation: Implement local caching & exponential backoff, request higher rate limits
+Owner: @backend-lead</code></pre>
+</section>
+</body></html>

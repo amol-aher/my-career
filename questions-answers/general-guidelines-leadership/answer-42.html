@@ -1,0 +1,37 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Balancing Clean Code and Tight Deadlines</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:24px;color:#111}h1{font-size:24px}h2{font-size:20px}ul{margin-left:18px}</style>
+</head>
+<body>
+  <h1>Balancing Clean, Maintainable Code with Tight Deadlines</h1>
+  <section>
+    <h2>Principles</h2>
+    <ul>
+      <li><strong>Prioritize correctness and safety:</strong> shipping fast is important but not at the cost of catastrophic bugs.</li>
+      <li><strong>Incremental quality:</strong> apply small, meaningful improvements (refactors) as part of feature work.</li>
+      <li><strong>Risk-based approach:</strong> spend more time on critical paths and simpler, more pragmatic approaches elsewhere.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Practical tactics</h2>
+    <ul>
+      <li>Keep PRs small and focused — easier to review and less risky.</li>
+      <li>Use feature flags to ship incomplete or risky work safely.</li>
+      <li>Add tests for the most critical behavior; leave non-critical tests for later.</li>
+      <li>Defer abstraction until there is clear duplication or complexity (YAGNI).</li>
+      <li>Allocate a small % of every sprint (e.g., 10–20%) for maintenance/refactoring.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Example</h2>
+    <p>When shipping a new checkout flow under tight deadline, we implemented the MVP with clear boundaries and added a follow-up ticket to refactor shared logic and add comprehensive tests in the next sprint.</p>
+  </section>
+</body>
+</html>

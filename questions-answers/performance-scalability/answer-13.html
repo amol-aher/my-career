@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Handling Skewed Partitions (Hot Regions / Heavy Shards)</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}</style>
+</head>
+<body>
+  <h1>Handling Skewed Partitions (Hot Regions / Heavy Shards)</h1>
+  <p>Partition skew—when one partition (e.g., a region) holds most of the data—breaks naive partition-by-region strategies. Fixing it requires re-sharding, virtual shards, or composite keys to evenly distribute load.</p>
+
+  <h2>Strategies</h2>
+  <h3>1. Sub-sharding (add a secondary shard key)</h3>
+  <p>Instead of single-level partition (region), add another dimension (hash of user id, date bucket) so each region has multiple shards.</p>
+  <pre><code>-- Example: partition by (region, hash_prefix)
+ALTER TABLE events PARTITION BY LIST (region);
+-- within a region, create hash-based child partitions or multiple physical shards
+  </code></pre>
+
+  <h3>2. Virtual shards (application-side)</h3>
+  <p>Map logical shards to physical nodes and use consistent hashing or a shard map service to reassign hot logical shards across nodes without downtime.</p>
+
+  <h3>3. Time-based rolling partitions</h3>
+  <p>Split hot data by time windows (daily/monthly partitions). Old partitions can be archived or compressed.</p>
+
+  <h3>4. Reshard / rebalance</h3>
+  <p>For databases that support it (MongoDB, Cassandra), trigger chunk splits and balancing. For Postgres, attach/detach partitions and move data off large partitions into smaller ones.</p>
+
+  <h3>5. Hot key mitigation</h3>
+  <p>Identify hot keys and add sharding prefixes to distribute their records across partitions. For example, store <code>prefixed_id = (hash(id) % 8) || '-' || id</code> and shard by that.</p>
+
+  <h3>6. Scale vertically for the hot partition</h3>
+  <p>As a stopgap, scale up resources (CPU, IOPS) on the node serving the big partition while you design re-sharding.</p>
+
+  <h2>Operational considerations</h2>
+  <ul>
+    <li>Plan re-sharding migrations during low-traffic windows.</li>
+    <li>Monitor partition sizes, IO contention, and per-partition query latency.</li>
+    <li>Test rebalancing operations in staging with a clone of production data.</li>
+  </ul>
+
+  <h2>Summary</h2>
+  <p>Skew requires splitting partitions further (sub-shards), virtual shards, or moving to a system with automatic rebalancing. Short term, scale up; medium term, redistribute the data by adding dimensions to your partition key.</p>
+</body>
+</html>

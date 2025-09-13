@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rails Version Differences</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; margin-top: 30px; }
+        .section { background-color: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .code-block { background-color: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto; margin: 15px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<h1>Rails Version Differences: Rails 4 vs Rails 7</h1>
+
+<div class="section">
+    <h2>Major Architectural Shifts</h2>
+    
+    <h3>1. Asset Pipeline</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Feature</th>
+                <th>Rails 4</th>
+                <th>Rails 7</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Default Asset Handler</td>
+                <td>Sprockets</td>
+                <td>Webpacker</td>
+            </tr>
+            <tr>
+                <td>JavaScript Support</td>
+                <td>Requires additional gems</td>
+                <td>Native ES6+/TypeScript support</td>
+            </tr>
+            <tr>
+                <td>CSS Handling</td>
+                <td>Global stylesheets</td>
+                <td>CSS Modules, scoped styles</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h3>2. Action Pack (ActionPack)</h3>
+    <ul>
+        <li><strong>Rails 4:</strong> Separate `action_dispatch` and `action_view` gems</li>
+        <li><strong>Rails 7:</strong> Unified structure with enhanced performance</li>
+    </ul>
+    
+    <h3>3. ActiveSupport</h3>
+    <ul>
+        <li><strong>Rails 4:</strong> Basic utility functions</li>
+        <li><strong>Rails 7:</strong> Enhanced with pattern matching and refined APIs</li>
+    </ul>
+    
+    <h3>4. Security Enhancements</h3>
+    <ul>
+        <li>Improved protection against XSS attacks</li>
+        <li>Built-in CSRF protection enhancements</li>
+        <li>Secure defaults for cookie storage</li>
+    </ul>
+    
+    <h3>5. Performance Improvements</h3>
+    <ul>
+        <li>Faster boot times with parallel loading</li>
+        <li>Optimized middleware stack</li>
+        <li>Improved garbage collection</li>
+    </ul>
+    
+    <h3>6. API and Websocket Integration</h3>
+    <ul>
+        <li><strong>Rails 4:</strong> Separate gems for API and Websockets</li>
+        <li><strong>Rails 7:</strong> Integrated Action Cable for real-time features</li>
+    </ul>
+</div>
+
+</body>
+</html>

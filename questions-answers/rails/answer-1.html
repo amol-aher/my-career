@@ -1,0 +1,129 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REST API Book Controller Implementation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        h2 {
+            color: #555;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .code-block {
+            background-color: #f8f8f8;
+            border-left: 4px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+<h1>REST API Book Controller Implementation</h1>
+
+<p>This example demonstrates a standard implementation of a RESTful controller for managing books in a Rails application.</p>
+
+<h2>Controller Code</h2>
+<pre><code class="ruby">class BooksController &lt; ApplicationController
+  before_action :set_book, only: [:show, :update, :destroy]
+
+  # GET /books
+  def index
+    @books = Book.all
+    render json: @books
+  end
+
+  # GET /books/:id
+  def show
+    render json: @book
+  end
+
+  # POST /books
+  def create
+    @book = Book.new(book_params)
+
+    if @book.save
+      render json: @book, status: :created
+    else
+      render json: @book.errors, status: :unprocessable_entity
+    end
+  end
+
+  # PATCH/PUT /books/:id
+  def update
+    if @book.update(book_params)
+      render json: @book
+    else
+      render json: @book.errors, status: :unprocessable_entity
+    end
+  end
+
+  # DELETE /books/:id
+  def destroy
+    @book.destroy
+    head :no_content
+  end
+
+  private
+
+  def set_book
+    @book = Book.find(params[:id])
+  end
+
+  def book_params
+    params.require(:book).permit(:title, :author, :isbn, :published_date, :genre)
+  end
+end</code></pre>
+
+<h2>Key Components Explained</h2>
+
+<ol>
+  <li><strong>Inheritance:</strong> Inherits from <code>ApplicationController</code> to gain access to common functionality like rendering JSON responses.</li>
+  <li><strong>Before Action:</strong> <code>set_book</code> method runs before <code>show</code>, <code>update</code>, and <code>destroy</code> actions to load the book record once.</li>
+  <li><strong>CRUD Actions:</strong>
+    <ul>
+      <li><code>index</code>: Returns all books as JSON</li>
+      <li><code>show</code>: Returns single book details</li>
+      <li><code>create</code>: Creates new book with validation handling</li>
+      <li><code>update</code>: Updates existing book with error handling</li>
+      <li><code>destroy</code>: Deletes book and returns empty response</li>
+    </ul>
+  </li>
+  <li><strong>Strong Parameters:</strong> <code>book_params</code> method whitelists permitted attributes to prevent mass assignment vulnerabilities.</li>
+  <li><strong>Error Handling:</strong> Uses Rails' built-in error handling for validation failures (returns HTTP 422 Unprocessable Entity).</li>
+</ol>
+
+<h2>Potential Enhancements</h2>
+
+<ul>
+  <li>Add pagination using gems like Kaminari or Pagy for large datasets</li>
+  <li>Implement authentication/authorization (e.g., Devise + Pundit)</li>
+  <li>Add caching strategies for frequently accessed data</li>
+  <li>Include rate limiting to prevent abuse</li>
+  <li>Use versioning for API changes (e.g., namespace controllers)</li>
+</ul>
+
+<h2>Testing Considerations</h2>
+
+<p>For comprehensive testing, consider:</p>
+<ul>
+  <li>RSpec tests covering happy paths and edge cases</li>
+  <li>Request specs testing full HTTP interactions</li>
+  <li>FactoryBot for creating test data</li>
+  <li>Shoulda Matchers for common validations</li>
+</ul>
+
+</body>
+</html>

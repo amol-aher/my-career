@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Designing a user-defined workflow engine</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:1000px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px}
+    h2{font-size:18px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    ul{line-height:1.5}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Designing a workflow engine for user-defined automations</h1>
+
+    <p>Goal: allow users to define automations like "When order ships → generate invoice → send email" via a UI or configuration, with robust execution, retries, observability and safe sandboxing.</p>
+
+    <h2>High-level architecture</h2>
+    <ol>
+      <li><strong>Workflow Designer UI</strong> — drag-and-drop or form-based builder that produces a serialized workflow (JSON/YAML).</li>
+      <li><strong>Workflow Definition Store</strong> — persistent store for definitions and versions (Postgres/Cassandra).</li>
+      <li><strong>Workflow Compiler/Validator</strong> — validates the DSL, resolves references, type-checks inputs, and compiles to an executable plan.</li>
+      <li><strong>Orchestrator / Execution Engine</strong> — executes steps, tracks state, schedules retries, and persists execution history.</li>
+      <li><strong>Task Workers / Action Runners</strong> — pluggable workers that perform external actions (generate PDF, send email, call API).</li>
+      <li><strong>Event Bus</strong> — Kafka/SNS for event-driven triggers and for decoupling producers/consumers.
+      </li>
+      <li><strong>Monitoring & Audit</strong> — execution logs, metrics, and a UI for inspecting runs and replays.</li>
+    </ol>
+
+    <h2>Key design choices</h2>
+    <ul>
+      <li><strong>Representation</strong> — define workflows as a directed acyclic graph (DAG) or state machine. Use JSON-friendly schema to store nodes and edges plus metadata.</li>
+      <li><strong>Idempotency & retries</strong> — runners should be idempotent, with configurable retry policies and exponential backoff. Track attempt counts in execution state.</li>
+      <li><strong>Long-running tasks</strong> — support durable timers and sleep/wait for asynchronous callbacks (webhooks) by storing state and resuming later.</li>
+      <li><strong>Security</strong> — sandbox user-provided expressions; restrict access to secrets, and use role-based access to workflow definitions.</li>
+      <li><strong>Pluggability</strong> — actions implemented as plugins (Ruby gems or microservices). Provide a library of common actions and a way to install custom actions safely.
+      </li>
+    </ul>
+
+    <h2>Example workflow JSON (simple)</h2>
+    <pre><code>{
+  "id": "invoice-on-ship",
+  "version": 3,
+  "trigger": {"type": "event", "name": "order.shipped"},
+  "nodes": [
+    {"id": "gen_invoice", "type": "action", "action": "generate_invoice", "params": {"template": "standard"}},
+    {"id": "email", "type": "action", "action": "send_email", "params": {"to": "{{order.customer.email}}", "template_id": "invoice_email"}}
+  ],
+  "edges": [["gen_invoice","email"]]
+}
+</code></pre>
+
+    <h2>Execution semantics</h2>
+    <ul>
+      <li>Trigger: event consumed from the event bus starts a new workflow run (create run_id).</li>
+      <li>Execution: orchestrator schedules nodes whose dependencies are satisfied; workers pick up tasks from queues and report completion state.</li>
+      <li>Compensation & rollback: allow optional compensating actions for failure scenarios (e.g., cancel shipment if invoice fails).</li>
+    </ul>
+
+    <h2>Scaling & reliability</h2>
+    <ul>
+      <li>Stateless orchestrator instances with durable state in DB; use optimistic locking for state transitions.</li>
+      <li>Separate queues per action type or priority for worker scaling.</li>
+      <li>Use outbox pattern for reliable event publishing when workflow changes result in external calls.</li>
+    </ul>
+
+    <h2>Implementation options (fast path vs full-featured)</h2>
+    <ul>
+      <li><strong>Use an existing workflow engine</strong>: Temporal, Cadence, or AWS Step Functions for durable execution, retries, timeouts, and visibility.</li>
+      <li><strong>Custom lightweight engine</strong>: DB-backed orchestrator + Sidekiq workers + event bus — good when you need bespoke actions and want full control.</li>
+    </ul>
+
+    <h2>Common interview subquestions</h2>
+    <ul>
+      <li><strong>How do you test workflows?</strong> Unit-test action implementations, use integration tests with a test bus and ephemeral DB, and provide replay capabilities for debugging.</li>
+      <li><strong>How to handle schema changes?</strong> Version workflow definitions and support migration scripts or graceful version negotiation at runtime.</li>
+      <li><strong>How to secure user-defined actions?</strong> Whitelist permitted actions, sandbox scripts, and enforce least privilege for secrets and external APIs.</li>
+    </ul>
+
+    <p style="color:#666;margin-top:12px">This design balances flexibility (user-defined flows) with operational safety (idempotency, retries, auditing). For an interview, be ready to sketch the event flow and justify choices between a managed workflow (Temporal/Step Functions) and a custom implementation.</p>
+  </div>
+</body>
+</html>

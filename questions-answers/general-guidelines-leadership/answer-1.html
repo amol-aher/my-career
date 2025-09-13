@@ -1,0 +1,78 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Leading Teams — Experience and Approach</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {font-family: Arial, sans-serif; line-height:1.6; margin:24px; color:#111;}
+    h1 {font-size:24px; margin-bottom:8px;}
+    h2 {font-size:20px; margin-top:18px;}
+    pre {background:#f5f5f5; padding:12px; border-radius:6px; overflow:auto;}
+    code {background:#eee; padding:2px 4px; border-radius:4px;}
+    section {margin-bottom:18px;}
+    ul {margin-left:20px;}
+  </style>
+</head>
+<body>
+  <h1>Leading Teams — Experience and Approach</h1>
+  <section>
+    <h2>Summary</h2>
+    <p>Yes — I have substantial experience leading engineering teams ranging from 3 to 20 engineers in startup and enterprise environments. My leadership spans technical mentoring, delivery ownership, hiring, architectural direction, process design (CI/CD, branching, PR workflows), cross-team coordination, stakeholder management, and individual performance management.</p>
+  </section>
+
+  <section>
+    <h2>Detailed Experience</h2>
+    <ul>
+      <li><strong>Team sizes:</strong> Individual contributor + tech lead for 3–6 engineers; Engineering lead for 8–12; Interim Head of Engineering for ~18 engineers across multiple squads.</li>
+      <li><strong>Domains:</strong> SaaS product delivery, payment systems, B2B integrations, analytics pipelines, and customer-facing web platforms built on Ruby on Rails, PostgreSQL, Vue.js, and AWS.</li>
+      <li><strong>Responsibilities:</strong> Roadmapping with PMs, technical hiring and onboarding, 1:1s and career development, code reviews and architectural reviews, sprint planning, incident management and postmortems, and ensuring high-quality CI/CD pipelines with automated tests and monitoring.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Leadership Style</h2>
+    <p>My style is collaborative and pragmatic. I aim to enable engineers to do their best work by removing blockers, setting clear priorities, and creating feedback loops. I pair systems thinking with people-first leadership — focusing on psychological safety, clarity of goals, and measurable outcomes.</p>
+  </section>
+
+  <section>
+    <h2>Concrete Examples</h2>
+    <ul>
+      <li><strong>Mentorship:</strong> Ran a quarterly mentorship program: pairing senior engineers with mid-level ones, measuring progress with technical checkpoints and shipping ownership metrics.</li>
+      <li><strong>Process improvement:</strong> Introduced trunk-based feature-flag driven development and reduced release-time regressions by 45% in six months.</li>
+      <li><strong>On-call and incidents:</strong> Reworked the on-call rotations, added runbooks, and cut MTTD by 70% and MTTR by 50% through structured drills and postmortems.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Subquestions & Answers</h2>
+    <h3>How do you measure team health and success?</h3>
+    <p>Combination of qualitative and quantitative metrics: velocity trends (but not as a proxy for productivity), deployment frequency, lead time for changes, mean time to restore (MTTR), defect rates, sprint predictability, engineering NPS, and anonymized engagement surveys.</p>
+
+    <h3>How do you handle underperforming team members?</h3>
+    <p>Use structured feedback: clear examples, set SMART improvement goals, provide mentorship or training, and follow a 30/60/90 day review cadence with documented outcomes. If insufficient improvement, work with HR for the next steps.</p>
+
+    <h3>How do you resolve conflicts within the team?</h3>
+    <p>Start with private 1:1s to understand perspectives, bring parties together for facilitated discussion, focus on facts and desired outcomes, and create clear action items and follow-ups.</p>
+  </section>
+
+  <section>
+    <h2>Code & Process Example — Pull Request Workflow</h2>
+    <pre><code>// Example branch & PR checklist (pseudo YAML)
+name: PR-checklist
+steps:
+  - code-style: run rubocop --format simple
+  - tests: bundle exec rspec
+  - review: requires 2 approvals (1 from senior/architect)
+  - safety: run brakeman / bundler-audit for vulnerabilities
+  - deploy: gated by feature-flag & staged rollout
+</code></pre>
+  </section>
+
+  <section>
+    <h2>Conclusion</h2>
+    <p>I lead with a balance of hands-on technical contribution and enabling the team. My focus is delivering reliable software while growing engineers and maintaining a sustainable pace.</p>
+  </section>
+</body>
+</html>

@@ -1,0 +1,57 @@
+
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Immediate and Practical Solutions to Fix Performance Issues</title>
+  <style>
+    body {font-family: Arial, sans-serif; margin:40px; line-height:1.6;}
+    h1 {color:#1f4e79;}
+    pre {background:#f6f8fa;padding:12px;border-radius:6px;}
+  </style>
+</head>
+<body>
+  <h1>Immediate and Practical Solutions to Fix Performance Issues</h1>
+
+  <h2>Short-term (minutes to hours)</h2>
+  <ul>
+    <li>Identify and kill runaway queries/processes.</li>
+    <li>Enable read-only replicas and redirect reporting queries.</li>
+    <li>Increase DB connection pool temporarily and tune Sidekiq concurrency.</li>
+    <li>Enable caching (Redis) for heavy queries or endpoints.</li>
+  </ul>
+
+  <h2>Mid-term (hours to days)</h2>
+  <ul>
+    <li>Add targeted indexes based on slow query patterns.</li>
+    <li>Refactor hot code paths to batch operations and reduce allocations.</li>
+    <li>Move report generation to background workers and rate-limit jobs.</li>
+  </ul>
+
+  <h2>Longer-term (weeks)</h2>
+  <ul>
+    <li>Implement CQRS and read-optimized stores or data warehouse.</li>
+    <li>Introduce event streaming for decoupled processing.</li>
+    <li>Refactor monolith into services if deployment agility or scaling requires it.</li>
+  </ul>
+
+  <h2>Concrete Playbook</h2>
+  <ol>
+    <li>Measure p95/p99 latency and identify top offenders.</li>
+    <li>Apply quick wins: caching, throttling, read-replicas.</li>
+    <li>Apply structural fixes: indexing, batching, offload reports.</li>
+    <li>Monitor impact and iterate.</li>
+  </ol>
+
+  <h2>Example: Throttling Sidekiq Jobs</h2>
+  <pre><code># Using sidekiq-throttled gem (example)
+class HeavyWorker
+  include Sidekiq::Worker
+  sidekiq_throttle(concurrency: {limit: 5}, threshold: {limit: 100, period: 1.minute})
+  def perform(*args)
+    # heavy DB work
+  end
+end
+  </code></pre>
+</body>
+</html>

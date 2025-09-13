@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Using the Decorator pattern to clean up Rails views</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:28px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Using Decorator / Presenter pattern to clean up Rails views</h1>
+
+    <p>Views often accumulate formatting, conditional logic and small composition tasks. Decorators/Presenters move presentation logic out of models and views, making templates simple and testable.</p>
+
+    <h2>Options</h2>
+    <ul>
+      <li><strong>Draper gem</strong> — widely used, provides helpers & integration with Rails.</li>
+      <li><strong>SimpleDelegator</strong> — lightweight, no external dependency.</li>
+      <li><strong>ViewComponent / Cells</strong> — component-based approach where presentation logic lives in components.</li>
+    </ul>
+
+    <h2>Example using Draper</h2>
+    <pre><code>class ProductDecorator &lt; Draper::Decorator
+  delegate_all
+
+  def display_price
+    h.number_to_currency(object.price_cents / 100.0)
+  end
+
+  def availability_label
+    object.in_stock? ? 'In stock' : 'Out of stock'
+  end
+end
+
+# controller
+@product = Product.find(params[:id]).decorate
+
+# view (erb)
+&lt;%= @product.display_price %&gt;
+&lt;%= @product.availability_label %&gt;
+</code></pre>
+
+    <h2>SimpleDelegator example (no gem)</h2>
+    <pre><code>require 'delegate'
+class ProductPresenter &lt; SimpleDelegator
+  include ActionView::Helpers::NumberHelper
+
+  def initialize(product)
+    super(product)
+  end
+
+  def display_price
+    number_to_currency(__getobj__.price_cents / 100.0)
+  end
+end
+
+# usage in controller
+@presenter = ProductPresenter.new(Product.find(...))
+</code></pre>
+
+    <h2>Benefits</h2>
+    <ul>
+      <li>Cleaner templates with one-liners.</li>
+      <li>Presentation logic isolated and unit-testable.</li>
+      <li>Encourages SRP by keeping models domain-focused.</li>
+    </ul>
+
+    <h2>Performance & caching</h2>
+    <ul>
+      <li>Decorators should avoid expensive DB calls; delegate to preloaded associations when possible.</li>
+      <li>Cache rendered fragments keyed by presenter state for heavy pages.</li>
+    </ul>
+
+    <h2>Interview tip</h2>
+    <p>Show a before/after snippet of a messy partial moved into a decorator and mention how tests became simpler. If asked about alternatives, mention ViewComponent for more complex UI logic.</p>
+  </div>
+</body>
+<

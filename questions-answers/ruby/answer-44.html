@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 44</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 44: Given a nested hash, can you flatten it so that nested keys are joined with a dot? Can you write pseudocode or actual code?</h1>
+<h2>Concept</h2>
+<p>Flattening a nested hash involves walking the hash recursively and building new keys by joining parent keys with a separator (dot). Handle arrays, non-hash values, and collisions carefully.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Recursively traverse the hash and accumulate key path segments, emitting key-value pairs where values are not hashes. Use a stack/recursion and join keys with '.' (or chosen separator).</p>
+
+<h2>Code (actual)</h2>
+<pre><code class="language-ruby">def flatten_hash(h, prefix = nil, sep = '.')
+  result = {}
+  h.each do |k, v|
+    key = prefix ? "\#{prefix}#{sep}\#{k}" : k.to_s
+    if v.is_a?(Hash)
+      result.merge!(flatten_hash(v, key, sep))
+    else
+      result[key] = v
+    end
+  end
+  result
+end
+
+nested = {a: {b: {c: 1}}, x: 2}
+flatten_hash(nested) # => { "a.b.c" =&gt; 1, "x" =&gt; 2 }</code></pre>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>Arrays?</strong> — Decide whether to index arrays (e.g., key.0) or keep arrays intact.</li>
+<li><strong>Key collisions?</strong> — Decide merge strategy (last wins, collect into arrays, or raise).</li>
+</ul>
+
+<h2>Best practices / Pitfalls</h2>
+<ul>
+<li>Document the flattening rules, especially for arrays and collisions.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 44</footer>
+</body></html>

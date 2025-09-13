@@ -1,0 +1,73 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Elastic Beanstalk vs ECS vs EKS vs Lambda</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:22px;color:#222;line-height:1.6}
+    h1{background:#3f51b5;color:#fff;padding:12px;border-radius:8px}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{border:1px solid #ddd;padding:10px;text-align:left}
+    th{background:#e8eaf6}
+    pre{background:#f7f7f7;padding:12px;border-radius:6px;overflow:auto}
+  </style>
+</head>
+<body>
+  <h1>Elastic Beanstalk, ECS, EKS and Lambda — Comparison</h1>
+  <h2>Summary</h2>
+  <p>These four offerings represent a spectrum from opinionated PaaS to fully-managed container orchestration and serverless:</p>
+  <ul>
+    <li><strong>Elastic Beanstalk (EB):</strong> PaaS, easy but limited; good for web apps.</li>
+    <li><strong>ECS:</strong> AWS native container orchestration; simpler than k8s; can run on EC2 or Fargate.</li>
+    <li><strong>EKS:</strong> Managed Kubernetes; most flexible but highest operational complexity.</li>
+    <li><strong>Lambda:</strong> Serverless functions; event-driven, pay-per-execution but constrained in runtime / execution duration.</li>
+  </ul>
+
+  <h2>Comparison table</h2>
+  <table>
+    <tr><th>Dimension</th><th>Elastic Beanstalk</th><th>ECS (Fargate)</th><th>EKS</th><th>Lambda</th></tr>
+    <tr><td>Level of abstraction</td><td>High (PaaS)</td><td>Medium (containers managed)</td><td>Low (k8s control plane)</td><td>Very high (FaaS)</td></tr>
+    <tr><td>Operational effort</td><td>Low</td><td>Low–Medium</td><td>High</td><td>Low</td></tr>
+    <tr><td>Startup time</td><td>Minutes</td><td>Seconds–minutes</td><td>Seconds–minutes</td><td>Milliseconds–seconds</td></tr>
+    <tr><td>Use cases</td><td>Simple web apps, quick MVPs</td><td>Microservices, background tasks</td><td>Complex microservices, custom k8s tools</td><td>Event processing, lightweight APIs</td></tr>
+    <tr><td>Scaling</td><td>Auto (limited config)</td><td>Auto (Fargate) or ASG for EC2</td><td>Auto via HPA/VPA/config</td><td>Built-in concurrency scaling</td></tr>
+    <tr><td>Cost model</td><td>Managed instances (pay for EC2)</td><td>Pay for vCPU/memory (Fargate) or for EC2 instances</td><td>Pay for nodes + control plane</td><td>Pay per-invocation (can be most cost-effective for intermittent workloads)</td></tr>
+  </table>
+
+  <h2>When to choose which</h2>
+  <ul>
+    <li><strong>Choose Beanstalk:</strong> If you need the fastest path to deploy web apps with minimal infra knowledge and modest scaling needs.</li>
+    <li><strong>Choose ECS(Fargate):</strong> If you want container-first workflows, tight AWS integration, and reduced infra ops.</li>
+    <li><strong>Choose EKS:</strong> If you need Kubernetes ecosystem (operators, custom controllers) or desire workload portability between clouds.</li>
+    <li><strong>Choose Lambda:</strong> If you can model your workloads as short-lived functions and want to minimize servers and ops.</li>
+  </ul>
+
+  <h2>Subquestions & sample answers</h2>
+  <h3>How does CICD differ for each?</h3>
+  <p>Lambda: deploy packaged function or use CDK/Serverless Framework. ECS/EKS: build images and update task definitions / helm charts. Beanstalk: upload a bundle or integrate with CodePipeline. All benefit from automated tests, image scanning and staged promotion.</p>
+
+  <h3>How to manage configuration?</h3>
+  <p>Use environment variables for EB and Lambda. For ECS/EKS, use parameter store / secrets manager + config maps/SSM integrations.</p>
+
+  <h2>Example: Simple ECS Fargate task definition snippet</h2>
+  <pre><code>{ 
+  "family": "myapp-task",
+  "networkMode": "awsvpc",
+  "containerDefinitions": [
+    {
+      "name": "web",
+      "image": "123456789012.dkr.ecr.us-east-1.amazonaws.com/myapp:latest",
+      "portMappings": [{"containerPort": 3000}],
+      "essential": true
+    }
+  ],
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024"
+}</code></pre>
+
+  <p style="margin-top:18px">If you want a recommendation for your specific workload (memory, request pattern, latency SLO), share the key constraints and I’ll recommend the best deployment surface.</p>
+</body>
+</html>

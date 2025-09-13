@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Explain in detail  box-sizing in CSS?</title>
+<style>
+body{font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; max-width:900px; margin:24px auto; line-height:1.6; padding:20px}
+h1{font-size:22px;margin-bottom:6px}
+h2{font-size:18px;margin-top:18px}
+pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+code{background:#f1f1f1;padding:2px 4px;border-radius:4px}
+.section{margin-bottom:18px}
+.followups li{margin-bottom:8px}
+small.meta{color:#666}
+</style>
+</head>
+<body>
+<h1>Explain in detail  box-sizing in CSS?</h1>
+<div class="section"><p>Summary:<br>`box-sizing` determines how the browser calculates an element&#x27;s total width and height. With `content-box` (default), width/height apply to the content box and padding/border are added outside. With `border-box`, width/height include padding and border, making layout more predictable.</p></div>
+<div class="section"><p>Deep dive:<br>- content-box (default): element&#x27;s `width` sets the content area; total rendered width = width + padding + border + margin.<br>- border-box: element&#x27;s `width` includes padding and border; total width = specified width + margin.<br>- Why switch to border-box: simplifies responsive layouts and prevents unexpected overflow when adding padding/border. It’s common to apply globally:<br>```css<br>*, *::before, *::after { box-sizing: border-box; }<br>```</p></div>
+<div class="section"><p>Practical considerations:<br>- Third-party components: some libraries assume content-box — verify visually after global change.<br>- Calculations: with border-box you avoid the need to subtract padding/border from width calculations in CSS/JS.<br>- Legacy IE quirks: ancient IE versions used a different box model, but modern browsers are consistent.</p></div>
+<div class="section"><p>Examples:<br>```html<br>&lt;style&gt;<br>.box { width: 200px; padding: 20px; border: 5px solid #000; }<br>/* With content-box total width = 200 + 40 + 10 = 250px */<br>/* With border-box total width = 200px (padding and border included) */<br>&lt;/style&gt;<br>&lt;div class=&quot;box&quot;&gt;Hello&lt;/div&gt;<br>```</p></div>
+<div class="section"><p>Interviewer follow-ups:<br>- Q: When might you prefer content-box?<br>  A: When you deliberately want padding outside the specified width or when integrating a library that expects content-box.<br>- Q: Does border-box affect height calculations?<br>  A: Yes — padding and border are included in the specified height with border-box too.</p></div>
+<hr>
+<p class="meta"><small>Generated on 2025-09-10T08:27:04.670215</small></p>
+</body>
+</html>

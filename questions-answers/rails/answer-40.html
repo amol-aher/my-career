@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Managing Consumers During Monolith to Microservices Migration</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1, h2, h3 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .code-block { margin: 20px 0; }
+        .subquestion { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Managing Consumers During Monolith to Microservices Migration</h1>
+    
+    <h2>1. Consumer Classification</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Consumer Type</th>
+                <th>Characteristics</th>
+                <th>Migration Strategy</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Internal Monolith Components</td>
+                <td>Tightly coupled, direct function calls</td>
+                <td>Refactor to use service discovery first</td>
+            </tr>
+            <tr>
+                <td>Web Applications</td>
+                <td>Browser-based clients</td>
+                <td>Redirect gradually using feature flags</td>
+            </tr>
+            <tr>
+                <td>Mobile Apps</td>
+                <td>Long-lived sessions, offline capability</td>
+                <td>Versioned APIs with graceful degradation</td>
+            </tr>
+            <tr>
+                <td>Third-party Integrations</td>
+                <td>External partners with own release cycles</td>
+                <td>Deprecated endpoints with advance notice</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h2>2. Gradual Migration Techniques</h2>
+    <h3>a. Dual Write Pattern</h3>
+    <p>Write to both monolith and microservice during transition:</p>
+    <pre class="code-block">def create_order(order_data)
+  # Create in monolith (legacy system)
+  legacy_order = LegacyOrder.create(order_data)
+  
+  # Create in microservice
+  new_service.order_create(order_data)
+  
+  # Handle inconsistencies
+  reconcile_orders(legacy_order.id, new_service_order.id)
+end</pre>
+    
+    <h3>b. Facade Pattern</h3>
+    <p>Create an intermediate facade that routes requests appropriately:</p>
+    <pre class="code-block">class OrderFacade
+  def initialize(user)
+    @user = user
+  end
+  
+  def place_order(items)
+    if feature_flag?(:use_new_order_service)
+      OrderService.new(@user).place_order(items)
+    else
+      LegacyOrderSystem.place_order(@user, items)
+    end
+  end
+end</pre>
+    
+    <h3>c. Shadow Mode Deployment</h3>
+    <p>Route requests to both systems without affecting consumers:</p>
+    <pre class="code-block"># In API Gateway
+route '/orders' do
+  if shadow_mode_enabled?
+    forward_to_microservice(request)
+    forward_to_monolith(request) # Log-only mode
+  else
+    forward_to_microservice(request)
+  end
+end</pre>
+    
+    <h2>3. Consumer Communication Strategies</h2>
+    <ul>
+        <li><strong>Deprecation Calendar:</strong> Publish timeline for endpoint removal</li>
+        <li><strong>Change Notifications:</strong> Automated alerts for breaking changes</li>
+        <li><strong>Compatibility Layers:</strong> Maintain adapters for legacy consumers</li>
+    </ul>
+    
+    <div class="subquestion">
+        <h3>Common Subquestions:</h3>
+        
+        <h4>Q: How do you handle consumers that can't be updated?</h4>
+        <p>Implement reverse proxies that route traffic to either monolith or microservice based on consumer identity. Use API gateways to manage legacy endpoints.</p>
+        
+        <h4>Q: What's your approach to testing with consumers?</h4>
+        <p>Create consumer simulation tests that mock various client behaviors. Use canary releases to test with small subsets of real consumers before full rollout.</p>
+        
+        <h4>Q: How do you manage versioning for consumers?</h4>
+        <p>Use semantic versioning in API contracts. Provide versioned endpoints (/v1/orders) and communicate deprecation timelines clearly through developer portals.</p>
+    </div>
+</body>
+</html>

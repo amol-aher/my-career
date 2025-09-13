@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Policy pattern (Pundit) in Rails</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Using the Policy pattern (Pundit) in Rails</h1>
+
+    <p><strong>When to use</strong>: authorization rules that determine whether a user can perform an action on a resource. Policies centralize authorization logic and keep controllers & models clean.</p>
+
+    <h2>Basic Pundit example</h2>
+    <pre><code># app/policies/post_policy.rb
+class PostPolicy
+  attr_reader :user, :post
+
+  def initialize(user, post)
+    @user = user
+    @post = post
+  end
+
+  def update?
+    user.admin? || post.author_id == user.id
+  end
+
+  def destroy?
+    user.admin?
+  end
+
+  def show?
+    post.public? || post.author_id == user.id || user.admin?
+  end
+end
+
+# controller
+class PostsController &lt; ApplicationController
+  before_action :set_post, only: [:show, :update, :destroy]
+
+  def update
+    authorize @post
+    @post.update!(post_params)
+    head :no_content
+  end
+end
+</code></pre>
+
+    <h2>Policy scopes</h2>
+    <pre><code># app/policies/post_policy.rb
+class PostPolicy < ApplicationPolicy
+  class Scope
+    def resolve
+      if user.admin? then Post.all
+      else Post.where(public: true).or(Post.where(author_id: user.id))
+      end
+    end
+  end
+end
+
+# controller
+@posts = policy_scope(Post)
+</code></pre>
+
+    <h2>Advantages</h2>
+    <ul>
+      <li>Separation of authorization from controllers/models.</li>
+      <li>Easy to test policies in isolation.</li>
+      <li>Consistent usage via <code>authorize</code> and <code>policy_scope</code>.</li>
+    </ul>
+
+    <h2>Alternatives & extensions</h2>
+    <ul>
+      <li>CanCanCan — a different flavor that uses abilities/DSL.</li>
+      <li>Custom policy implementations — if you want less gem dependency.</li>
+    </ul>
+
+    <h2>Edge cases</h2>
+    <ul>
+      <li>Complex business rules mixed with authorization — keep policy limited to permission-checking and delegate complex logic to policy helpers or services.</li>
+      <li>Performance — avoid heavy DB work inside policy methods; push expensive operations into scopes and index accordingly.</li>
+    </ul>
+
+    <h2>Interview tip</h2>
+    <p>Explain how you keep policy logic small, test policy methods & scopes, and how you handle multi-tenant or attribute-based access control (ABAC) scenarios.</p>
+  </div>
+</body>
+</html>

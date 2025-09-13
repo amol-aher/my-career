@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rails Concerns and design patterns</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>How Rails Concerns relate to design patterns</h1>
+
+    <p><strong>Concerns</strong> are simply modules used to share behavior across models or controllers (e.g., <code>app/models/concerns</code>). They are a form of composition (mixins) and help implement cross-cutting patterns.</p>
+
+    <h2>Common usage</h2>
+    <pre><code># app/models/concerns/trackable.rb
+module Trackable
+  extend ActiveSupport::Concern
+
+  included do
+    has_many :events, as: :trackable
+    after_create :track_create
+  end
+
+  def track_create
+    events.create!(action: 'create')
+  end
+end
+
+# model\ nclass Article &lt; ApplicationRecord
+  include Trackable
+end
+</code></pre>
+
+    <h2>Relation to patterns</h2>
+    <ul>
+      <li><strong>Decorator / Presenter</strong>: concerns aren't decorators but can provide shared helpers that decorators might use.</li>
+      <li><strong>Strategy / Policy</strong>: concerns can provide shared strategies or policy helpers across multiple classes.</li>
+      <li><strong>DRY composition</strong>: concerns are an implementation of the composition-over-inheritance principle.</li>
+    </ul>
+
+    <h2>Pitfalls & best practices</h2>
+    <ul>
+      <li>Avoid large "God" concerns with many responsibilities — split by responsibility (SRP).</li>
+      <li>Prefer explicit dependencies: document methods a concern expects to exist in the including class.</li>
+      <li>Use concerns for small, reusable behavior (auditing, tagging, soft deletes), not for large workflows.</li>
+    </ul>
+
+    <h2>Interview tip</h2>
+    <p>Explain how concerns help you reuse code but also show a real refactor where you extracted behavior into a concern and later split it to avoid a God module.</p>
+  </div>
+</body>
+</html>

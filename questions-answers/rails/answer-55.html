@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Separation for Microservices</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px; }
+        .option-box { background-color: #f0f8ff; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .comparison-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .comparison-table th, .comparison-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .comparison-table th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>Database Separation for Microservices</h1>
+
+    <div class="option-box">
+        <h2>The Shared Database Antipattern</h2>
+        <p>Keeping a single database for all microservices creates tight coupling and violates service autonomy:</p>
+        <ul>
+            <li><strong>Schema Lock-In:</strong> Services become dependent on central schema changes</li>
+            <li><strong>Performance Contention:</strong> Resource competition between services</li>
+            <li><strong>Deployment Blocking:</strong> Database changes require coordinated releases</li>
+            <li><strong>Security Risks:</strong> Excessive privileges granted to multiple services</li>
+        </ul>
+    </div>
+
+    <div class="option-box">
+        <h2>Separation Approaches</h2>
+        
+        <h3>Option 1: Database Per Service</h3>
+        <p>Each microservice owns its dedicated database instance:</p>
+        <ul>
+            <li><strong>Pros:</strong> Complete autonomy, optimized schemas, independent scaling</li>
+            <li><strong>Cons:</strong> Data duplication, eventual consistency challenges, complex joins</li>
+            <li><strong>Implementation:</strong> Use managed services (AWS RDS, Google Cloud SQL) per service</li>
+        </ul>
+
+        <h3>Option 2: Schema-Based Separation</h3>
+        <p>Single database with logically separated schemas:</p>
+        <ul>
+            <li><strong>Pros:</strong> Lower operational overhead, easier cross-service queries</li>
+            <li><strong>Cons:</strong> Still risks schema coupling, harder to enforce access controls</li>
+            <li><strong>Implementation:</strong> PostgreSQL schemas or MySQL databases within same cluster</li>
+        </ul>
+
+        <h3>Option 3: Polyglot Persistence</h3>
+        <p>Choose optimal database technology per service needs:</p>
+        <ul>
+            <li><strong>Example:</strong> Use PostgreSQL for relational data, Redis for caching, Elasticsearch for search</li>
+            <li><strong>Benefit:</strong> Right tool for each workload type</li>
+            <li><strong>Challenge:</strong> Increased operational complexity</li>
+        </ul>
+    </div>
+
+    <div class="option-box">
+        <h2>Migration Strategies</h2>
+        
+        <h3>Strategy 1: Dual Write</h3>
+        <p>Temporarily write to both old and new databases during migration:</p>
+        <div class="sql-code">
+            <pre># Pseudocode for dual write
+def create_order(order_data)
+  old_db.create_order(order_data)
+  new_db.create_order(order_data)
+end</pre>
+        </div>
+
+        <h3>Strategy 2: Change Data Capture (CDC)</h3>
+        <p>Replicate data changes asynchronously using CDC tools:</p>
+        <ul>
+            <li><strong>Tools:</strong> Debezium, AWS DMS, pglogical</li>
+            <li><strong>Process:</strong> Capture binlog changes → transform → load to target DB</li>
+        </ul>
+
+        <h3>Strategy 3: Event Sourcing</h3>
+        <p>Store state changes as immutable events:</p>
+        <div class="sql-code">
+            <pre># Order placed event
+{
+  "type": "order_placed",
+  "payload": {
+    "id": "123",
+    "items": [...],
+    "total": 99.99
+  }
+}</pre>
+        </div>
+    </div>
+
+    <div class="option-box">
+        <h2>Handling Cross-Service Data Needs</h2>
+        <p>When services need data from others, consider:</p>
+        <ul>
+            <li><strong>API Calls:</strong> Direct service-to-service requests (simplest but synchronous)</li>
+            <li><strong>Event-Driven:</strong> Publish events for interested parties to consume</li>
+            <li><strong>Materialized Views:</strong> Precomputed aggregates stored in read-only replicas</li>
+            <li><strong>Batch Processing:</strong> Scheduled jobs to synchronize data periodically</li>
+        </ul>
+    </div>
+
+    <div class="solution">
+        <h2>Decision Framework</h2>
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Factor</th>
+                    <th>Database Per Service</th>
+                    <th>Shared Database</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Autonomy</td>
+                    <td>✅ High</td>
+                    <td>❌ Low</td>
+                </tr>
+                <tr>
+                    <td>Scalability</td>
+                    <td>✅ Independent scaling</td>
+                    <td>❌ Limited by shared resources</td>
+                </tr>
+                <tr>
+                    <td>Complexity</td>
+                    <td>❌ Higher operational burden</td>
+                    <td>✅ Simpler management</td>
+                </tr>
+                <tr>
+                    <td>Data Consistency</td>
+                    <td>❌ Eventually consistent</td>
+                    <td>✅ Strongly consistent</td>
+                </tr>
+            </tbody>
+        </table>
+        <p><strong>Recommendation:</strong> Start with database-per-service for greenfield projects. For brownfield migrations, use gradual separation with CDC/event sourcing.</p>
+    </div>
+</body>
+</html>

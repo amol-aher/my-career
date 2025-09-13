@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Designing Service Communication to Avoid Bottlenecks</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Designing Service Communication to Avoid Bottlenecks</h1>
+
+  <h2>Principles</h2>
+  <ul>
+    <li><strong>Asynchronous by default:</strong> Prefer event-driven patterns for non-critical interactions.</li>
+    <li><strong>Backpressure & queueing:</strong> Use queues (Kafka, SQS) to buffer bursts and autoscale consumers.</li>
+    <li><strong>Partitioning:</strong> Partition messages by key to allow parallel processing without contention.</li>
+    <li><strong>Cache frequently-read data:</strong> Local caches or read models prevent hitting other services frequently.</li>
+    <li><strong>Graceful degradation:</strong> Serve degraded responses when downstreams are slow.</li>
+  </ul>
+
+  <h2>Techniques</h2>
+  <ul>
+    <li>Use bulk/batched APIs instead of one-by-one calls.</li>
+    <li>Use rate limits and quotas to protect critical services.</li>
+    <li>Introduce a service mesh (Istio) for fine-grained traffic control and retries.</li>
+    <li>Use CDN for static and public content.</li>
+  </ul>
+
+  <h2>Example pattern</h2>
+  <pre><code>// Order flow: API receives order -> write to orders DB -> publish orders.created event
+// Consumers: inventory, billing, shipping subscribe to orders.created and process independently
+  </code></pre>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Optimization in Rails</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1, h2, h3 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .code-block { margin: 20px 0; }
+        .subquestion { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Performance Optimization Strategies in Rails</h1>
+    
+    <h2>1. Database Optimization</h2>
+    <ul>
+        <li><strong>Eager Loading:</strong> Eliminate N+1 queries with includes/preload</li>
+        <li><strong>Query Optimization:</strong> Use EXPLAIN ANALYZE to identify slow queries</li>
+        <li><strong>Indexing:</strong> Add indexes to frequently queried columns</li>
+        <li><strong>Read Replicas:</strong> Offload read traffic to replica databases</li>
+    </ul>
+    
+    <h2>2. Caching Layers</h2>
+    <ul>
+        <li><strong>Fragment Caching:</strong> Cache partial view components</li>
+        <li><strong>Page Caching:</strong> For static content with low-frequency updates</li>
+        <li><strong>Redis/Memcached:</strong> Store computed results and frequent database lookups</li>
+        <li><strong>Russian Doll Caching:</strong> Nested fragment caching strategy</li>
+    </ul>
+    
+    <h2>3. Background Processing</h2>
+    <ul>
+        <li>Offload heavy tasks to Sidekiq/Resque workers</li>
+        <li>Use Active Job for job abstraction across queues</li>
+        <li>Implement rate limiting and priority queuing</li>
+    </ul>
+    
+    <h2>4. Frontend Optimization</h2>
+    <ul>
+        <li>Asset pipeline compression and minification</li>
+        <li>CDN distribution for static assets</li>
+        <li>Lazy loading of non-critical JavaScript</li>
+        <li>HTTP/2 server push for critical resources</li>
+    </ul>
+    
+    <h2>5. Infrastructure Scaling</h2>
+    <ul>
+        <li>Horizontal scaling with load balancers</li>
+        <li>Auto-scaling groups based on metrics</li>
+        <li>Containerization with Docker/Kubernetes</li>
+        <li>Serverless functions for event-driven workloads</li>
+    </ul>
+    
+    <h2>6. Code-Level Optimizations</h2>
+    <pre class="code-block"># Avoid N+1 queries
+@users = User.includes(:posts).where(active: true)
+
+# Batch processing instead of loops
+User.find_each(batch_size: 100) do |user|
+  # Process user
+end
+
+# Memoization for expensive calculations
+def expensive_calculation
+  @result ||= perform_complex_operation
+end</pre>
+    
+    <div class="subquestion">
+        <h3>Common Subquestions:</h3>
+        
+        <h4>Q: How do you monitor performance in production?</h4>
+        <p>Use New Relic/AppSignal for APM, Prometheus/Grafana for metrics, and ELK stack for logging. Set up alerts for response time thresholds and error rates.</p>
+        
+        <h4>Q: What's your approach to memory optimization?</h4>
+        <p>Profile with memory_profiler gem, avoid large object allocations, use string interpolation judiciously, and consider streaming responses for large datasets.</p>
+        
+        <h4>Q: How do you handle caching invalidation?</h4>
+        <p>Use cache keys incorporating model timestamps, implement cache busting on deployments, and set appropriate TTL values based on data volatility.</p>
+    </div>
+</body>
+</html>

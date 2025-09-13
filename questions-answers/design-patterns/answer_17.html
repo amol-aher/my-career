@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Designing extensible multi-ecommerce integrations</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:1000px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px}
+    h2{font-size:18px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    ul{line-height:1.5}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Maximizing code reuse across multiple e-commerce integrations</h1>
+
+    <p>With integrations for Shopify, Amazon, Walmart, etc., the goal is to minimize duplication while handling provider-specific quirks. I'll describe an adapter-based architecture and a configuration-first approach to enable integrations with minimal new code.</p>
+
+    <h2>Key patterns</h2>
+    <ul>
+      <li><strong>Adapter / Strategy pattern</strong> — define a common integration interface (create_order, fetch_orders, update_inventory) and implement provider-specific adapters.</li>
+      <li><strong>Transformation / Mapping layer</strong> — use declarative mappings (JSON/YAML templates or Liquid/JMESPath expressions) to convert provider payloads to your canonical model.</li>
+      <li><strong>Connector manifest</strong> — describe each provider’s capabilities, auth types, rate limits and endpoints in a manifest file (JSON). The runtime engine uses the manifest to build requests without code changes.</li>
+      <li><strong>Plugin architecture</strong> — load adapters as plugins (gems or microservices). For config-only flows, allow parametrized requests/templates stored as config objects.
+      </li>
+    </ul>
+
+    <h2>Architectural components</h2>
+    <ul>
+      <li><strong>Canonical model</strong> — define internal DTOs (Order, Product, InventorySnapshot). All adapters map provider data to/from this model.</li>
+      <li><strong>Mapper engine</strong> — library that uses mapping definitions to transform fields (supports expressions, loops, and conditions).</li>
+      <li><strong>Auth handlers</strong> — pluggable auth strategies (OAuth, API keys, AWS SigV4) selected per connector manifest.</li>
+      <li><strong>Request templates</strong> — store headers/body templates (Liquid/Jinja) per endpoint, with placeholders for canonical fields.</li>
+      <li><strong>Retry & rate-limit manager</strong> — shared component to handle per-provider limits and retries with backoff.
+      </li>
+    </ul>
+
+    <h2>Config-only approach (no new code)</h2>
+    <ol>
+      <li>Create a connector manifest describing endpoints, methods, auth, headers, and a mapping to canonical fields.</li>
+      <li>Provide mapping templates for request/response bodies using a template language and filters for common transforms (date formats, units).</li>
+      <li>Provide event-to-endpoint bindings so workflows call connectors by name with canonical objects; the system compiles and executes provider-specific requests at runtime.</li>
+    </ol>
+
+    <h2>Sample connector manifest (simplified)</h2>
+    <pre><code>{
+  "name": "shopify",
+  "auth": {"type": "token", "header": "X-Shopify-Access-Token"},
+  "endpoints": {
+    "create_order": {
+      "method": "POST",
+      "path": "/admin/api/{{version}}/orders.json",
+      "body_template": "{{ order | to_shopify_order }}",
+      "rate_limit": {"calls_per_minute": 40}
+    }
+  }
+}
+</code></pre>
+
+    <h2>Benefits</h2>
+    <ul>
+      <li>No-code onboarding for many providers — fill manifest and mapping templates.</li>
+      <li>Centralized rate limiting and retry logic reduces bugs.</li>
+      <li>Fewer tests for each provider — test the mapping templates and generic engine once, then validate manifests.</li>
+    </ul>
+
+    <h2>Trade-offs & when to write code</h2>
+    <ul>
+      <li>Config covers the vast majority of RESTful JSON providers. However, when provider has complex auth (e.g., OAuth flows with special PKCE steps) or streaming APIs, a small adapter may still be required.</li>
+      <li>Monitoring & observability must be robust to troubleshoot mapping/template errors which are harder to debug than code.
+      </li>
+    </ul>
+
+    <h2>Interview subquestions</h2>
+    <ul>
+      <li><strong>How to test connectors?</strong> Use contract tests: recorded HTTP fixtures (VCR-like) and schema validation for request/response templates.</li>
+      <li><strong>How to handle breaking API changes?</strong> Use connector versioning and deprecation windows; allow multiple manifests to exist and migrate gradually.</li>
+    </ul>
+
+    <p style="color:#666;margin-top:12px">This approach minimizes per-provider code while remaining flexible. It’s powerful in interview discussions—walk through an example manifest for Shopify and then show how the same engine can call Amazon with a different manifest.</p>
+  </div>
+</body>
+</html>

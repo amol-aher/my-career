@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AWS Services — Practical Usage Beyond Lambda</title>
+<style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.6; padding:28px; color:#111; background:#fff; }
+    .container{max-width:980px;margin:0 auto;}
+    header{border-bottom:1px solid #e6e6e6;margin-bottom:18px;padding-bottom:8px;}
+    h1{font-size:26px;margin:0 0 6px 0;}
+    h2{font-size:18px;margin-top:18px;color:#0b69ff;}
+    h3{font-size:15px;margin-top:14px;color:#0b69ff;}
+    p{margin:8px 0;}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:4px;}
+    ul{margin:8px 0 8px 20px;}
+    table{border-collapse:collapse;width:100%;margin:8px 0;}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+    .muted{color:#666;font-size:13px;}
+    footer{border-top:1px solid #e6e6e6;margin-top:22px;padding-top:12px;color:#666;font-size:13px;}
+    .kbd{background:#f4f4f4;padding:2px 6px;border-radius:4px;font-family:monospace;}
+    </style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>AWS Services — Practical Usage Beyond Lambda</h1>
+<p class="muted">Prepared by: Senior Software Engineer &amp; System Architect — Rails / AWS / SQL / Vue.js</p>
+<p class="muted">Date: 2025-09-10 (UTC)</p>
+</header>
+
+<p class="muted"><strong>Overview</strong></p>
+<p>An exhaustive tour of AWS services commonly used alongside (or instead of) Lambda, with real-world use-cases, integration patterns with Rails/Kubernetes/Sidekiq, and operational notes.</p>
+
+<section><h2>Compute and Container Services</h2>
+<ul>
+<li><strong>EC2:</strong> Virtual machines for workloads requiring full control (legacy systems, specialized drivers, stateful services).</li>
+<li><strong>ECS / Fargate:</strong> Container orchestration with tight AWS integration; Fargate removes node management for serverless containers.</li>
+<li><strong>EKS:</strong> Managed Kubernetes — use when you need portability, custom scheduling, or complex k8s ecosystems.</li>
+<li><strong>Elastic Beanstalk:</strong> PaaS for simple app deployments (less used in mature infra stacks).</li>
+</ul>
+</section>
+<section><h2>Storage & Databases</h2>
+<ul>
+<li><strong>S3:</strong> Object storage for assets, backups, and presigned URLs. Use lifecycle rules, versioning, and MFA delete for important buckets.</li>
+<li><strong>EBS / EFS:</strong> Block storage for single-node use (EBS) or shared file systems (EFS) for multiple instances/pods.</li>
+<li><strong>RDS / Aurora:</strong> Managed relational databases with Multi-AZ, read replicas, and automated backups. Aurora provides better scaling for read-heavy workloads.</li>
+<li><strong>DynamoDB:</strong> NoSQL key/value store for high throughput, single-digit ms latency use cases.</li>
+<li><strong>Redshift / Glue / Athena:</strong> Data warehousing and analytics (ETL, SQL-on-S3).</li>
+</ul>
+</section>
+<section><h2>Networking & Delivery</h2>
+<ul>
+<li><strong>Route 53:</strong> DNS management with health checks and weighted routing.</li>
+<li><strong>Elastic Load Balancer (ALB/NLB):</strong> Distribute traffic to instances, targets, or IPs. ALB for HTTP routing and path-based rules; NLB for high-throughput TCP.</li>
+<li><strong>CloudFront:</strong> CDN for assets and API edge caching; use with signed cookies for protected content.</li>
+</ul>
+</section>
+<section><h2>Messaging, Queues & Events</h2>
+<ul>
+<li><strong>SQS:</strong> Durable queues for decoupling producers & consumers; Standard and FIFO options.</li>
+<li><strong>SNS:</strong> Pub/Sub for fan-out to SQS, Lambda, HTTP endpoints, and email/SMS.</li>
+<li><strong>Kinesis:</strong> Streaming data platform for ingestion and real-time processing (Streams / Firehose).</li>
+<li><strong>EventBridge:</strong> Event bus with routing and rules — great for near-real-time orchestration and cross-account events.</li>
+</ul>
+</section>
+<section><h2>Caching, State &amp; Identity</h2>
+<ul>
+<li><strong>ElastiCache (Redis / Memcached):</strong> Session stores, caches, and Sidekiq backing store (often Redis).</li>
+<li><strong>Secrets Manager / SSM Parameter Store:</strong> Secure storage for secrets and configuration with rotation support (Secrets Manager).</li>
+<li><strong>KMS:</strong> Key management for encryption of secrets and resources.</li>
+<li><strong>Cognito:</strong> User pools and identity federation for apps (or use Auth0/third-party).</li>
+</ul>
+</section>
+<section><h2>CI/CD, Build & Observability</h2>
+<ul>
+<li><strong>ECR:</strong> Container registry integrated with IAM and lifecycle policies.</li>
+<li><strong>CodeBuild / CodePipeline / CodeDeploy:</strong> AWS-native CI/CD components for building, testing, and deploying artifacts, though teams often prefer GitHub Actions + Terraform + ArgoCD.</li>
+<li><strong>CloudWatch &amp; X-Ray:</strong> Logs, metrics, alarms, and distributed tracing for observability.</li>
+</ul>
+</section>
+<section><h2>Security, Governance & Infra-as-Code</h2>
+<ul>
+<li><strong>IAM:</strong> Core identity and access management — enforce least privilege, use roles, and enable MFA for admins.</li>
+<li><strong>Organizations / SCPs:</strong> Multi-account governance and service control policies to restrict actions.</li>
+<li><strong>CloudFormation / CDK / Terraform:</strong> IaC tools for provisioning and managing resources declaratively.</li>
+<li><strong>WAF / Shield:</strong> Web application firewall and DDoS protection.</li>
+</ul>
+</section>
+<section><h2>How these services fit with Rails / Sidekiq / Kubernetes</h2>
+<ul>
+<li><strong>Sidekiq:</strong> Backed by ElastiCache (Redis) and scheduled by cron or bucketed queues; metrics in CloudWatch/Datadog for latency and retry sets.</li>
+<li><strong>Rails assets &amp; uploads:</strong> S3 + CloudFront for static assets and presigned uploads from clients.</li>
+<li><strong>DB:</strong> RDS/Aurora for primary relational data with read replicas; use backups and PITR for recovery.</li>
+<li><strong>Queues:</strong> Use SNS+SQS for cross-service events and fanout; use SQS FIFO for ordered processing and dedupe.</li>
+<li><strong>Container images:</strong> Push to ECR; use IAM roles for build agents and ECR lifecycle rules to prune images.</li>
+<li><strong>Observability:</strong> Ship logs to CloudWatch/ElasticSearch; use X-Ray or OpenTelemetry for traces across services.</li>
+</ul>
+</section>
+<section><h2>Operational concerns & trade-offs</h2>
+<ul>
+<li><strong>Cost:</strong> Balance managed services (higher cost, less ops) vs self-managed (lower cost, more ops). EKS incurs control plane/node costs; Fargate might be cheaper at low scale.</li>
+<li><strong>Latency:</strong> Prefer regional services and VPC endpoints for low-latency access and security.</li>
+<li><strong>Resilience:</strong> Multi-AZ deployments and cross-region DR for critical systems.</li>
+<li><strong>Vendor lock-in:</strong> Use abstraction layers where portability is a concern (e.g., Terraform, containerization), but accept some lock-in for productivity gains.</li>
+</ul>
+</section>
+<section><h2>Subquestions you should expect</h2>
+<ol>
+<li><strong>How do you store secrets securely?</strong><br/>Use Secrets Manager for rotation-capable secrets and SSM Parameter Store for configuration. Use KMS to encrypt secrets and IAM to limit access.</li>
+<li><strong>How to design for high availability?</strong><br/>Multi-AZ RDS, read replicas, autoscaling for compute, and health-checked load balancers. Use multiple AZs by default and cross-region backups.</li>
+<li><strong>How to handle backups and DR?</strong><br/>Automate snapshots, cross-region replication for critical backups, test restores regularly, and document RTO/RPO for each system.</li>
+<li><strong>How do you minimize costs?</strong><br/>Right-size instances, use reserved instances/savings plans, use lifecycle rules on ECR/S3, and prefer serverless where appropriate for spiky workloads.</li>
+</ol>
+</section>
+
+
+<footer>
+If you'd like, I can scaffold Terraform modules for a typical Rails app (VPC, EKS/ECS, RDS, ECR, S3) and an example IAM policy set.
+</footer>
+</div>
+</body>
+</html>

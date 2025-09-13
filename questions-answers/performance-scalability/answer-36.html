@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Pagination, Rate Limiting, and Throttling in Rails APIs</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Pagination, Rate Limiting, and Throttling in Rails APIs</h1>
+  <p>These patterns protect your service from overload and make APIs predictable for clients. Below are best practices and code examples.</p>
+
+  <h2>Pagination strategies</h2>
+  <ul>
+    <li><strong>Offset-based:</strong> Simple, page &amp; per_page (kaminari, will_paginate). Not ideal for deep paging in large datasets.</li>
+    <li><strong>Cursor-based:</strong> Use encoded cursors (id + sort field) for reliable, stable pagination for real-time data.</li>
+    <li><strong>Keyset pagination:</strong> SQL where clauses (e.g., WHERE id &lt; last_id ORDER BY id DESC LIMIT 25).</li>
+  </ul>
+
+  <h3>Cursor example</h3>
+  <pre><code>def index
+  limit = (params[:limit] || 25).to_i
+  if params[:cursor]
+    last_id = Base64.decode64(params[:cursor]).to_i
+    items = Item.where("id &lt; ?", last_id).order(id: :desc).limit(limit)
+  else
+    items = Item.order(id: :desc).limit(limit)
+  end
+  next_cursor = items.any? ? Base64.encode64(items.last.id.to_s) : nil
+  render json: { items: items, next_cursor: next_cursor }
+end
+  </code></pre>
+
+  <h2>Rate limiting & throttling</h2>
+  <p>Use Rack::Attack with Redis as a backing store for counters and limits.</p>
+  <pre><code># Gemfile
+gem 'rack-attack'
+
+# config/initializers/rack_attack.rb
+class Rack::Attack
+  Rack::Attack.cache.store = ActiveSupport::Cache::RedisCacheStore.new(url: ENV['REDIS_URL'])
+
+  # throttle by IP: 100 requests per minute
+  throttle('req/ip', limit: 100, period: 1.minute) do |req|
+    req.ip
+  end
+
+  # blocklist abusive IP
+  blocklist('block bad UA') do |req|
+    req.user_agent =~ /BadBot/
+  end
+end
+  </code></pre>
+
+  <h2>Throttling patterns</h2>
+  <ul>
+    <li>Throttling by IP or API token.</li>
+    <li>Graceful responses: return <code>429 Too Many Requests</code> and Retry-After header.</li>
+    <li>Exempt trusted clients (with keys) or allow higher quotas for paid tiers.</li>
+  </ul>
+
+  <h2>Monitoring & UX</h2>
+  <p>Expose rate-limit headers (X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset) so clients can adapt. Monitor throttled requests and adjust thresholds.</p>
+
+  <h2>Summary</h2>
+  <p>Use cursor/keyset pagination for performance, Rack::Attack for rate-limiting, and design throttling rules to protect critical resources. Provide informative headers and 429 responses so clients handle limits gracefully.</p>
+</body>
+</html>

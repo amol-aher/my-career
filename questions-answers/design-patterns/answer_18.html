@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Constructing API requests for different e-commerce providers</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:1000px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px}
+    h2{font-size:18px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    ul{line-height:1.5}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>How to construct provider-specific API requests (Shopify / Amazon / Walmart)</h1>
+
+    <p>Different providers expect different headers, auth schemes, path parameters and payload shapes. Build a pluggable request builder that composes headers, signs requests, and renders body templates from canonical data.</p>
+
+    <h2>Components of a request builder</h2>
+    <ul>
+      <li><strong>Auth module</strong> — signs requests or injects tokens (OAuth, API key, AWS SigV4).</li>
+      <li><strong>Header composer</strong> — merges default headers from connector manifest and runtime headers (e.g., correlation id).</li>
+      <li><strong>URL builder</strong> — resolves base URL, path params, query strings and versioning placeholders.</li>
+      <li><strong>Body templating</strong> — render payload using a templating engine (Liquid, ERB, Jinja) or transform via mapping engine (JMESPath/JSONata).</li>
+      <li><strong>Serializer</strong> — set Content-Type and encode body (JSON/XML/form-data) and attach files or multipart data when needed.
+      </li>
+    </ul>
+
+    <h2>Provider-specific notes</h2>
+    <h3>Shopify</h3>
+    <ul>
+      <li>Auth: X-Shopify-Access-Token header (admin REST) or OAuth Bearer token for public apps.</li>
+      <li>Versioning: path includes API version (/admin/api/2025-01/orders.json).</li>
+      <li>Payload: nested JSON under root keys (e.g., { "order": { ... } }).</li>
+      <li>Headers: X-Request-ID for idempotency; Content-Type: application/json.
+      </li>
+    </ul>
+
+    <h3>Amazon (SP-API / MWS)</h3>
+    <ul>
+      <li>Auth: AWS Signature Version 4 (sign requests with credentials and region/service).</li>
+      <li>Complexity: multi-step authorizations (LWA tokens) and strict timestamp/signature rules.</li>
+      <li>Payload: XML in older MWS, JSON for newer SP-API; often requires multipart for attachments.</li>
+    </ul>
+
+    <h3>Walmart</h3>
+    <ul>
+      <li>Auth: API key + signature or OAuth depending on integration type.</li>
+      <li>Payload: JSON with specific schema; requires strict field validation and sometimes HMAC signing of payloads.</li>
+    </ul>
+
+    <h2>Example request templates</h2>
+    <pre><code># Shopify create order template (Liquid-like)
+{
+  "order": {
+    "email": "{{ customer.email }}",
+    "line_items": [
+      {% for item in order.items %}
+      {"variant_id": {{ item.variant_id }}, "quantity": {{ item.qty }}}{% unless forloop.last %},{% endunless %}
+      {% endfor %}
+    ]
+  }
+}
+
+# Amazon SP-API requires SigV4 signing rather than a simple body template
+</code></pre>
+
+    <h2>Implementation tips</h2>
+    <ul>
+      <li>Centralize signing logic per auth type so connectors only configure credentials.</li>
+      <li>Use a templating engine that supports safe filters (date, currency formatting) and escapes to avoid injection.</li>
+      <li>Validate final constructed payload against provider JSON schema (where available) before sending to reduce API errors.</li>
+      <li>Instrument request/response pairs and store last request payloads for debugging.
+      </li>
+    </ul>
+
+    <h2>Interview follow-ups</h2>
+    <ul>
+      <li><strong>How to test these requests?</strong> Use contract tests and recorded HTTP fixtures; run integrations against sandbox accounts when possible.</li>
+      <li><strong>How to handle different content types?</strong> Build serializer interfaces that select JSON/XML/multipart serializers based on connector manifest.</li>
+    </ul>
+
+    <p style="color:#666;margin-top:12px">In an interview, be ready to show how you would structure a request-building module and give one concrete example (Shopify) end-to-end including headers, body template and response mapping.</p>
+  </div>
+</body>
+</html>

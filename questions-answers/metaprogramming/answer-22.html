@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Ruby method lookup path</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:18px;color:#111}
+    h1{color:#1a56db} h2{color:#0b5a78}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <h1>Ruby method lookup path (including modules, prepend, refinements, singleton classes)</h1>
+
+  <p>Understanding Ruby's method lookup is vital for metaprogramming. Here's the conceptual order Ruby uses when resolving an instance method call:</p>
+
+  <h2>High-level lookup order (instance method call)</h2>
+  <ol>
+    <li><strong>Singleton class</strong> (a.k.a. eigenclass) of the receiver — methods defined only on that object or class-level methods for class objects.</li>
+    <li><strong>Modules prepended</strong> into the singleton class (if any).</li>
+    <li><strong>The receiver's class</strong> (look for instance methods).</li>
+    <li><strong>Modules prepended into the class</strong> (in the order they were prepended, last prepended searched first).</li>
+    <li><strong>Included modules</strong> — modules included into the class are searched next (in reverse include order: last included first), including their included ancestors.</li>
+    <li><strong>Superclass chain</strong> — repeat steps 3–5 for each superclass up to <code>Object</code> and <code>BasicObject</code>.</li>
+    <li><strong>Method not found</strong> — <code>method_missing</code> on the original receiver is called.</li>
+  </ol>
+
+  <h2>Where refinements fit</h2>
+  <p><strong>Refinements</strong> are lexically scoped modifications to method lookup: when you write <code>using SomeRefinement</code> in a file or module, method calls in that lexical scope will prefer the refined method implementation when calling methods on the target class. Refinements are applied at the call site, not directly altering the global ancestor chain. Important notes:</p>
+  <ul>
+    <li>Refinements are <em>lexical</em> (activated where <code>using</code> appears).</li>
+    <li>They can be disabled or not active inside eval'd strings or separate files that don't have the <code>using</code> statement.</li>
+    <li>Refinements have complex interaction with nested scopes and are intentionally conservative to avoid surprising global effects.</li>
+  </ul>
+
+  <h2>Examples and diagrams</h2>
+  <pre><code class="language-ruby"># singleton methods / eigenclass
+o = Object.new
+def o.foo; :singleton end
+
+class C; include M; prepend P; end
+# Lookup when calling o.foo:
+# 1. o's eigenclass -> methods defined on o
+# 2. eigenclass prepended modules
+# 3. C (the object's class)
+# 4. modules prepended into C
+# 5. modules included into C (reverse include order)
+# 6. superclass chain</code></pre>
+
+  <h2>Notes & gotchas</h2>
+  <ul>
+    <li><strong>prepend wins over class methods:</strong> Prepending a module places it earlier in the chain, so it can override methods and call <code>super</code> to reach the original implementation.</li>
+    <li><strong>Multiple includes:</strong> Module inclusion order matters — last included module gets searched first.</li>
+    <li><strong>Singleton ancestors:</strong> You can inspect the actual lookup chain with <code>obj.singleton_class.ancestors</code> and <code>obj.class.ancestors</code>.</li>
+    <li><strong>Refinements are subtle:</strong> Because they are lexical, debugging can be confusing — a method call might behave differently inside a file that has <code>using</code> versus one that doesn't.</li>
+  </ul>
+
+  <h2>Practical tips</h2>
+  <ul>
+    <li>Use <code>prepend</code> for instrumentation and AOP-like wrappers (it supports <code>super</code> nicely).</li>
+    <li>Avoid complex chains of includes/ prepends unless necessary; prefer explicit composition.</li>
+    <li>Use <code>singleton_class</code>, <code>ancestors</code>, and <code>method(:name).owner</code> to inspect where a method is defined.</li>
+  </ul>
+
+  <h2>Inspecting lookup</h2>
+  <pre><code class="language-ruby">module A; end
+module B; end
+class X; include A; prepend B; end
+
+x = X.new
+p x.singleton_class.ancestors
+p X.ancestors
+# Use method(:foo).owner to find where foo is located:
+# p x.method(:foo).owner</code></pre>
+
+  <h2>Summary</h2>
+  <p>The lookup path is deterministic: singleton class → class/prepends → includes → superclass chain → method_missing. Refinements operate at the caller's scope and can alter resolution for methods on specified classes in that lexical context.</p>
+</body>
+</html>

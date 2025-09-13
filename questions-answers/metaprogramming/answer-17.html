@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Implementing a simple DSL in Ruby</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:18px;color:#111}
+    h1{color:#1a56db} h2{color:#0b5a78}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <h1>Implementing a simple DSL using Ruby metaprogramming</h1>
+
+  <p>We'll build a small <em>routes-like</em> DSL that reads nice declarations and builds an internal structure. This demonstrates <code>instance_eval</code>, <code>method_missing</code>, and <code>define_method</code> to materialize route helpers.</p>
+
+  <h2>DSL surface</h2>
+  <pre><code class="language-ruby">routes.draw do
+  get '/users', to: 'users#index'
+  post '/users', to: 'users#create'
+end</code></pre>
+
+  <h2>Implementation</h2>
+  <pre><code class="language-ruby">class Routes
+  Route = Struct.new(:verb, :path, :controller, :action)
+
+  def initialize
+    @routes = []
+  end
+
+  def draw(&block)
+    instance_eval(&block)
+    freeze_routes
+  end
+
+  # Basic handlers
+  %i[get post put patch delete].each do |verb|
+    define_method(verb) do |path, to:|
+      controller, action = to.split('#')
+      @routes << Route.new(verb.to_s.upcase, path, controller, action)
+      define_route_helper(controller, action, path)
+    end
+  end
+
+  def routes; @routes end
+
+  private
+
+  def define_route_helper(controller, action, path)
+    helper_name = "#{controller}_#{action}_path"
+    # define helper on singleton so consumers can call on instance
+    define_singleton_method(helper_name) { path }
+  end
+
+  def freeze_routes
+    @routes.freeze
+  end
+end
+
+# Usage
+routes = Routes.new
+routes.draw do
+  get '/users', to: 'users#index'
+  post '/users', to: 'users#create'
+end
+
+routes.routes.each { |r| puts "#{r.verb} #{r.path} => #{r.controller}##{r.action}" }
+puts routes.users_index_path # "/users"</code></pre>
+
+  <h2>Notes</h2>
+  <ul>
+    <li>We used <code>instance_eval</code> to evaluate the block in the context of the DSL object so <code>get</code> and <code>post</code> are available as methods.</li>
+    <li><code>define_method</code> and <code>define_singleton_method</code> were used to create helpers dynamically.</li>
+    <li>We avoided <code>method_missing</code> here by explicitly defining verbs; for more flexible keywords you could use <code>method_missing</code> but should also provide <code>respond_to_missing?</code>.</li>
+  </ul>
+
+  <h2>Tests (brief)</h2>
+  <pre><code class="language-ruby">RSpec.describe Routes do
+  it "builds routes and helpers" do
+    routes = Routes.new
+    routes.draw do
+      get '/foo', to: 'foo#index'
+    end
+    expect(routes.routes.first.path).to eq('/foo')
+    expect(routes.foo_index_path).to eq('/foo')
+  end
+end</code></pre>
+
+  <h2>Variants and extensibility</h2>
+  <ul>
+    <li>Add namespacing, constraints, or parameterized paths.</li>
+    <li>Use <code>method_missing</code> for verbs you don't want to list explicitly.</li>
+    <li>Generate reverse lookup maps and URL builders with placeholders.</li>
+  </ul>
+
+  <h2>Conclusion</h2>
+  <p>This pattern shows a pragmatic, testable approach to building a small DSL: keep the interpreter separate, use <code>instance_eval</code> for nice syntax and <code>define_method</code>/<code>define_singleton_method</code> to add helpers for usability and performance.</p>
+</body>
+</html>

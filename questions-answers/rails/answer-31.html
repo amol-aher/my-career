@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Measures for APIs</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; margin-top: 30px; }
+        .section { background-color: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .code-block { background-color: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto; margin: 15px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<h1>Security Measures for APIs</h1>
+
+<div class="section">
+    <h2>Key Security Practices</h2>
+    
+    <h3>1. Authentication and Authorization</h3>
+    <ul>
+        <li>Implement JWT or OAuth 2.0 for secure authentication</li>
+        <div class="code-block"># Using JWT in Rails
+class ApplicationController
+  before_action :authenticate_request
+
+  private
+
+  def authenticate_request
+    token = request.headers['Authorization'].split(' ').last
+    decoded_token = JWT.decode(token)
+    @current_user = User.find(decoded_token['user_id'])
+  end
+end</div>
+        
+    <h3>2. Input Validation</h3>
+    <ul>
+        <li>Use strong parameters to prevent mass assignment vulnerabilities</li>
+        <li>Implement parameter sanitization</li>
+        <li>Use Rails built-in validators</li>
+    </ul>
+    
+    <h3>3. Rate Limiting</h3>
+    <div class="code-block"># Implementing rate limiting
+class Api::V1::ApiController < ApplicationController
+  before_action :throttle_requests, limit: 100, period: 1.minute
+
+  private
+
+  def throttle_requests
+    request.ip_address
+  end
+end</div>
+    
+    <h3>4. Secure Headers</h3>
+    <ul>
+        <li>Content Security Policy (CSP)</li>
+        <li>HTTP Strict Transport Security (HSTS)</li>
+        <li>X-Frame-Options to prevent clickjacking</li>
+    </ul>
+    
+    <h3>5. Logging and Monitoring</h3>
+    <ul>
+        <li>Centralized logging with tools like Lograge</li>
+        <li>Real-time monitoring with New Relic or Datadog</li>
+        <div class="code-block"># Configuring centralized logging
+config.log_level = :info
+config.logger = Logger.new(STDOUT)
+config.logger.formatter = Logger::Formatter.new</div>
+    </ul>
+    
+    <h2>Additional Security Layers</h2>
+    
+    <h3>6. Dependency Scanning</h3>
+    <ul>
+        <li>Regular vulnerability scanning with Snyk or Dependabot</li>
+        <li>Monitor open-source dependencies</li>
+        <li>Implement automated security testing</li>
+    </ul>
+    
+    <h3>7. Secure Storage</h3>
+    <ul>
+        <li>Encrypt sensitive data at rest</li>
+        <li>Use secure credential storage</li>
+        <li>Implement proper file upload validation</li>
+    </ul>
+</div>
+
+</body>
+</html>

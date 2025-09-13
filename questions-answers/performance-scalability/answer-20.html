@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Scaling a Rails App for High Traffic & Handling Long-Running Processes</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Scaling a Rails App for High Traffic & Handling Long-Running Processes</h1>
+  <p>This covers upfront capacity planning, architecture choices, and patterns to handle long-running tasks safely.</p>
+
+  <h2>Design for scale (before traffic arrives)</h2>
+  <ul>
+    <li>Stateless web processes with shared caches and session stores.</li>
+    <li>Separate read and write paths (read replicas, caching).</li>
+    <li>Autoscaling on business metrics (queue depth, latency) instead of CPU alone.</li>
+    <li>CI/CD with automated smoke tests and canary deployments.</li>
+  </ul>
+
+  <h2>Database & connection strategies</h2>
+  <p>Tune DB connection pools, use pgbouncer, and avoid opening too many connections by aligning Puma & DB pool sizes.</p>
+  <pre><code># rule of thumb:
+# DB_MAX_CONNECTIONS >= puma_workers * puma_threads + sidekiq_concurrency_total + slack
+  </code></pre>
+
+  <h2>Handle long-running processes</h2>
+  <ul>
+    <li><strong>Background workers:</strong> Offload to Sidekiq or separate worker service; use dedicated queues.</li>
+    <li><strong>Chunking:</strong> Break large jobs into small tasks and stream results; use batch jobs and pagination.</li>
+    <li><strong>Idempotency:</strong> Design jobs to be idempotent and use at-least-once processing with dedupe keys.</li>
+    <li><strong>Timeouts and heartbeats:</strong> Use job heartbeats and watchdogs (Sidekiq's <code>sidekiq-unique-jobs</code>, retries with exponential backoff).</li>
+    <li><strong>Separate resource pools:</strong> Use dedicated worker clusters for CPU-bound vs IO-bound tasks to avoid resource contention.</li>
+  </ul>
+
+  <h2>Example: Sidekiq long-running worker pattern</h2>
+  <pre><code>class LargeImportWorker
+  include Sidekiq::Worker
+  sidekiq_options queue: 'imports', retry: 5
+
+  def perform(import_id)
+    Import.find(import_id).process_in_chunks do |batch|
+      ImportBatchWorker.perform_async(batch.ids)
+    end
+  end
+end
+
+class ImportBatchWorker
+  include Sidekiq::Worker
+  def perform(ids)
+    Model.insert_all(ids.map { |i| {...} })
+  end
+end
+  </code></pre>
+
+  <h2>Observability & runbooks</h2>
+  <p>Define SLOs, track queue depths, job durations, worker CPU, and memory. Keep runbooks for job failures and database overload.</p>
+
+  <h2>Autoscaling for workers</h2>
+  <p>Autoscale worker pools based on queue length and lag. Use horizontal scaling rather than increasing concurrency in single host when possible.</p>
+
+  <h2>Testing at scale</h2>
+  <p>Simulate high load using traffic replay, chaos testing, and lifecycle testing for background jobs.</p>
+
+  <h2>Summary</h2>
+  <p>Prepare a Rails app for high traffic by designing stateless services, separating concerns, and using a robust background-processing strategy for long-running tasks. Monitor and iterate aggressively.</p>
+</body>
+</html>

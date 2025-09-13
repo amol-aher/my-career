@@ -1,0 +1,70 @@
+<!doctype html><html><head><meta charset='utf-8'><title>Comfort with day-to-day coding and independent module ownership</title>
+<style>
+body{font-family:Segoe UI,Arial,Helvetica,sans-serif;line-height:1.5;padding:24px;max-width:900px;margin:auto;color:#111}
+header{border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:18px}
+h1{font-size:20px;margin:0 0 6px 0}
+.role{color:#555;font-size:13px;margin-bottom:6px}
+pre{background:#f6f6f6;padding:12px;border-radius:6px;overflow:auto}
+code{font-family:monospace;font-size:13px}
+section{margin-bottom:18px}
+.sub{font-weight:600;margin-top:8px}
+ul{margin-left:18px}
+ol{margin-left:18px}
+</style></head><body><header><h1>Comfort with day-to-day coding and independent module ownership</h1><div class='role'>System architect · Technical lead · Senior software engineer (Ruby on Rails, AWS, SQL, Vue.js)</div></header>
+<section>
+<p><strong>Summary:</strong> I am highly comfortable with day-to-day coding and have substantial experience owning modules end-to-end. Ownership for me means responsibility across design, implementation, testing, deployment, observability, and maintenance.</p>
+
+<section class='sub'>Breakdown of capabilities</section>
+<ul>
+<li><strong>Design & architecture:</strong> define clear interfaces, identify boundaries, and pick appropriate patterns (Repository, Service Object, Hexagonal layering).</li>
+<li><strong>Implementation:</strong> write idiomatic, maintainable code (Rails conventions + pragmatic deviations when necessary).</li>
+<li><strong>Testing:</strong> unit, integration, contract, and end-to-end tests with RSpec, FactoryBot, Capybara; mutation testing where needed.</li>
+<li><strong>CI/CD & deployment:</strong> author pipelines (GitHub Actions / CircleCI), feature flags, canary deploys, and rollback strategies.</li>
+<li><strong>Monitoring & ops:</strong> add metrics, logs, alerts (CloudWatch / Datadog / Prometheus) and runbooks for on-call.</li>
+<li><strong>Security & cost:</strong> threat modelling, least privilege, and cost-awareness (AWS right-sizing).</li>
+</ul>
+
+<div class='sub'>How I debug a module solo — practical step-by-step</div>
+<ol>
+<li><strong>Reproduce locally</strong>: create a reproducible environment (seed data, sample requests). Use Docker or the project's dev environment scripts.</li>
+<li><strong>Read the contracts</strong>: inspect API contracts, DB schema, existing tests, ADRs, and the README to understand intended behavior.</li>
+<li><strong>Instrument</strong>: add logs, request/response dumps, and lightweight metrics to surface where the failure occurs.</li>
+<li><strong>Binary search</strong>: use git bisect or comment-out technique to narrow the change that introduced the issue.</li>
+<li><strong>Use debuggers</strong>: pry/byebug for Ruby. Example:</li>
+</ol>
+<pre><code># Gemfile (dev)
+group :development do
+  gem 'pry'
+  gem 'pry-byebug'
+end
+
+# usage
+require 'pry'; binding.pry
+</code></pre>
+<ol start="6">
+<li><strong>Write failing tests</strong>: Add a focused unit/integration test that demonstrates the bug (test-first ensures fix coverage).</li>
+<li><strong>Patch & refactor</strong>: implement the minimal fix, refactor to improve clarity, and run full test suite.</li>
+<li><strong>CI & deploy</strong>: push a branch with CI, add feature flag if risky, deploy to staging, and run smoke tests.</li>
+<li><strong>Post-deploy</strong>: observe metrics, verify logs, and schedule a postmortem if it impacted users.</li>
+</ol>
+
+<div class='sub'>Example: Debugging a slow ActiveRecord query</div>
+<pre><code># Identify in production logs
+User.includes(:orders).where('orders.created_at > ?', 1.month.ago).to_sql
+
+# Use EXPLAIN in psql
+EXPLAIN ANALYZE SELECT ...;
+
+# Fix approach: add an index or change the query
+add_index :orders, :created_at
+
+# Or batch to avoid N+1
+User.find_each(batch_size: 100) do |u|
+  u.orders.recent.limit(50) # avoid loading everything
+end
+</code></pre>
+
+<div class='sub'>When I escalate</div>
+<p>I escalate early if the issue cross-cuts infra (network, DB) or requires access/knowledge I don't have. Escalation includes: clear summary, steps tried, impact, and suggested next steps.</p>
+</section>
+</body></html>

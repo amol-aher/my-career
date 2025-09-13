@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upgrading Rails Applications</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; margin-top: 30px; }
+        .section { background-color: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .code-block { background-color: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto; margin: 15px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<h1>Upgrading Rails Applications from Legacy Versions</h1>
+
+<div class="section">
+    <h2>Step-by-Step Upgrade Process</h2>
+    
+    <h3>1. Preparation Phase</h3>
+    <ul>
+        <li>Create backup of production environment</li>
+        <li>Establish upgrade timeline and milestones</li>
+        <li>Document current dependencies and configurations</li>
+        <li>Set up isolated staging environment</li>
+    </ul>
+    
+    <h3>2. Incremental Upgrade Strategy</h3>
+    <p>Upgrade step-by-step rather than jumping major versions:</p>
+    <div class="code-block"># Example upgrade path
+Rails 5.2 → 6.0 → 7.0</div>
+    
+    <h3>3. Addressing Breaking Changes</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Area</th>
+                <th>Key Changes</th>
+                <th>Solution Approach</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Routing</td>
+                <td>Deprecated `match` syntax</td>
+                <td>Replace with `get`, `post`, etc.</td>
+            </tr>
+            <tr>
+                <td>Active Record</td>
+                <td>`find_by_sql` removed</td>
+                <td>Use `exec_query` or raw SQL</td>
+            </tr>
+            <tr>
+                <td>Asset Pipeline</td>
+                <td>Sprockets replaced with Webpacker</td>
+                <td>Port assets to Webpacker configuration</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h3>4. Automated Testing</h3>
+    <ul>
+        <li>Ensure comprehensive test coverage</li>
+        <li>Run tests against new Rails version</li>
+        <li>Address deprecation warnings</li>
+        <li>Validate behavior with integration tests</li>
+    </ul>
+    
+    <h3>5. Deployment and Rollback Plan</h3>
+    <ul>
+        <li>Blue-green deployment strategy</li>
+        <li>Rollback procedures documented</li>
+        <li>Monitoring setup for immediate issue detection</li>
+        <li>Communication plan for stakeholders</li>
+    </ul>
+    
+    <h3>6. Post-Upgrade Validation</h3>
+    <ul>
+        <li>Performance benchmarking</li>
+        <li>Security vulnerability scanning</li>
+        <li>Deprecation check for future upgrades</li>
+        <li>Documentation update</li>
+    </ul>
+</div>
+
+</body>
+</html>

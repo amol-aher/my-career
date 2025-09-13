@@ -1,0 +1,39 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Long-term Impact of a Technical Decision</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:24px;color:#111}h1{font-size:24px}h2{font-size:20px}ul{margin-left:18px}</style>
+</head>
+<body>
+  <h1>Instance of a Technical Decision with Long‑Term Impact</h1>
+  <section>
+    <h2>Decision</h2>
+    <p>Introduced feature-flag driven trunk-based development and automated canary deployments.</p>
+  </section>
+
+  <section>
+    <h2>Why it mattered</h2>
+    <ul>
+      <li>Reduced release risk and made rollbacks simpler.</li>
+      <li>Increased deployment frequency and confidence.</li>
+      <li>Encouraged smaller changes and better review practices.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Positive long-term effects</h2>
+    <ul>
+      <li>Higher velocity with fewer regressions.</li>
+      <li>Improved developer experience and less fear of shipping.</li>
+      <li>Better observability and metrics tied to feature flags.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Negative example</h2>
+    <p>Conversely, an early decision to centrally manage a shared DB schema across many teams created coupling and slowed independent deployments — we later mitigated this by introducing service-specific read models and API gateways.</p>
+</body>
+</html>

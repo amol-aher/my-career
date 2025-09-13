@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 170</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 170: How would you choose between Fork + exec, Process.spawn, threads, and external services for parallelism in a production system?</h1>
+<h2>Concept</h2>
+<p>This question is similar to earlier one (147) and emphasizes operational trade-offs: isolation, startup cost, shared memory, language/runtime, and observability.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Choose fork+exec/spawn for running external programs or isolation; choose processes for CPU-bound tasks on MRI; choose threads/fibers for IO-bound concurrency and lower memory usage; choose external services for heavy compute or polyglot ecosystems. Consider startup latency, monitoring, restart behavior, and ease of deployment.</p>
+
+<h2>Checklist</h2>
+<ul>
+<li>Does task need full CPU parallelism? → processes or JRuby.</li>
+<li>Need isolation/fault containment? → processes or external services.</li>
+<li>Is low memory footprint critical? → threads/fibers.</li>
+<li>Operational complexity acceptable? → external services/microservices.</li>
+</ul>
+
+<h2>Best practices</h2>
+<ul>
+<li>Prototype and measure; prefer simple designs and clear ownership boundaries.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 170</footer>
+</body></html>

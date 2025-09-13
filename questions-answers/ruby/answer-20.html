@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"/><title>Answer 20</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6; color:#111 }
+pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto }
+code { font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace }
+h1,h2,h3 { color:#0b5394 }
+footer { color:#666; font-size:0.9em }
+</style></head><body>
+<h1>Question 20: What is the difference between load and require in Ruby?</h1>
+<h2>Concept</h2>
+<p><code>require</code> loads a file once and records it in <code>$LOADED_FEATURES</code>. <code>load</code> re-evaluates the file every time it's called and can optionally wrap the evaluation in an anonymous module.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Use <code>require</code> for libraries (idempotent). Use <code>load</code> when you need to reload code (e.g., development scripts) or evaluate multiple times.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>load with wrap:</strong> <code>load 'file.rb', true</code> executes inside an anonymous module, limiting namespace pollution.</li>
+<li><strong>require_relative:</strong> resolves relative to the caller file — useful for project files.</li>
+</ul>
+
+<h2>Example</h2>
+<pre><code class="language-ruby"># file: greet.rb
+puts 'greet loaded at ' + Time.now.to_s
+
+require './greet' # prints once
+require './greet' # no-op
+load './greet'    # prints again</code></pre>
+
+<h2>Best practices / Pitfalls</h2>
+<ul>
+<li>Avoid mixing load/require unexpectedly — it can lead to multiple constant definitions.</li>
+</ul>
+
+<hr/>
+<footer>Generated HTML for question 20</footer>
+</body></html>

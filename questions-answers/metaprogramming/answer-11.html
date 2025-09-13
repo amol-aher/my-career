@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Proxies and Reflect in JavaScript</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; margin:20px; color:#111 }
+    h1 { color:#1a56db }
+    h2 { color:#0b5a78 }
+    pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto }
+    code { font-family: monospace; }
+    .toc { background:#eef6ff; padding:10px; border-radius:6px }
+  </style>
+</head>
+<body>
+  <h1>How Proxies and Reflect support metaprogramming in JavaScript</h1>
+
+  <p><strong>Summary:</strong> <code>Proxy</code> provides traps to intercept fundamental operations (property access, assignment, function calls, construction, enumeration, etc.). <code>Reflect</code> provides default operation implementations and is used within traps to delegate to the original behavior safely. Together they form a powerful, standard metaprogramming surface for building virtualized objects, validation layers, DSLs, mocking & testing helpers, and more.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ul>
+      <li>Key Proxy traps</li>
+      <li>Role of Reflect</li>
+      <li>Examples (logging, validation, virtual properties, revocable proxies)</li>
+      <li>Performance & pitfalls</li>
+      <li>Subquestions (common follow-ups)</li>
+    </ul>
+  </div>
+
+  <h2>Key Proxy traps</h2>
+  <p>Common traps you will use:</p>
+  <ul>
+    <li><code>get(target, prop, receiver)</code> — intercept property reads.</li>
+    <li><code>set(target, prop, value, receiver)</code> — intercept writes.</li>
+    <li><code>apply(target, thisArg, args)</code> — intercept function calls (when target is a function).</li>
+    <li><code>construct(target, args, newTarget)</code> — intercept <code>new</code> invocations.</li>
+    <li><code>has(target, prop)</code> — for the <code>in</code> operator.</li>
+    <li><code>ownKeys(target)</code> — intercept <code>Object.keys</code>, <code>Reflect.ownKeys</code>, and enumeration.</li>
+    <li><code>getOwnPropertyDescriptor</code>, <code>defineProperty</code>, <code>deleteProperty</code>, <code>preventExtensions</code>, <code>getPrototypeOf</code>, etc.</li>
+  </ul>
+
+  <h2>Role of Reflect</h2>
+  <p><code>Reflect</code> exposes the same low-level operations as the proxy traps, but as functions (e.g., <code>Reflect.get</code>, <code>Reflect.set</code>, <code>Reflect.apply</code>). Use <code>Reflect</code> inside traps when you want to defer to the default behavior or implement consistent semantics across traps. It makes it easy and safe to forward operations.</p>
+
+  <h2>Examples</h2>
+
+  <h3>1) Logging reads and writes</h3>
+  <pre><code class="language-javascript">const target = { a: 1 };
+
+const logger = new Proxy(target, {
+  get(t, prop, receiver) {
+    console.log("get", prop);
+    return Reflect.get(t, prop, receiver);
+  },
+  set(t, prop, value, receiver) {
+    console.log("set", prop, "=", value);
+    return Reflect.set(t, prop, value, receiver);
+  }
+});
+
+logger.a;      // logs: get a
+logger.b = 2;  // logs: set b = 2</code></pre>
+
+  <h3>2) Validation layer</h3>
+  <pre><code class="language-javascript">function createValidatedObject(schema) {
+  return new Proxy({}, {
+    set(target, prop, value) {
+      if (schema[prop] && !schema[prop](value)) {
+        throw new TypeError(`Invalid value for ${prop}`);
+      }
+      return Reflect.set(target, prop, value);
+    }
+  });
+}
+
+const user = createValidatedObject({ age: v => Number.isInteger(v) && v &gt;= 0 });
+user.age = 30;    // ok
+// user.age = "x"; // throws TypeError</code></pre>
+
+  <h3>3) Virtual properties / computed fields</h3>
+  <pre><code class="language-javascript">const person = new Proxy({}, {
+  get(target, prop) {
+    if (prop === 'fullName') {
+      return `${target.first || ''} ${target.last || ''}`.trim();
+    }
+    return Reflect.get(target, prop);
+  }
+});
+
+person.first = "Ada";
+person.last = "Lovelace";
+console.log(person.fullName); // "Ada Lovelace"</code></pre>
+
+  <h3>4) Revocable proxy</h3>
+  <pre><code class="language-javascript">const { proxy, revoke } = Proxy.revocable({}, {});
+proxy.x = 10;
+console.log(proxy.x); // 10
+revoke();
+// proxy.x; // throws TypeError after revoke()</code></pre>
+
+  <h2>Why use Reflect?</h2>
+  <ul>
+    <li>Ensures consistent internal behavior and return codes required by the proxy invariants.</li>
+    <li>Makes it easy to call the default operation without duplicating logic.</li>
+    <li>Helps avoid subtle bugs in trap implementations (e.g., forgetting to return the boolean expected by <code>set</code>).</li>
+  </ul>
+
+  <h2>When to use proxies (metaprogramming scenarios)</h2>
+  <ul>
+    <li>Creating virtualization layers (remote objects, RPC proxies).</li>
+    <li>Backward-compatible shims and deprecation warnings.</li>
+    <li>Mocking and spying in tests.</li>
+    <li>DSLs that want to treat property names as commands (e.g., chained query builders).</li>
+    <li>Validation, security checks, access control.</li>
+  </ul>
+
+  <h2>Pitfalls & performance</h2>
+  <ul>
+    <li>Proxies add overhead — avoid them in hot loops or micro-optimized paths.</li>
+    <li>Some engine optimizations (inline caching) are inhibited by proxies.</li>
+    <li>Debugging can be harder — stack traces may skip intermediate proxies logic.</li>
+    <li>Carefully implement traps and forward to <code>Reflect</code> where appropriate to maintain invariants.</li>
+  </ul>
+
+  <h2>Subquestions you might be asked (and short answers)</h2>
+  <h3>Q: Can proxies intercept private fields (e.g., <code>#private</code>)?</h3>
+  <p>A: No — proxies operate at the public property/slot level and cannot observe or intercept true language-private fields declared with <code>#</code>.</p>
+
+  <h3>Q: Are proxies transparent to <code>instanceof</code>?</h3>
+  <p>Proxies with an object target preserve <code>instanceof</code> behavior. If the target is a function and you use the <code>construct</code> trap, you must be careful to preserve prototype invariants.</p>
+
+  <h3>Q: How do proxies interact with Reflect.ownKeys and enumeration?</h3>
+  <p>Implement <code>ownKeys</code> and <code>getOwnPropertyDescriptor</code> consistently. The runtime enforces invariants such as returning non-configurable properties found on the target.</p>
+
+  <h2>Conclusion</h2>
+  <p>Proxies + Reflect form a modern, standardized metaprogramming toolset in JavaScript. Use them to implement clean abstraction layers, but be mindful of performance and invariants. Prefer Reflect for default behavior delegation and always think about the contract each trap must satisfy.</p>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Controllers and Models in Rails — Responsibilities and Interaction</title>
+<style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.6; padding:28px; color:#111; background:#fff; }
+    .container{max-width:980px;margin:0 auto;}
+    header{border-bottom:1px solid #e6e6e6;margin-bottom:18px;padding-bottom:8px;}
+    h1{font-size:26px;margin:0 0 6px 0;}
+    h2{font-size:18px;margin-top:18px;color:#0b69ff;}
+    h3{font-size:15px;margin-top:14px;color:#0b69ff;}
+    p{margin:8px 0;}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:4px;}
+    ul{margin:8px 0 8px 20px;}
+    table{border-collapse:collapse;width:100%;margin:8px 0;}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+    .muted{color:#666;font-size:13px;}
+    footer{border-top:1px solid #e6e6e6;margin-top:22px;padding-top:12px;color:#666;font-size:13px;}
+    </style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>Controllers and Models in Rails — Responsibilities and Interaction</h1>
+<p class="muted">Prepared by: Senior Software Engineer &amp; System Architect — Rails / AWS / SQL / Vue.js</p>
+<p class="muted">Date: 2025-09-10 (UTC)</p>
+</header>
+
+<p class="muted"><strong>Overview</strong></p>
+<p>Best practices for controller and model responsibilities, keeping code maintainable and testable, and interaction patterns between layers.</p>
+
+<section><h2>Controller responsibilities</h2>
+<ul>
+<li>Handle HTTP layer: params, authentication, authorization, and rendering responses.</li>
+<li>Delegate business logic to service objects or models.</li>
+<li>Map domain errors to HTTP status codes.</li>
+<li>Keep controllers thin — orchestrators rather than processors.</li>
+</ul>
+</section>
+<section><h2>Model responsibilities</h2>
+<ul>
+<li>Represent domain data and invariants: validations, associations, scopes, and small domain methods.</li>
+<li>Encapsulate persistence logic and domain rules that are intrinsic to the entity.</li>
+<li>Avoid putting orchestration, external API calls, or heavy workflows directly in models.</li>
+</ul>
+</section>
+<section><h2>Interaction patterns</h2>
+<ul>
+<li>Controller calls a service object which manipulates models and enqueues jobs, returns a Result object back to controller for rendering.</li>
+<li>Use presenters/decorators for view-layer formatting and serializers for JSON responses.</li>
+</ul>
+<pre><code># Controller (thin)
+def create
+  result = CreateOrder.new(current_user, order_params).call
+  if result.success?
+    render json: OrderSerializer.new(result.order), status: :created
+  else
+    render json: { errors: result.errors }, status: :unprocessable_entity
+  end
+end
+</code></pre>
+</section>
+<section><h2>Testing strategy</h2>
+<ul>
+<li>Unit test models (validations, scopes), unit test service objects, and integration tests for controller flows.</li>
+<li>Use fixtures/factories sparingly; prefer explicit object builders in tests for clarity.</li>
+</ul>
+</section>
+<section><h2>Subquestions you should expect</h2>
+<ol>
+<li><strong>What about concerns?</strong><br/>Use concerns for small shared behavior but prefer composition over inheritance. Avoid large concerns that hide dependencies.</li>
+<li><strong>How to handle background jobs?</strong><br/>Enqueue jobs from services or models where it makes sense; keep asynchronous side-effects explicit.</li>
+</ol>
+</section>
+
+
+<footer>
+I can help refactor a controller-heavy codebase into service-oriented patterns and provide tests and examples.
+</footer>
+</div>
+</body>
+</html>

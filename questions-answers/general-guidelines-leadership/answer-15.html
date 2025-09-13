@@ -1,0 +1,51 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>End‑to‑End Project — What Went Well & What Didn’t</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:24px;color:#111}h1{font-size:24px}h2{font-size:20px}pre{background:#f5f5f5;padding:12px;border-radius:6px;overflow:auto}ul{margin-left:18px}</style>
+</head>
+<body>
+  <h1>Example Project — Shipping a Multi‑Tenant Analytics Dashboard</h1>
+
+  <section>
+    <h2>Context</h2>
+    <p>I owned the project end‑to‑end: discovery, architecture, implementation, rollout, and post‑launch support.</p>
+  </section>
+
+  <section>
+    <h2>What went well</h2>
+    <ul>
+      <li><strong>Clear discovery:</strong> Early workshops with stakeholders produced usable acceptance criteria and prioritized MVP features.</li>
+      <li><strong>Good architecture:</strong> Designed a multi‑tenant data model and a separate aggregation pipeline using background jobs to keep reads fast.</li>
+      <li><strong>Incremental rollout:</strong> We used feature flags to incrementally enable features for customers and collect feedback.</li>
+      <li><strong>Observability:</strong> Dashboards for request latency, error rates, and data freshness allowed quick detection of issues.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>What didn’t go well</h2>
+    <ul>
+      <li><strong>Underestimated export load:</strong> CSV export for large tenants caused memory spikes and occasional job failures.</li>
+      <li><strong>Insufficient QA coverage:</strong> Edge cases around timezone handling and data permissions were missed initially.</li>
+      <li><strong>Customer communication:</strong> During rollout, we could have been clearer about data latency expectations.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>How we fixed the problems</h2>
+    <ul>
+      <li>Refactored exports to stream data and use pagination to reduce memory usage.</li>
+      <li>Expanded QA matrix to include timezone permutations and permission boundary tests.</li>
+      <li>Published a runbook and a “data freshness” SLA in the product docs for customers.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Key takeaways</h2>
+    <p>Ownership across the lifecycle matters — early operational concerns (exports, quotas, rate limits) should be part of discovery. Using feature flags and staging with representative data mitigated risk and enabled safer rollouts.</p>
+  </section>
+</body>
+</html>

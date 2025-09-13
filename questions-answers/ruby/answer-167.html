@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 167</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 167: How do you design for observability in concurrent systems (metrics, tracing, logging)?</h1>
+<h2>Concept</h2>
+<p>Observability in concurrent systems requires correlating context across threads/fibers, tracking queue lengths, contention, and resource usage, and capturing traces for distributed flows.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Emit structured logs with request IDs, instrument metrics for queue depths, worker latencies, GC and thread metrics, and add distributed tracing for cross-service flows. Correlate logs and traces with a unique context propagated through threads/fibers.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>Context propagation:</strong> pass context explicitly or use fiber-local storage with careful cleanup for async code.</li>
+<li><strong>Metrics:</strong> expose histograms, gauges, and counters for concurrency hotspots.</li>
+</ul>
+
+<h2>Example</h2>
+<pre><code class="language-ruby"># pseudo: set request id in fiber-local storage
+Fiber.current[:req_id] = SecureRandom.uuid
+logger.info("start", req_id: Fiber.current[:req_id])</code></pre>
+
+<h2>Best practices</h2>
+<ul>
+<li>Keep metric cardinality low, and instrument points of contention (lock wait times, queue lengths).</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 167</footer>
+</body></html>

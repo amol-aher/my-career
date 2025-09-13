@@ -1,0 +1,56 @@
+<!doctype html><html><head><meta charset='utf-8'><title>Missing deadlines or production incidents — handling and learnings</title>
+<style>
+body{font-family:Segoe UI,Arial,Helvetica,sans-serif;line-height:1.5;padding:24px;max-width:900px;margin:auto;color:#111}
+header{border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:18px}
+h1{font-size:20px;margin:0 0 6px 0}
+.role{color:#555;font-size:13px;margin-bottom:6px}
+pre{background:#f6f6f6;padding:12px;border-radius:6px;overflow:auto}
+code{font-family:monospace;font-size:13px}
+section{margin-bottom:18px}
+.sub{font-weight:600;margin-top:8px}
+ul{margin-left:18px}
+ol{margin-left:18px}
+</style></head><body><header><h1>Missing deadlines or production incidents — handling and learnings</h1><div class='role'>System architect · Technical lead · Senior software engineer (Ruby on Rails, AWS, SQL, Vue.js)</div></header>
+<section>
+<p><strong>Summary:</strong> Missed deadlines and incidents are inevitable; the measure is response quality. My process emphasizes containment, root cause, remediation, and prevention.</p>
+
+<div class='sub'>Immediate incident response (first 60–120 minutes)</div>
+<ol>
+<li><strong>Assess impact:</strong> Who is affected? What functionality is down? Severity level.</li>
+<li><strong>Mitigate:</strong> Apply hotfix, rollback, or circuit-breaker/feature-flag toggle.</li>
+<li><strong>Communicate:</strong> Notify stakeholders and on-call with current state and estimated next update.</li>
+<li><strong>Stabilize:</strong> Stop further changes and focus on containment.</li>
+</ol>
+
+<div class='sub'>Post-incident (within 24–72 hours)</div>
+<ol>
+<li><strong>Postmortem:</strong> A blameless report with timeline, root cause, contributing factors, impact, and remediation plan.</li>
+<li><strong>Action items:</strong> Assign owners for fixes: tests, infra changes, runbook updates, monitoring.</li>
+<li><strong>Follow-through:</strong> Track and verify completion of action items.</li>
+</ol>
+
+<div class='sub'>Missed deadline — practical handling</div>
+<ol>
+<li><strong>Be transparent:</strong> Inform stakeholders with reason, impact, and revised plan.</li>
+<li><strong>Prioritize:</strong> Re-scope to deliver core value first (MVP approach).</li>
+<li><strong>Adjust process:</strong> Modify estimation practice, add buffer for unknowns, or increase QA capacity.</li>
+</ol>
+
+<div class='sub'>Example scenario and learnings</div>
+<p>We once missed a launch because integration tests with a third-party payment provider were flaky and skipped in CI. Actions taken:</p>
+<ul>
+<li>Added contract tests & mocked provider for CI.</li>
+<li>Created staging environment with test provider credentials.</li>
+<li>Introduced a pre-release checklist that includes end-to-end smoke tests.</li>
+<li>Result: subsequent releases had fewer surprises and quicker time-to-release.</li>
+</ul>
+
+<div class='sub'>Checklist to prevent recurrence</div>
+<ul>
+<li>End-to-end smoke tests in pipeline</li>
+<li>Feature flags for partial rollouts</li>
+<li>Runbooks for on-call</li>
+<li>Pre-release canary deployments</li>
+</ul>
+</section>
+</body></html>

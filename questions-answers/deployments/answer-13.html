@@ -1,0 +1,98 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Securing Application Deployments (IAM, Secrets, etc.)</title>
+  <style>
+    body{font-family:Inter,Arial,Helvetica,sans-serif;margin:22px;color:#111;line-height:1.65}
+    h1{background:#b71c1c;color:#fff;padding:14px;border-radius:8px}
+    h2{color:#b71c1c;margin-top:18px}
+    pre{background:#fff5f5;padding:12px;border-radius:6px;overflow:auto}
+    ul{margin:8px 0 8px 20px}
+    .tip{background:#fff1f0;padding:10px;border-left:4px solid #b71c1c;border-radius:6px;margin:10px 0}
+  </style>
+</head>
+<body>
+  <h1>Securing Application Deployments (IAM Roles, Secrets, etc.)</h1>
+
+  <h2>Security principles</h2>
+  <ul>
+    <li><strong>Least privilege:</strong> give each principal the minimal permissions required.</li>
+    <li><strong>Defense in depth:</strong> combine network, identity, data and runtime protections.</li>
+    <li><strong>Secrets as first-class:</strong> never store secrets in code or images.</li>
+    <li><strong>Automate and audit:</strong> rotate keys, log access and enforce policies via IaC.</li>
+  </ul>
+
+  <h2>IAM & identity best practices</h2>
+  <ul>
+    <li><strong>Use roles not long-lived keys:</strong> assign IAM roles to compute resources (EC2 roles, ECS task roles, Lambda execution roles, EKS IRSA).</li>
+    <li><strong>Role separation:</strong> separate CI/CD role from runtime roles and use least privilege policies.</li>
+    <li><strong>Use temporary credentials / STS:</strong> when pipelines need AWS access prefer assume-role with short-lived tokens.</li>
+    <li><strong>Use OIDC for external CI:</strong> configure GitHub/GitLab OIDC provider so GitHub Actions can get temporary credentials without secrets in repo.</li>
+    <li><strong>Apply IAM boundaries & SCPs:</strong> in multi-account orgs, use Service Control Policies to enforce guardrails.</li>
+  </ul>
+
+  <h2>Secrets management</h2>
+  <ul>
+    <li><strong>AWS Secrets Manager:</strong> store DB passwords, API keys with automatic rotation using Lambda if supported by the service.</li>
+    <li><strong>SSM Parameter Store (SecureString):</strong> good for configuration values; cheaper than Secrets Manager for many values.</li>
+    <li><strong>HashiCorp Vault:</strong> enterprise-grade option for multi-cloud and advanced workflows.</li>
+    <li><strong>Inject at runtime:</strong> fetch secrets via SDK/agents at startup or use secret integration (ECS secrets, Kubernetes Secrets with KMS/SealedSecrets).</li>
+    <li><strong>Avoid env var leakage:</strong> do not echo envs to logs; mask secrets in CI output.</li>
+  </ul>
+
+  <h2>Encryption & key management</h2>
+  <ul>
+    <li>Use AWS KMS CMKs for encrypting secrets at rest and S3/EBS/RDS encryption.</li>
+    <li>Rotate keys periodically and limit KMS key usage to tightly scoped roles.</li>
+  </ul>
+
+  <h2>Network & runtime protections</h2>
+  <ul>
+    <li>Use private subnets for internal services; only expose APIs through ALB/NGINX/API Gateway.</li>
+    <li>Use security groups and NACLs following least-privilege network rules.</li>
+    <li>Use VPC endpoints for S3/SecretsManager to avoid egress through internet.</li>
+    <li>Enable TLS everywhere; manage certificates with ACM.</li>
+    <li>Run runtime protection: ECR image scanning, ECR image signing, container vulnerability scanning, and runtime policies (PSP/OPA for k8s).</li>
+  </ul>
+
+  <h2>Supply-chain & artifact security</h2>
+  <ul>
+    <li>Sign artifacts and containers and verify signatures at deploy time (Sigstore/Cosign).</li>
+    <li>Use an immutable artifact repository (ECR, Artifactory) and only deploy tagged artifacts.</li>
+    <li>Scan dependencies using SCA tools (Dependabot, Snyk, Sonatype).</li>
+  </ul>
+
+  <h2>CI/CD-specific security</h2>
+  <ul>
+    <li>Use separate minimal roles for CI with only the permissions needed to publish artifacts and trigger deployments.</li>
+    <li>Prefer OIDC or short-lived creds over storing AWS keys in CI secrets.</li>
+    <li>Limit who can approve production deploys and apply MFA for sensitive operations.</li>
+  </ul>
+
+  <div class="tip"><strong>Audit & monitoring:</strong> enable CloudTrail, AWS Config, GuardDuty and log access to secrets. Review permission usage with Access Analyzer.</div>
+
+  <h2>Common interview subquestions</h2>
+  <h3>How do you rotate secrets without downtime?</h3>
+  <p>Use Secrets Manager rotation or dual-writing/dual-reading: deploy new secret, update consumers to accept both, perform atomic switch once consumers succeed and then remove old secret after safe period.</p>
+
+  <h3>How do you prevent leaked secrets from being useful?</h3>
+  <p>Enforce short-lived credentials, revoke/rotate compromised secrets, restrict network access and monitor unusual use via CloudTrail and GuardDuty.</p>
+
+  <h3>How to protect credentials in Terraform state?</h3>
+  <p>Avoid embedding secrets in terraform code and outputs; use data sources to reference external secrets at apply time if possible and encrypt remote state (S3 with KMS) and use DynamoDB locking.</p>
+
+  <h2>Final checklist for secure deployment</h2>
+  <ul>
+    <li>Least-privilege IAM roles for every principal.</li>
+    <li>Secrets in Secrets Manager/ Vault, not in code.</li>
+    <li>Immutable, signed artifacts and image scanning.</li>
+    <li>Encryption at rest & in transit with KMS-managed keys.</li>
+    <li>Logging, alerting & automated rotation/audit.</li>
+  </ul>
+
+  <p style="margin-top:18px">If you want, I can produce a concrete IAM policy example, an OIDC trust policy for GitHub Actions, or a sample Secrets Manager rotation Lambda — tell me which and I’ll add it.</p>
+</body>
+</html>

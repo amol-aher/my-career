@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Event Sourcing and CQRS in Rails</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:1100px;margin:0 auto;background:#fff;padding:28px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Using Event Sourcing & CQRS patterns in a Rails app</h1>
+
+    <p><strong>Overview</strong>: Event Sourcing stores state as an append-only sequence of domain events. CQRS (Command Query Responsibility Segregation) splits write models (commands/events) from read models (projections). In Rails, you can adopt these gradually for parts of the system where auditability, complex history, and scalable read models are required.</p>
+
+    <h2>When to consider</h2>
+    <ul>
+      <li>Auditability and full history are mandatory.</li>
+      <li>Complex business rules that evolve and need reprocessing.</li>
+      <li>Need to scale read models independently of writes.</li>
+    </ul>
+
+    <h2>Key components</h2>
+    <ul>
+      <li><strong>Event store</strong> — append-only store of domain events (RailsEventStore, Kafka, custom table).</li>
+      <li><strong>Command handlers</strong> — validate and persist events to the event store.</li>
+      <li><strong>Projectors / Read model builders</strong> — subscribe to events and update read-optimized views (Postgres tables, Elasticsearch, Redis).</li>
+      <li><strong>Replayers</strong> — re-run events to build new projections if read model schema changes.</li>
+    </ul>
+
+    <h2>Example using rails_event_store (conceptual)</h2>
+    <pre><code># command handler
+class PlaceOrderHandler
+  def call(cmd)
+    # validate...
+    event = OrderPlaced.new(data: {order_id: cmd.order_id, items: cmd.items})
+    RailsEventStore::Client.new.publish(event)
+  end
+end
+
+# projector
+class OrderProjector
+  def call(event)
+    case event
+    when OrderPlaced
+      OrderReadModel.create!(id: event.data[:order_id], items: event.data[:items])
+    when OrderCancelled
+      OrderReadModel.find(event.data[:order_id]).update!(status: 'cancelled')
+    end
+  end
+end
+
+# wiring (initializer)
+RailsEventStore::Client.new.subscribe(OrderProjector.new, to: [OrderPlaced, OrderCancelled])
+</code></pre>
+
+    <h2>Benefits</h2>
+    <ul>
+      <li>Perfect audit trail and ability to reconstruct state.</li>
+      <li>Decouples write logic from read performance tuning.</li>
+      <li>Enables flexible, denormalized read models tailored to use cases.</li>
+    </ul>
+
+    <h2>Costs & challenges</h2>
+    <ul>
+      <li>Increased complexity (mental model, testing, operational).</li>
+      <li>Event schema evolution must be handled carefully (versioning).</li>
+      <li>Eventual consistency between write and read sides—design for it.</li>
+    </ul>
+
+    <h2>Practical adoption strategy</h2>
+    <ol>
+      <li>Start with a single bounded context (e.g., billing or orders) where audit matters.</li>
+      <li>Implement an event store and projectors for that context.</li>
+      <li>Build replayers & migrations for event versioning.</li>
+      <li>Monitor projection lag and tune consumers/parallelism.</li>
+    </ol>
+
+    <h2>Interview tip</h2>
+    <p>Explain when you’d adopt event sourcing: not for every table—only where the benefits outweigh the complexity. Give a concrete example: invoice lifecycle where exact history and ability to recompute balances were crucial.</p>
+  </div>
+</body>
+</html>

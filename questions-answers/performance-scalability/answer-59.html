@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>ALB vs NLB vs CLB — Which Load Balancer to Use</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>ALB, NLB, CLB — Differences & Recommendation for Microservices</h1>
+
+  <h2>CLB (Classic Load Balancer)</h2>
+  <p>Legacy; supports basic Layer 4/7 features; use only for legacy apps.</p>
+
+  <h2>ALB (Application Load Balancer)</h2>
+  <ul>
+    <li>Layer 7 (HTTP/HTTPS). Supports host/path-based routing, WebSocket, HTTP/2, stickiness via application cookies.</li>
+    <li>Good for microservices where routing and host-based rules are needed.</li>
+  </ul>
+
+  <h2>NLB (Network Load Balancer)</h2>
+  <ul>
+    <li>Layer 4. Extremely low latency, static IPs, TLS passthrough, handles millions of connections.</li>
+    <li>Use when you need extreme performance or static IPs.</li>
+  </ul>
+
+  <h2>Recommendation</h2>
+  <p>For HTTP microservices, use ALB for its routing features. Use NLB for TCP-level performance or when you require static IP addresses. CLB is deprecated.</p>
+</body>
+</html>

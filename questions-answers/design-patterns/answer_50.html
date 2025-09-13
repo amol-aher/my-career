@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Patterns to reduce complexity in a large Rails model</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Refactoring a large Rails model — design patterns & techniques</h1>
+
+    <p>If your model is growing too large, apply patterns that break responsibilities into testable, single-purpose components.</p>
+
+    <h2>Patterns to apply</h2>
+    <ul>
+      <li><strong>Service Objects</strong> — move complex operations and orchestration out of the model (e.g., <code>CreateOrder</code>, <code>ProcessRefund</code>).</li>
+      <li><strong>Query Objects / Repositories</strong> — extract complex queries into dedicated classes.</li>
+      <li><strong>Form Objects</strong> — handle multi-model form flow outside the model.</li>
+      <li><strong>Decorator / Presenter</strong> — move presentation logic out of the model.</li>
+      <li><strong>Policy objects</strong> — use Pundit for authorization logic instead of sprinkling checks in the model.</li>
+      <li><strong>State pattern</strong> — extract state-specific behavior into state machines or state objects.</li>
+      <li><strong>Events / Observers</strong> — move side effects to subscribers or background jobs.</li>
+      <li><strong>Concerns (small)</strong> — extract reusable bits but avoid God modules.</li>
+    </ul>
+
+    <h2>Refactoring approach</h2>
+    <ol>
+      <li>Identify responsibilities (validation, persistence, business rules, integrations, presentation).</li>
+      <li>Prioritize easiest extractions (presenters, queries) and add tests before moving code.</li>
+      <li>Extract one responsibility at a time and run full test suite; use feature flags for behavioral changes if necessary.</li>
+      <li>Document new boundaries and update architecture diagrams.</li>
+    </ol>
+
+    <h2>Example refactor — order checkout</h2>
+    <pre><code># before: large Order model with payment, shipment, notifications
+
+# after: extract services
+class CreateOrder
+  def call(cart:, user:)
+    order = Order.create!(...)
+    ChargePayment.new(order).call
+    ReserveInventory.new(order).call
+    NotifyUserJob.perform_later(order.id)
+    order
+  end
+end
+</code></pre>
+
+    <h2>Other techniques</h2>
+    <ul>
+      <li>Use composition over inheritance — prefer modules/services to massive subclasses.</li>
+      <li>Adopt hexagonal / clean architecture layering when model responsibilities are domain-heavy.</li>
+      <li>Introduce domain events and projections to create read-optimized models and keep write model lean.</li>
+    </ul>
+
+    <h2>Interview tip</h2>
+    <p>Walk through a concrete refactor: show before/after code snippets, tests you added, metrics improved (reduced cyclomatic complexity, faster deploys, clearer ownership), and how the team adopted the new patterns.</p>
+  </div>
+</body>

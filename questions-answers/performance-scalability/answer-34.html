@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Handling Failed Background Jobs — Retries, Dead Jobs, and Strategies</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Handling Failed Background Jobs — Retries, Dead Jobs, and Strategies</h1>
+  <p>Designing retries and dead-job handling is critical to reliability. Below are patterns and concrete examples.</p>
+
+  <h2>Default Sidekiq behavior</h2>
+  <ul>
+    <li>Sidekiq retries failed jobs with an exponential backoff by default (up to 25 retries historically; configurable).</li>
+    <li>After exhausting retries, jobs land in the <code>Dead</code> set (dead queue) for manual inspection or automated draining.</li>
+  </ul>
+
+  <h2>Strategies for handling failures</h2>
+  <ol>
+    <li><strong>Idempotency:</strong> Make jobs idempotent (use unique keys or dedupe logic) so retries are safe.</li>
+    <li><strong>Classify errors:</strong> Retry transient errors (network/db timeouts) but fail fast for unrecoverable errors (validation failed) using custom error handling.</li>
+    <li><strong>Custom retry policies:</strong> Use Sidekiq options or middleware to adjust retry counts and backoff.</li>
+    <li><strong>Dead job automation:</strong> Alert on growth of dead set and use automated pipelines to retry or notify owners.</li>
+  </ol>
+
+  <h2>Example: custom retry logic</h2>
+  <pre><code>class MyWorker
+  include Sidekiq::Worker
+  sidekiq_options retry: 5
+
+  def perform(id)
+    do_work
+  rescue TransientError => e
+    raise e # will retry
+  rescue PermanentError => e
+    # log and drop: don't retry
+  end
+end
+  </code></pre>
+
+  <h2>DLQ (Dead Letter Queue) patterns</h2>
+  <ul>
+    <li>Move failed messages to a DLQ with metadata (error, traceback, attempts) and an automated process for retries after fixes.</li>
+    <li>Use poison-message handling to prevent repeated immediate failures (move to DLQ fast).</li>
+  </ul>
+
+  <h2>Notification & observability</h2>
+  <p>Integrate Sidekiq Web UI, Prometheus metrics, and alerts (PagerDuty/Slack) when retries exceed thresholds or the dead set grows.</p>
+
+  <h2>Best practices</h2>
+  <ul>
+    <li>Keep job work small and fail-fast where possible.</li>
+    <li>Use exponential backoff and include jitter to avoid retry storms.</li>
+    <li>Provide a manual retry path for dead jobs after root cause is resolved.</li>
+  </ul>
+
+  <h2>Summary</h2>
+  <p>Design jobs to be idempotent, classify errors for retry policies, monitor the dead set, and provide clear operational flows to inspect and re-run failed jobs.</p>
+</body>
+</html>

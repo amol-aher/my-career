@@ -1,0 +1,67 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Stages in a Typical CI/CD Pipeline</title>
+  <style>
+    body{font-family:Inter,Arial,Helvetica,sans-serif;margin:22px;color:#111;line-height:1.65}
+    h1{background:#1e88e5;color:#fff;padding:14px;border-radius:8px}
+    h2{color:#1e88e5;margin-top:18px}
+    pre{background:#f1f8ff;padding:12px;border-radius:6px;overflow:auto}
+    ul{margin:8px 0 8px 20px}
+  </style>
+</head>
+<body>
+  <h1>Stages in a Typical CI/CD Pipeline</h1>
+
+  <h2>Overview</h2>
+  <p>A CI/CD pipeline automates building, testing, and deploying software. Stages vary by team maturity, but the canonical pipeline includes stages from source to production with testing and gating in between.</p>
+
+  <h2>Typical pipeline stages</h2>
+  <ol>
+    <li><strong>Source / PR Validation:</strong> Triggered by commits or PRs. Run linters, unit tests, static analysis, and SCA (software composition analysis).</li>
+    <li><strong>Build:</strong> Compile code, build container images, and produce immutable artifacts (images or packaged artifacts).</li>
+    <li><strong>Package & Store Artifacts:</strong> Push images to ECR or artifacts to S3/Artifactory. Tag artifacts with immutable references (commit SHA).</li>
+    <li><strong>Integration Tests:</strong> Run tests that verify interactions between components (DBs, APIs) in a short-lived environment.</li>
+    <li><strong>Security & Compliance Scans:</strong> Image vulnerability scan, SAST, secret scanning, and policy checks.</li>
+    <li><strong>Deploy to Staging:</strong> Deploy artifact to staging environment using IaC and run smoke and E2E tests.</li>
+    <li><strong>Manual/Automated Approval:</strong> Optional human approval or automated quality gates based on metrics.</li>
+    <li><strong>Production Deploy:</strong> Promote artifact and use safe strategies (blue/green, canary, rolling).</li>
+    <li><strong>Post-Deploy Validation:</strong> Run synthetic transactions, monitor SLOs, and validate key metrics.</li>
+    <li><strong>Observability & Rollback:</strong> Monitor and trigger rollback if thresholds are breached.</li>
+  </ol>
+
+  <h2>Auxiliary pipeline components</h2>
+  <ul>
+    <li>Secrets management (pull secrets at deploy time)</li>
+    <li>Feature flags for decoupling deploy from release</li>
+    <li>Canary analysis tooling and metrics dashboards</li>
+    <li>Artifact provenance and traceability</li>
+  </ul>
+
+  <h2>Example pipeline flow using GitHub Actions + ECR + ECS</h2>
+  <pre><code>1) on: pull_request -> run unit tests, lint
+2) on: push to main -> build image, push to ECR, terraform plan for staging
+3) CI deploy to staging -> run integration tests
+4) After approval -> terraform apply for prod, update ECS service</code></pre>
+
+  <h2>Interview subquestions</h2>
+  <h3>How do you manage slow tests?</h3>
+  <p>Run slow, expensive tests in nightly pipelines and keep PR checks fast (unit/fast integration). Use test selection to run only affected tests on PRs.</p>
+
+  <h3>How to shorten lead time?</h3>
+  <p>Parallelize pipeline steps, cache dependencies between builds, keep tests deterministic, and break large monolith tests into smaller suites.</p>
+
+  <h2>Metrics to measure pipeline health</h2>
+  <ul>
+    <li>Lead time for changes</li>
+    <li>Deployment frequency</li>
+    <li>Change failure rate</li>
+    <li>Mean time to recovery (MTTR)</li>
+  </ul>
+
+  <p style="margin-top:18px">If you want sample pipeline YAML for a specific CI system (GitHub Actions, GitLab CI, Jenkinsfile), I can generate one tailored to your stack (Rails + Vue.js + Terraform).</p>
+</body>
+</html>

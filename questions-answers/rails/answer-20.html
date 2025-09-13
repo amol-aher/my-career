@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test-Driven Development in Ruby on Rails</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; margin-top: 30px; }
+        .section { background-color: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .code-block { background-color: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto; margin: 15px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<h1>Test-Driven Development in Ruby on Rails</h1>
+
+<div class="section">
+    <h2>Core Principles</h2>
+    
+    <h3>Red-Green-Refactor Cycle</h3>
+    <ol>
+        <li><strong>Red:</strong> Write failing tests for new functionality</li>
+        <li><strong>Green:</strong> Implement minimal code to pass tests</li>
+        <li><strong>Refactor:</strong> Improve code while keeping tests passing</li>
+    </ol>
+    
+    <h3>Testing Pyramid</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Test Type</th>
+                <th>Purpose</th>
+                <th>Examples</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Unit Tests</td>
+                <td>Isolate small pieces of functionality</td>
+                <td>Model validations, helper methods</td>
+            </tr>
+            <tr>
+                <td>Integration Tests</td>
+                <td>Test interactions between components</td>
+                <td>Controller actions, service objects</td>
+            </tr>
+            <tr>
+                <td>System Tests</td>
+                <td>Full-stack browser simulation</td>
+                <td>End-to-end user workflows</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h3>Setting Up Tests in Rails</h3>
+    <div class="code-block"># Gemfile
+group :development, :test do
+  gem 'rspec-rails'
+  gem 'factory_bot_rails'
+  gem 'shoulda-matchers'
+end
+
+# spec/rails_helper.rb
+RSpec.configure do |config|
+  config.include Shoulda::Matchers::ActiveModel
+  config.include FactoryBot::Syntax::Methods
+end</div>
+    
+    <h3>Writing Unit Tests</h3>
+    <div class="code-block"># Model validation test
+describe User do
+  it "is valid with proper attributes" do
+    user = build(:user, name: "John", email: "john@example.com")
+    expect(user).to be_valid
+  end
+
+  it "requires an email address" do
+    user = build(:user, name: "Jane")
+    expect(user).not_to be_valid
+    expect(user.errors[:email]).to include("can't be blank")
+  end
+end</div>
+    
+    <h3>Writing Integration Tests</h3>
+    <div class="code-block"># Controller test
+describe UsersController do
+  describe "GET /users" do
+    it "returns all users" do
+      create_list(:user, 3)
+      
+      get :index
+      expect(response).to have_http_status(:ok)
+      expect(assigns(:users).size).to eq(3)
+    end
+  end
+end</div>
+    
+    <h3>Writing System Tests</h3>
+    <div class="code-block"># System test with Capybara
+require "rails_helper"
+
+feature "User registration" do
+  scenario "successful registration" do
+    visit new_user_path
+    
+    fill_in "Name", with: "Alice Smith"
+    fill_in "Email", with: "alice@example.com"
+    click_button "Sign Up"
+    
+    expect(page).to have_content("Welcome, Alice!")
+    expect(User.count).to eq(1)
+  end
+end</div>
+    
+    <h3>Test Coverage Guidelines</h3>
+    <ul>
+        <li>Aim for 80-90% coverage for critical business logic</li>
+        <li>Prioritize tests for high-risk areas (payment processing, auth)</li>
+        <li>Include negative tests for edge cases</li>
+        <li>Mock external services to avoid flakiness</li>
+    </ul>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"/><title>Most Technically Complex System</title><meta name="viewport" content="width=device-width,initial-scale=1"/><style>body{font-family:Arial,Helvetica,sans-serif;margin:24px;color:#111}h1{font-size:24px}h2{font-size:20px}ul{margin-left:18px}ol{margin-left:18px}</style></head>
+<body>
+  <h1>Most Technically Complex System</h1>
+  
+<p><strong>System:</strong> A real-time analytics ingestion and aggregation platform for multi-tenant customers.</p>
+<h3>Complexities</h3>
+<ul>
+<li>High throughput (millions of events/day) while ensuring per-tenant isolation.</li>
+<li>Exactly-once processing challenges with idempotency and deduplication.</li>
+<li>Balancing batch vs stream processing for cost and latency.</li>
+<li>Operational concerns: partitioning, scaling workers, backpressure handling, and monitoring.</li>
+</ul>
+<h3>Approach</h3>
+<p>Used modular pipeline components, idempotent consumers, time-windowed aggregations, and robust observability with alerts and dashboards.</p>
+
+</body>
+</html>

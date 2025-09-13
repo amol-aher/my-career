@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Backup and Recovery Strategies for Mission-Critical Services</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Backup & Recovery Strategies for Mission-Critical Services</h1>
+
+  <h2>Principles</h2>
+  <ul>
+    <li>Define RPO (data loss tolerance) and RTO (time to recovery).</li>
+    <li>Automate backups and verify restores regularly (DR drills).</li>
+    <li>Store backups offsite and across regions.</li>
+    <li>Protect backups (encryption, least privilege).</li>
+  </ul>
+
+  <h2>Concrete strategies</h2>
+  <ul>
+    <li><strong>Databases:</strong> RDS automated backups + snapshots, enable PITR (Postgres WAL archiving) where supported; cross-region snapshots for DR.</li>
+    <li><strong>DynamoDB:</strong> On-Demand backups + PITR, export to S3 for long-term archiving.</li>
+    <li><strong>S3:</strong> Versioning + cross-region replication (CRR) and lifecycle policies.</li>
+    <li><strong>ElastiCache:</strong> Redis snapshots persisted to S3 and cross-region copy if needed; ensure Multi-AZ and automatic failover.</li>
+    <li><strong>Infrastructure as Code:</strong> Store Terraform/CloudFormation state in remote buckets with locking (S3 + DynamoDB lock) and backup state snapshots.</li>
+  </ul>
+
+  <h2>Recovery runbook checklist</h2>
+  <ol>
+    <li>Declare incident and RTO/RPO targets.</li>
+    <li>Identify latest good backup and its region.</li>
+    <li>Restore backups to an isolated environment and validate integrity.</li>
+    <li>Promote restored DB to be writable if necessary and update DNS/load balancer.</li>
+    <li>Validate application behavior and monitor for errors.</li>
+  </ol>
+
+  <h2>Testing</h2>
+  <p>Run regular restore tests, simulate outages with chaos engineering, and update runbooks based on observations.</p>
+</body>
+</html>

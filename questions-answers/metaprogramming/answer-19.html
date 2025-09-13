@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>extend vs include vs prepend in Ruby</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:18px;color:#111}
+    h1{color:#1a56db} h2{color:#0b5a78}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <h1>What happens behind the scenes when you call <code>extend</code>, <code>include</code>, and <code>prepend</code>?</h1>
+
+  <p>All three change the method lookup chain but in different ways:</p>
+
+  <h2><code>include</code></h2>
+  <p><code>include ModuleName</code> inserts the module into the including class's ancestor chain <em>after</em> the class but before its superclass. Methods in the module become instance methods of the class.</p>
+  <pre><code class="language-ruby">module M; def foo; "m" end; end
+class C; include M; def foo; "c" end; end
+C.new.foo # => "c" (class method overrides module when class defines same name)</code></pre>
+
+  <h2><code>prepend</code></h2>
+  <p><code>prepend ModuleName</code> inserts the module before the class in the ancestor chain. Module methods take precedence over the class's methods. Module can call <code>super</code> to access the class implementation.</p>
+  <pre><code class="language-ruby">module M; def foo; "m" end; end
+class C; prepend M; def foo; "c" end; end
+C.new.foo # => "m" (module wins)</code></pre>
+
+  <h2><code>extend</code></h2>
+  <p><code>object.extend(ModuleName)</code> adds the module to the object's singleton class. The module's methods become singleton methods of the object (or class methods if you extend a class object).</p>
+  <pre><code class="language-ruby">module M; def foo; "m" end; end
+o = Object.new
+o.extend(M)
+o.foo # => "m"</code></pre>
+
+  <h2>Under the hood (conceptually)</h2>
+  <ol>
+    <li><strong>include</strong> creates an anonymous proxy in the ancestor chain referencing the module's method table so that method lookup will find the module methods after the class's methods.</li>
+    <li><strong>prepend</strong> inserts the module even earlier so its methods are consulted before the class's own methods.</li>
+    <li><strong>extend</strong> modifies the object's singleton class so that the module appears in the ancestor chain for that object's singleton class.</li>
+  </ol>
+
+  <h2>Implications & use cases</h2>
+  <ul>
+    <li>Use <code>include</code> to share instance behavior across classes.</li>
+    <li>Use <code>prepend</code> when you want to override class behavior but still call <code>super</code> to reach the original implementation (good for instrumentation or aspect-oriented patterns).</li>
+    <li>Use <code>extend</code> to add behavior to a single object or to add class-level methods by extending the class object.</li>
+  </ul>
+
+  <h2>Example: using prepend for instrumentation</h2>
+  <pre><code class="language-ruby">module Logging
+  def call(*args)
+    puts "calling \#{self.class}#call"
+    super
+  end
+end
+
+class Worker
+  def call; "done" end
+end
+
+Worker.prepend(Logging)
+Worker.new.call
+# logs "calling Worker#call" then returns "done"</code></pre>
+
+  <h2>Edge cases</h2>
+  <ul>
+    <li>Method resolution order is important when multiple modules are included or prepended — the last inserted appears earlier in the chain.</li>
+    <li>Prepending modules can be surprising for maintainers — document intentions clearly.</li>
+  </ul>
+
+  <h2>Conclusion</h2>
+  <p><code>include</code>, <code>prepend</code>, and <code>extend</code> are declarative ways to shape the ancestor chain and the method lookup strategy. <code>prepend</code> is especially useful for wrappers/instrumentation while <code>extend</code> is ideal for per-object behavior.</p>
+</body>
+</html>

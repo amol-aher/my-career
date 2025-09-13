@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Invalidating Cached Content Efficiently in Rails</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Invalidating Cached Content Efficiently in Rails</h1>
+  <p>Cache invalidation is hard. Use patterns that make invalidation deterministic and cheap: versioned keys, touch callbacks, and background refresh.</p>
+
+  <h2>1. Use versioned cache keys</h2>
+  <pre><code># model cache key
+def cache_key
+  "#{self.class.name.downcase}/#{id}-#{updated_at.to_i}"
+end
+  </code></pre>
+
+  <h2>2. Use <code>touch</code> to propagate updates</h2>
+  <p>When an associated record changes, use <code>touch: true</code> to update parent's timestamp so its cache key changes automatically.</p>
+  <pre><code>class Comment &lt; ApplicationRecord
+  belongs_to :post, touch: true
+end
+  </code></pre>
+
+  <h2>3. Explicit expire on write</h2>
+  <pre><code>Rails.cache.delete("top_products/v1") # when product changes
+# or use cache.delete_matched for pattern deletes (costly)
+  </code></pre>
+
+  <h2>4. Use background refresh (stale-while-revalidate)</h2>
+  <p>Serve slightly stale content while a background job recomputes the cache to avoid thundering herds.</p>
+  <pre><code>value = Rails.cache.fetch(key, expires_in: 5.minutes) do
+  computed_value
+end
+# Kick off background job to refresh near expiry
+  </code></pre>
+
+  <h2>5. Use CDN & cache-control carefully</h2>
+  <p>Short TTLs with cache invalidation APIs (CloudFront invalidation) for critical changes. Use surrogate keys on CDNs when supported for targeted purge.</p>
+
+  <h2>6. Use cache namespaces / versioning for mass invalidation</h2>
+  <pre><code># bump namespace version to invalidate many keys
+Rails.cache.fetch("v2:top_products:...") { ... }
+# bump the 'v2' quickly invalidates older keys without deletes
+  </code></pre>
+
+  <h2>7. Practical checklist</h2>
+  <ul>
+    <li>Prefer deterministic keys with timestamps</li>
+    <li>Use <code>touch</code> and association callbacks to cascade invalidation</li>
+    <li>Avoid broad deletes in hot caches; use namespacing when possible</li>
+    <li>Monitor cache hit/miss, eviction rates, and latency</li>
+  </ul>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>EC2 vs ECS vs EKS vs Lambda — AWS Compute Choices</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>EC2, ECS, EKS, Lambda — AWS Compute Options & When to Use Them</h1>
+
+  <h2>EC2 (virtual machines)</h2>
+  <p>Full control over OS — choose when you need custom runtime, GPUs, or legacy apps. Higher operational overhead (patching, scaling).</p>
+
+  <h2>ECS (Elastic Container Service)</h2>
+  <p>Managed container orchestration. Use Fargate for serverless containers to avoid managing EC2. Good for containerized workloads with easier ops.</p>
+
+  <h2>EKS (Elastic Kubernetes Service)</h2>
+  <p>Managed Kubernetes for teams with Kubernetes expertise, need for complex scheduling, custom controllers, and portability.</p>
+
+  <h2>Lambda (serverless)</h2>
+  <p>Function-as-a-Service for event-driven workloads. Great for infrequent or highly variable workloads; cost-effective but with cold starts and execution time limits.</p>
+
+  <h2>Choosing guidance</h2>
+  <ul>
+    <li>Choose Lambda for short-lived event-driven tasks and microservices with low operational overhead.</li>
+    <li>Choose ECS/Fargate for straightforward container-based apps without running a Kubernetes control plane.</li>
+    <li>Choose EKS if you need Kubernetes ecosystem features or multi-cluster control.</li>
+    <li>Choose EC2 for full control, legacy lift-and-shift, or very specialized needs.</li>
+  </ul>
+</body>
+</html>

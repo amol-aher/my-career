@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Composite pattern in Rails</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Using the Composite pattern in Rails (nested comments, menus)</h1>
+
+    <p><strong>Intent</strong>: treat individual objects and compositions (nodes with children) uniformly. Useful for tree-like structures: nested comments, menus, categories.</p>
+
+    <h2>Modeling nested comments</h2>
+    <pre><code>class Comment &lt; ApplicationRecord
+  belongs_to :post
+  belongs_to :parent, class_name: 'Comment', optional: true
+  has_many :children, class_name: 'Comment', foreign_key: 'parent_id', dependent: :destroy
+
+  # simple recursive render
+  def render_tree(depth = 0)
+    [('#' * depth) + body] + children.flat_map { |c| c.render_tree(depth + 1) }
+  end
+end
+</code></pre>
+
+    <h2>Optimizations</h2>
+    <ul>
+      <li>Use closure table or nested set (awesome_nested_set gem) for efficient subtree queries.</li>
+      <li>Use materialized path (store path strings) for simpler indexing and retrieval.</li>
+      <li>Cache rendered trees for read-heavy pages.</li>
+    </ul>
+
+    <h2>Menus & UI components</h2>
+    <p>Menu items with children can be represented similarly and rendered recursively by presenters or helpers.</p>
+
+    <h2>When to use composite</h2>
+    <ul>
+      <li>Tree-like data with uniform behavior (render, aggregate counts, permission checks).</li>
+      <li>When clients need to treat single items and groups interchangeably.</li>
+    </ul>
+
+    <h2>Interview tip</h2>
+    <p>Be ready to discuss trade-offs between simple parent/child vs specialized tree models (nested sets, closure tables) and how you’d migrate when scale increases.</p>
+  </div>
+</body>
+</html>

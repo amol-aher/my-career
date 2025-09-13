@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sprockets vs Webpacker Comparison</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; margin-top: 30px; }
+        .section { background-color: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .code-block { background-color: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto; margin: 15px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<h1>Sprockets vs Webpacker Comparison</h1>
+
+<div class="section">
+    <h2>Core Differences</h2>
+    
+    <h3>Asset Management Philosophy</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Feature</th>
+                <th>Sprockets</th>
+                <th>Webpacker</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Asset Processing</td>
+                <td>Manifest-based (explicit declarations)</td>
+                <td>Module-based (everything is a module)</td>
+            </tr>
+            <tr>
+                <td>Dependency Resolution</td>
+                <td>Global scope, manual declaration</td>
+                <td>Local scope, explicit imports/exports</td>
+            </tr>
+            <tr>
+                <td>Configuration</td>
+                <td>Environment variables, limited options</td>
+                <td>Full webpack.config.js customization</td>
+            </tr>
+            <tr>
+                <td>Modern JS Support</td>
+                <td>Requires additional gems/plugins</td>
+                <td>Native support for ES6+, TypeScript, JSX</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h3>Advantages of Webpacker</h3>
+    <ul>
+        <li><strong>Advanced Module System:</strong> Supports ES6+ features and allows importing various asset types</li>
+        <div class="code-block">// Importing CSS as a module
+import styles from './styles.css';
+
+// Importing images
+import logo from './logo.png';</div>
+        
+        <li><strong>Code Splitting and Lazy Loading:</strong> Automatically splits code into smaller chunks for improved performance</li>
+        <div class="code-block">// Dynamic import for route-based splitting
+const UserProfile = () => import('./UserProfile');</div>
+        
+        <li><strong>Hot Module Replacement (HMR):</strong> Enables live reloading of individual modules without full page refreshes</li>
+    </ul>
+    
+    <h3>Vulnerability Mitigation Strategies</h3>
+    <ul>
+        <li><strong>Regular Audits:</strong> Use `npm audit` or `yarn audit` to scan dependencies</li>
+        <li><strong>Lockfile Management:</strong> Strictly manage `package-lock.json` or `yarn.lock`</li>
+        <li><strong>Automated Scanning:</strong> Integrate tools like Snyk or Dependabot into CI/CD pipelines</li>
+        <li><strong>Version Pinning:</strong> Explicitly pin dependency versions</li>
+        <li><strong>Security Plugins:</strong> Use webpack plugins like `webpack-bundle-analyzer`</li>
+    </ul>
+    
+    <h3>Additional Security Measures</h3>
+    <ul>
+        <li>Implement Content Security Policy (CSP) headers</li>
+        <li>Use Subresource Integrity (SRI) for third-party scripts</li>
+        <li>Regularly update dependencies to patch known vulnerabilities</li>
+    </ul>
+</div>
+
+</body>
+</html>

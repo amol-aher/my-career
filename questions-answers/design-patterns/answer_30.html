@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Avoiding fat models in Rails — design patterns</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Design patterns to avoid fat models in Rails</h1>
+
+    <p>Rails’ "fat models, skinny controllers" guidance encourages keeping controllers thin, but models can still accumulate too much responsibility. Use these patterns to distribute responsibilities and improve testability.</p>
+
+    <h2>Service objects</h2>
+    <p>Encapsulate complex business actions into POROs. Keep models focused on persistence and simple validations.</p>
+    <pre><code>class CreateOrder
+  def initialize(user:, cart:); end
+  def call; end
+end
+</code></pre>
+
+    <h2>Query / Repository objects</h2>
+    <p>Extract complex queries into separate classes to keep model scopes simple and testable.</p>
+    <pre><code>class Orders::RecentForUser
+  def initialize(user); @user = user; end
+  def call; Order.where(user: @user).recent.limit(50); end
+end
+</code></pre>
+
+    <h2>Form Objects / Presenters</h2>
+    <p>Handle multi-model form submission and presentation logic outside the model (Reform, Virtus, or simple POROs).</p>
+
+    <h2>Decorator / Presenter</h2>
+    <p>Move view-specific formatting out of models (Draper or SimpleDelegator-based presenters).</p>
+
+    <h2>Policy / Authorization objects</h2>
+    <p>Use Pundit or custom policy objects to keep authorization logic out of models.</p>
+
+    <h2>State Machines</h2>
+    <p>Use AASM or state_machines for lifecycle logic instead of peppering models with status checks.</p>
+
+    <h2>Interactor / Command</h2>
+    <p>For orchestrating multi-step processes, use Interactors or Command objects (similar to service objects) to make flows explicit and testable.</p>
+
+    <h2>Event-driven / Domain events</h2>
+    <p>Emit events from models (lightweight) and handle side-effects in subscribers/workers. Keeps models from owning integration code.</p>
+
+    <h2>Example decomposition</h2>
+    <pre><code># controller
+CreateOrder.new(user: current_user, cart: cart).call
+
+# service
+class CreateOrder
+  def call
+    ActiveRecord::Base.transaction do
+      order = Order.create!(...)
+      PaymentGateway.charge(order)
+      NotifyUserJob.perform_later(order.id)
+      order
+    end
+  end
+end
+</code></pre>
+
+    <h2>Interview tip</h2>
+    <p>Show an example where you refactored a fat model into services, presenters, and policies, and quantify improvements (tests, reduced complexity, deployment speed).</p>
+  </div>
+</body>
+</html>

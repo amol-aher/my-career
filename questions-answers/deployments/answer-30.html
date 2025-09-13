@@ -1,0 +1,62 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Role of Elastic Container Registry (ECR)</title>
+  <style>
+    body{font-family:Inter,Arial,Helvetica,sans-serif;margin:24px;color:#222;line-height:1.6}
+    h1{background:#0d6efd;color:#fff;padding:12px;border-radius:8px}
+    h2{color:#0d6efd;margin-top:18px}
+    pre{background:#f1f5ff;padding:12px;border-radius:6px;overflow:auto}
+    ul{margin:8px 0 8px 20px}
+  </style>
+</head>
+<body>
+  <h1>Role of Elastic Container Registry (ECR) in Container-Based Deployments</h1>
+
+  <h2>What is ECR?</h2>
+  <p>AWS Elastic Container Registry (ECR) is a fully-managed Docker container registry that stores, scans and serves container images for deployments. It integrates tightly with AWS services like ECS, EKS, CodeBuild and IAM.</p>
+
+  <h2>Key capabilities</h2>
+  <ul>
+    <li><strong>Private and public repositories:</strong> Host private container images or publish public images.</li>
+    <li><strong>Image scanning:</strong> Scan images for known vulnerabilities (via Amazon Inspector/ECR scan).</li>
+    <li><strong>Lifecycle policies:</strong> Automatically expire old or untagged images.</li>
+    <li><strong>Encryption & access control:</strong> Images encrypted at rest with KMS and access controlled with IAM.</li>
+    <li><strong>Replication:</strong> Cross-region replication for improved latency and resilience.</li>
+  </ul>
+
+  <h2>How ECR fits in CI/CD</h2>
+  <ol>
+    <li>CI builds container images and tags them immutably (e.g., <code>sha-abcdef</code>).</li>
+    <li>CI pushes the image to ECR.</li>
+    <li>Deployment systems (ECS/EKS/ArgoCD) pull the image by SHA to deploy immutable artifacts.</li>
+  </ol>
+
+  <h2>Push & pull example (CLI)</h2>
+  <pre><code>aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 123456789012.dkr.ecr.us-east-1.amazonaws.com
+docker build -t myapp:sha-abcdef .
+docker tag myapp:sha-abcdef 123456789012.dkr.ecr.us-east-1.amazonaws.com/myapp:sha-abcdef
+docker push 123456789012.dkr.ecr.us-east-1.amazonaws.com/myapp:sha-abcdef</code></pre>
+
+  <h2>Best practices</h2>
+  <ul>
+    <li>Tag images with semantic versions and the immutable digest (SHA).</li>
+    <li>Scan images on push and block promotion on high-severity vulnerabilities.</li>
+    <li>Use lifecycle policies to clean up old tags and control storage costs.</li>
+    <li>Use cross-account roles and repository policies for multi-account deployments.</li>
+  </ul>
+
+  <h2>Subquestions & answers</h2>
+  <h3>Difference between ECR and Docker Hub?</h3>
+  <p>A: ECR is integrated with AWS IAM and services, supports private/public repos, and offers encryption/replication and vulnerability scanning. Docker Hub is a public registry with community images but has limits for private usage and different access control semantics.</p>
+
+  <h3>Can ECR host non-Docker artifacts?</h3>
+  <p>A: ECR is optimized for OCI-compatible container images. For other artifact types use S3 or Artifactory/Nexus.</p>
+
+  <h2>Conclusion</h2>
+  <p>ECR is a central part of container-based deployments on AWS — secure, managed, and integrated. Use it as the canonical store for container images to enable immutable, auditable and reproducible deployments.</p>
+</body>
+</html>

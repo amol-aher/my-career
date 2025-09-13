@@ -1,0 +1,48 @@
+<!doctype html><html><head><meta charset='utf-8'><title>Communicating delays or risks to external stakeholders</title>
+<style>
+body{font-family:Segoe UI,Arial,Helvetica,sans-serif;line-height:1.5;padding:24px;max-width:900px;margin:auto;color:#111}
+header{border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:18px}
+h1{font-size:20px;margin:0 0 6px 0}
+.role{color:#555;font-size:13px;margin-bottom:6px}
+pre{background:#f6f6f6;padding:12px;border-radius:6px;overflow:auto}
+code{font-family:monospace;font-size:13px}
+section{margin-bottom:18px}
+.sub{font-weight:600;margin-top:8px}
+ul{margin-left:18px}
+ol{margin-left:18px}
+</style></head><body><header><h1>Communicating delays or risks to external stakeholders</h1><div class='role'>System architect · Technical lead · Senior software engineer (Ruby on Rails, AWS, SQL, Vue.js)</div></header>
+<section>
+<p><strong>Summary:</strong> Communicate early, clearly, and with proposed options. Use a short written update and follow-up with a meeting if the impact is material. Tailor the level of detail to the audience.</p>
+
+<div class='sub'>What to include in the communication</div>
+<ul>
+<li>Concise summary of the issue and impact.</li>
+<li>Why it happened (brief root cause).</li>
+<li>Mitigation steps already taken.</li>
+<li>Clear recommended options and trade-offs.</li>
+<li>Revised timeline and owners.</li>
+</ul>
+
+<div class='sub'>Channels & cadence</div>
+<ul>
+<li>Email or stakeholder channel for formal record.</li>
+<li>Optional follow-up meeting for decision-making stakeholders.</li>
+<li>Weekly status updates until resolved.</li>
+</ul>
+
+<div class='sub'>Example message</div>
+<pre><code>Hi all,
+
+We discovered instability in the 3rd-party identity provider which blocks user migrations. Impact: user migration paused for affected cohorts, potential 3 business day delay.
+
+Actions:
+- Running a spike to implement a fallback (in progress)
+- Engaged vendor support (ticket #12345)
+- Proposal: migrate unaffected cohorts first and delay the remainder by 3 days
+
+Next update: EOD today or sooner if new info.
+
+Regards,
+Tech Lead</code></pre>
+</section>
+</body></html>

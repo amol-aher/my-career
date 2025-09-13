@@ -1,0 +1,66 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Modernizing / Refactoring a Legacy System</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:24px;color:#111}h1{font-size:24px}h2{font-size:20px}pre{background:#f5f5f5;padding:12px;border-radius:6px;overflow:auto}ul{margin-left:18px}</style>
+</head>
+<body>
+  <h1>Modernizing or Refactoring a Legacy System — Example & Approach</h1>
+  <section>
+    <h2>Situation</h2>
+    <p>Legacy monolithic Rails app with brittle deployments, slow test suite, tightly coupled modules, and increasing incidents as the codebase scaled.</p>
+  </section>
+
+  <section>
+    <h2>Approach</h2>
+    <ol>
+      <li><strong>Assessment:</strong> Inventory tech debt, critical paths, deployment pain points, test coverage gaps, and module boundaries.</li>
+      <li><strong>Define goals:</strong> Reduce deploy time by X, improve test time, enable independent deployments, and minimize customer impact.</li>
+      <li><strong>Prioritize:</strong> Triage by risk & value—start with high‑risk, high-reward areas (e.g., payment flows).</li>
+      <li><strong>Strangler pattern:</strong> Extract functionality into services or gems behind a compatibility layer rather than a big-bang rewrite.</li>
+      <li><strong>Improve tooling:</strong> Speed up CI by parallelizing tests, add caching, and introduce feature flags for safe rollouts.</li>
+      <li><strong>Incremental refactors:</strong> Small PRs, keep the system deployable at all times, automated regression tests for extracted contracts.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Concrete steps taken</h2>
+    <ul>
+      <li>Introduced a shared service interface and moved heavy background processing to a separate worker service (Sidekiq + Redis).</li>
+      <li>Modularized the code: moved billing, reporting, and notification logic into separate components/gems.</li>
+      <li>Implemented a compatibility API and adapters to ensure backwards compatibility during transition.</li>
+      <li>Added end-to-end and contract tests between monolith and services.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Outcome</h2>
+    <ul>
+      <li>Reduced deploy time by 70% and number of rollback incidents significantly.</li>
+      <li>Improved team autonomy — squads could own services and deploy independently.</li>
+      <li>Lowered cognitive load and made new feature delivery faster.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Code example — Adapter pattern (Ruby)</h2>
+    <pre><code>module PaymentGateway
+  def charge(amount:, source:); end
+end
+
+# adapter for ProviderA
+class ProviderAAdapter
+  include PaymentGateway
+  def charge(amount:, source:)
+    # provider-specific logic
+  end
+end
+
+# usage via factory
+gateway = PaymentGatewayFactory.for(current_account)
+gateway.charge(amount: 1000, source: token)</code></pre>
+</body>
+</html>

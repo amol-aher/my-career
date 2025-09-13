@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 120</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 120: Explain Queue and SizedQueue in Ruby. How are they used for producer/consumer patterns?</h1>
+<h2>Concept</h2>
+<p>Queue is a thread-safe FIFO queue. SizedQueue adds a maximum size and blocks producers when full, providing backpressure.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Use Queue for simple producer/consumer communication. Use SizedQueue to limit in-flight jobs and provide natural backpressure to producers.</p>
+
+<h2>Example</h2>
+<pre><code class="language-ruby">queue = SizedQueue.new(10) # max 10 items
+producer = Thread.new do
+  100.times do |i|
+    queue.push(i) # blocks when queue full
+  end
+  queue.push(:done)
+end
+
+consumer = Thread.new do
+  loop do
+    item = queue.pop
+    break if item == :done
+    process(item)
+  end
+end
+
+[producer, consumer].each(&:join)</code></pre>
+
+<h2>Best practices</h2>
+<ul>
+<li>Use SizedQueue to avoid unbounded memory growth; ensure consumers finish or use sentinel values for graceful shutdown.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 120</footer>
+</body></html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Review Process in Software Development</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; margin-top: 30px; }
+        .section { background-color: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .code-block { background-color: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto; margin: 15px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<h1>Code Review Process in Software Development</h1>
+
+<div class="section">
+    <h2>Approach to Code Reviews</h2>
+    
+    <h3>Preparation Phase</h3>
+    <ul>
+        <li>Gather context: understand requirements and design goals</li>
+        <li>Review pull request description and related tickets</li>
+        <li>Set clear objectives for the review</li>
+    </ul>
+    
+    <h3>Review Process</h3>
+    <ol>
+        <li><strong>Initial Scan:</strong> Quick overview for obvious issues</li>
+        <li><strong>Detailed Review:</strong> Line-by-line examination focusing on:
+            <ul>
+                <li>Code readability and maintainability</li>
+                <li>Algorithm efficiency</li>
+                <li>Error handling</li>
+                <li>Security implications</li>
+                <li>Test coverage</li>
+            </ul>
+        </li>
+        <li><strong>Feedback Delivery:</strong> Constructive, specific comments</li>
+        <li><strong>Discussion:</strong> Collaborative conversation about alternatives</li>
+        <li><strong>Approval Decision:</strong> Evaluate risks and approve/reject</li>
+    </ol>
+    
+    <h3>Handling Your Own Code Being Reviewed</h3>
+    <p>When receiving feedback:</p>
+    <ul>
+        <li>Stay open-minded and avoid defensiveness</li>
+        <li>Ask clarifying questions if unsure</li>
+        <li>Thank reviewers for their time</li>
+        <li>Iterate on feedback promptly</li>
+    </ul>
+    
+    <h3>Approach to Reviewing Others' Code</h3>
+    <ul>
+        <li>Assume positive intent and respect the author's efforts</li>
+        <li>Focus on the code, not the person</li>
+        <li>Provide actionable suggestions, not just criticism</li>
+        <li>Highlight both strengths and weaknesses</li>
+        <li>Offer alternative solutions when appropriate</li>
+    </ul>
+    
+    <h3>Effective Feedback Techniques</h3>
+    <div class="code-block"># Good feedback example
+Instead of: "This is wrong"
+Try: "I think we could improve this by..."
+    
+# Bad feedback example
+"This function is terrible and will break in production."
+    
+# Good feedback example
+"I notice the loop might be inefficient for large datasets. Could we try this optimized approach?"</div>
+    
+    <h3>Best Practices</h3>
+    <ul>
+        <li>Establish clear coding standards and style guides</li>
+        <li>Use checklists for common issues</li>
+        <li>Pair program for complex changes</li>
+        <li>Rotate reviewers to share knowledge</li>
+        <li>Follow up on feedback implementation</li>
+    </ul>
+</div>
+
+</body>
+</html>

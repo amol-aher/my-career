@@ -1,0 +1,82 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Implementing Rollback Strategies in Pipelines</title>
+  <style>
+    body{font-family:Inter,Arial,Helvetica,sans-serif;margin:22px;color:#111;line-height:1.65}
+    h1{background:#283593;color:#fff;padding:14px;border-radius:8px}
+    h2{color:#283593;margin-top:18px}
+    pre{background:#eef3ff;padding:12px;border-radius:6px;overflow:auto}
+    ul{margin:8px 0 8px 20px}
+    .note{background:#f0f4ff;padding:10px;border-left:4px solid #283593;border-radius:6px;margin:10px 0}
+  </style>
+</head>
+<body>
+  <h1>Implementing Rollback Strategies in Pipelines</h1>
+
+  <h2>Why rollbacks matter</h2>
+  <p>Rollback is the last line of defense when a deployment negatively impacts availability or correctness. A robust rollback strategy minimizes downtime and data loss.</p>
+
+  <h2>Rollback strategies</h2>
+  <ul>
+    <li><strong>Immutable artifacts + versioning:</strong> keep prior artifact versions available to re-deploy quickly.</li>
+    <li><strong>Automated rollback on health checks:</strong> deployment tooling triggers rollback when alarms are breached (error rates, latency).</li>
+    <li><strong>Blue-Green:</strong> switch traffic back to the previous (blue) environment if green fails.</li>
+    <li><strong>Canary with automatic rollback:</strong> monitor canary metrics and stop/rollback if early metrics degrade.</li>
+    <li><strong>Feature flags:</strong> turn off a problematic feature without full service rollback.</li>
+  </ul>
+
+  <h2>Pipeline implementations</h2>
+  <h3>Using CodeDeploy / ECS</h3>
+  <p>CodeDeploy supports automatic traffic shifting and rollback hooks. For ECS, use CodeDeploy blue/green and configure lifecycle and validation hooks that can initiate rollback if health checks fail.</p>
+
+  <h3>Kubernetes (EKS)</h3>
+  <p>Use <code>kubectl rollout undo</code> or Argo Rollouts for automated canary analysis and rollbacks. Keep previous ReplicaSets so rollback is fast and declarative.</p>
+
+  <h3>Immutable server groups (EC2 ASG)</h3>
+  <p>Deploy new ASG and attach to load balancer. If validation fails, detach new ASG and reattach the old one. Use CloudFormation or Terraform to orchestrate this.</p>
+
+  <h2>Database rollbacks</h2>
+  <ul>
+    <li>Prefer forward-compatible migrations and avoid destructive changes that need rollback.</li>
+    <li>For breaking migrations, use multi-step: add new columns, deploy code to write to both schemas, backfill, switch reads, and only then remove legacy fields.</li>
+    <li>Back up data before migrations and have tested restore procedures.</li>
+  </ul>
+
+  <h2>Automated rollback triggers</h2>
+  <ul>
+    <li>Health checks failing (ALB, pod readiness).</li>
+    <li>Error rate threshold (5xx spike).</li>
+    <li>Latency spike on p95/p99.</li>
+    <li>Business metric regression (cart checkout drop).</li>
+  </ul>
+
+  <h2>Designing safe rollback windows</h2>
+  <p>Set a rollback window (e.g., 15–60 minutes) during which you keep the previous version available and monitor for anomalies. The window size depends on business risk and traffic patterns.</p>
+
+  <h2>Playbooks and runbooks</h2>
+  <p>Have runbooks that describe rollback steps, responsible owners, and communication templates. Automate as much as possible but ensure manual override is available.</p>
+
+  <div class="note"><strong>Note:</strong> Rollbacks are easier for stateless services. For stateful changes, prefer feature flags, migrations with compatibility steps, and snapshot-based recovery.</div>
+
+  <h2>Common interview subquestions</h2>
+  <h3>When should you avoid automatic rollback?</h3>
+  <p>If the new deployment includes irreversible data migrations or when automatic rollback could exacerbate data inconsistency. In such cases rely on manual incident response and mitigation strategies.</p>
+
+  <h3>How to test rollback?</h3>
+  <p>Exercise rollback in staging and during planned game days — practice both automated and manual rollback scenarios, and restore DB backups in isolated environments.</p>
+
+  <h2>Example: Canary + automated rollback pseudocode</h2>
+  <pre><code>1. Deploy new version to 5% of traffic (canary)
+2. Run synthetic checks and collect metrics for X minutes
+3. If error_rate > threshold OR latency_degradation > threshold:
+     abort deployment and redirect traffic back to baseline (rollback)
+   else if metrics are healthy:
+     increase traffic to 50% then 100% in steps</code></pre>
+
+  <p style="margin-top:18px">If you want, I can generate a sample pipeline (GitHub Actions / Argo Rollouts / CodeDeploy) that implements a canary rollout with automated rollback and alerts — tell me which runner/orchestration you prefer.</p>
+</body>
+</html>

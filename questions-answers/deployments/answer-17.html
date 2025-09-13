@@ -1,0 +1,51 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>CI vs Continuous Delivery vs Continuous Deployment</title>
+  <style>
+    body{font-family:Inter,Arial,Helvetica,sans-serif;margin:22px;color:#111;line-height:1.65}
+    h1{background:#2e7d32;color:#fff;padding:14px;border-radius:8px}
+    h2{color:#2e7d32;margin-top:18px}
+    ul{margin:8px 0 8px 20px}
+    .box{background:#f1fbf5;padding:12px;border-radius:6px;border-left:4px solid #2e7d32;margin:10px 0}
+  </style>
+</head>
+<body>
+  <h1>Continuous Integration, Continuous Delivery and Continuous Deployment — Differences Explained</h1>
+
+  <h2>Definitions</h2>
+  <ul>
+    <li><strong>Continuous Integration (CI):</strong> Developers merge changes frequently; automated builds and tests run on each change to detect integration problems early.</li>
+    <li><strong>Continuous Delivery (CD — Delivery):</strong> The software is always in a releasable state. Deployments to production are manual but fully automated up to the deployment step.</li>
+    <li><strong>Continuous Deployment (CD — Deployment):</strong> Every change that passes automated tests is automatically deployed to production without manual intervention.</li>
+  </ul>
+
+  <h2>Key differences & prerequisites</h2>
+  <ul>
+    <li><strong>Pipeline maturity:</strong> CI is baseline. CD-Delivery requires robust test coverage and release automation; CD-Deployment requires confidence to push every change to production automatically.</li>
+    <li><strong>Risk control:</strong> Continuous Deployment requires feature flags, monitoring and quick rollback mechanisms to minimize blast radius.</li>
+    <li><strong>Organizational readiness:</strong> teams must be capable of responding to incidents quickly (on-call, runbooks) for continuous deployment.</li>
+  </ul>
+
+  <div class="box"><strong>Practical advice:</strong> start with CI, implement Continuous Delivery (automate up to production but gate with approvals), then adopt Continuous Deployment for low-risk areas using feature flags.</div>
+
+  <h2>Benefits & trade-offs</h2>
+  <ul>
+    <li><strong>Benefits:</strong> Faster feedback loops, smaller PRs, quicker customer value delivery, reduced merge conflicts.</li>
+    <li><strong>Trade-offs:</strong> Requires investment in automated tests, observability, feature flags and culture changes around frequent releases.</li>
+  </ul>
+
+  <h2>Common interview subquestions</h2>
+  <h3>Do you need 100% test coverage for Continuous Deployment?</h3>
+  <p>No. You need reliable test suites across unit, integration and smoke tests and real-time monitoring. Feature flags allow rapid mitigation of production issues without full test coverage.</p>
+
+  <h3>How do feature flags fit into CD?</h3>
+  <p>Feature flags decouple deploy from release, allowing code to be shipped disabled and enabled progressively — critical for Continuous Deployment and safe rollouts.</p>
+
+  <h2>Conclusion</h2>
+  <p>CI, Continuous Delivery, and Continuous Deployment form a maturity curve: adopt the practices that match your team's testing and operational maturity, then progressively automate and reduce manual gates as confidence grows.</p>
+</body>
+</html>

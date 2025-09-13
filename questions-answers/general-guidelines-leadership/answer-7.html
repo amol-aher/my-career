@@ -1,0 +1,76 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Roles Performed During Development</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>body{font-family:Arial, sans-serif;margin:24px;color:#111}h1{font-size:24px}h2{font-size:20px}pre{background:#f5f5f5;padding:12px;border-radius:6px}</style>
+</head>
+<body>
+  <h1>Roles Performed During Development</h1>
+  <section>
+    <h2>Overview</h2>
+    <p>I have performed a broad set of roles: hands-on coding, code reviews, architecture & design, resolving production challenges, performance engineering, and promoting engineering best practices.</p>
+  </section>
+
+  <section>
+    <h2>Detailed Responsibilities & Examples</h2>
+    <h3>Coding</h3>
+    <p>Developed new features end-to-end (Rails APIs, background jobs, Vue.js frontends). Example: built an event-sourced audit trail using PostgreSQL and background workers to capture user actions.</p>
+
+    <h3>Code Reviewing</h3>
+    <p>Established review guidelines: small PRs (<300 LOC), require tests, ensure observable metrics, and check for security concerns. Example checklist included test coverage, schema migrations, and performance implications.</p>
+
+    <h3>Resolving Challenges</h3>
+    <p>Led incident response for high CPU issues due to inefficient queries; performed flamegraphs, fixed N+1 queries, added appropriate indexes, and added query time monitoring.</p>
+
+    <h3>Application Design & Architecture</h3>
+    <p>Designed modular boundaries (service objects, API gateways), selected event-driven patterns for decoupling, and introduced CQRS for read-heavy areas.</p>
+
+    <h3>Performance</h3>
+    <p>Profiling with ruby-prof, pg_stat_statements, and New Relic. Introduced caching layers (Redis), background aggregation jobs, and pagination best practices.</p>
+
+    <h3>Best Practices</h3>
+    <p>Introduced consistent testing strategy (unit, integration, feature), linting, security scanning, and CI gating for deploys.</p>
+  </section>
+
+  <section>
+    <h2>Code Example — Service Object Pattern (Rails)</h2>
+    <pre><code># app/services/create_order.rb
+class CreateOrder
+  Result = Struct.new(:success?, :order, :errors)
+
+  def initialize(user:, params:)
+    @user = user
+    @params = params
+  end
+
+  def call
+    order = nil
+    ActiveRecord::Base.transaction do
+      order = Order.create!(user: @user, status: 'pending')
+      params[:items].each do |item|
+        order.line_items.create!(product_id: item[:product_id], quantity: item[:qty])
+      end
+    end
+    Result.new(true, order, nil)
+  rescue ActiveRecord::RecordInvalid => e
+    Result.new(false, nil, e.record.errors.full_messages)
+  end
+
+  private
+  attr_reader :user, :params
+end</code></pre>
+  </section>
+
+  <section>
+    <h2>Subquestions & Answers</h2>
+    <h3>How do you ensure quality?</h3>
+    <p>Automated test suites, pre-merge CI, performance regression tests, code review standards, and canary releases with observability.</p>
+
+    <h3>How do you handle architecture disagreements?</h3>
+    <p>Host architecture design reviews, provide data-backed tradeoffs, prototype when necessary, and involve senior engineers to reach consensus.</p>
+  </section>
+</body>
+</html>

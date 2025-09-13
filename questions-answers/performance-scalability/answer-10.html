@@ -1,0 +1,69 @@
+
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Handling DB Overload from Background Jobs — A Solution Approach</title>
+  <style>
+    body {font-family: Arial, sans-serif; margin:40px;}
+    h1 {color:#1f4e79;}
+    pre {background:#f6f8fa;padding:12px;border-radius:6px;}
+  </style>
+</head>
+<body>
+  <h1>Handling DB Overload from Background Jobs — A Solution Approach</h1>
+
+  <p>Scenario: Ruby on Rails app collects data from microservices, computes it, and generates reports. Background processes are overloading the database.</p>
+
+  <h2>Root-cause analysis checklist</h2>
+  <ol>
+    <li>Which queries are slow? Capture slow query logs.</li>
+    <li>Are jobs running concurrently causing connection saturation?</li>
+    <li>Are heavy aggregates running during peak time?</li>
+    <li>Is there a hot table or index contention?</li>
+  </ol>
+
+  <h2>Immediate mitigations</h2>
+  <ul>
+    <li>Throttling: Limit concurrency of background workers (Sidekiq concurrency and per-queue limits).</li>
+    <li>Schedule heavy jobs during off-peak windows.</li>
+    <li>Move read-heavy operations to read replicas.</li>
+    <li>Introduce caching of intermediate results to avoid repeated heavy queries.</li>
+  </ul>
+
+  <h2>Architectural solutions</h2>
+  <ul>
+    <li><strong>Use an event stream:</strong> Publish incoming data to Kafka or SNS. Consumers can build materialized projections or write to a data warehouse without touching the primary transactional DB.</li>
+    <li><strong>Introduce an OLAP store:</strong> Move reporting computations to a data warehouse (Redshift/BigQuery) or a columnar store that is optimized for scans.</li>
+    <li><strong>Read models & CQRS:</strong> Build read-optimized tables that are updated asynchronously, keeping transactional workload lean.</li>
+    <li><strong>Idempotent batching:</strong> Process records in batches and use bulk upserts to minimize DB round trips.</li>
+  </ul>
+
+  <h2>Concrete Sidekiq tuning example</h2>
+  <pre><code># config/sidekiq.yml
+:concurrency: 10
+:queues:
+  - [default, 2]
+  - [reports, 1] # lower weight for heavy-reports queue
+# Use sidekiq-limit_fetch or sidekiq-throttled to ensure global limits
+  </code></pre>
+
+  <h2>Batching and Bulk Upsert Example</h2>
+  <pre><code>class ReportWorker
+  include Sidekiq::Worker
+  def perform(batch)
+    rows = batch.map do |r|
+      {external_id: r['id'], value: r['value'], updated_at: Time.now}
+    end
+    Model.insert_all(rows, unique_by: :external_id)
+  end
+end
+  </code></pre>
+
+  <h2>Monitoring and Feedback Loop</h2>
+  <p>Instrument job duration, DB time per job, and queue length. Use this to tune concurrency and batch sizes.</p>
+
+  <h2>Summary</h2>
+  <p>Combine short-term throttling and scheduling with a medium- to long-term architecture that decouples ingestion from heavy reporting — event streams, read projections, and data warehouses.</p>
+</body>
+</html>

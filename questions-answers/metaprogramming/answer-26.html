@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Building an ActiveRecord-like query DSL</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:18px;color:#111}
+    h1{color:#1a56db} h2{color:#0b5a78}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <h1>Approach to building an ActiveRecord-like query DSL using metaprogramming</h1>
+
+  <p>An ActiveRecord-like DSL is chainable, lazy, composable, and maps Ruby expressions to SQL safely. Below is a high-level design, tactical choices, and a small implementation sketch showing the essential techniques.</p>
+
+  <h2>Design goals</h2>
+  <ul>
+    <li>Immutable, chainable Relation objects (calls like <code>.where</code> return a new relation).</li>
+    <li>Lazy evaluation—SQL is generated and executed only when needed (<code>to_a</code>, <code>first</code>, <code>count</code>).</li>
+    <li>Safe parameter binding to avoid SQL injection.</li>
+    <li>Pluggable adapters for different SQL dialects.</li>
+    <li>Ability to define dynamic scopes and named queries (metaprogramming).</li>
+  </ul>
+
+  <h2>Core components</h2>
+  <ol>
+    <li><strong>Relation</strong> — holds a query AST (conditions, order, limit).</li>
+    <li><strong>Node/AST</strong> — small objects representing predicates (AND/OR/Column/Eq).</li>
+    <li><strong>Adapter / SQL Generator</strong> — turns AST into SQL + bind params.</li>
+    <li><strong>Model class methods</strong> — <code>.where</code>, <code>.select</code>, <code>.order</code>, and dynamic finders.</li>
+  </ol>
+
+  <h2>Simple implementation sketch</h2>
+  <pre><code class="language-ruby"># A minimal relation-ish implementation
+class Relation
+  attr_reader :table, :where_clauses, :limit_count
+  def initialize(table, where_clauses = [], limit_count = nil)
+    @table = table
+    @where_clauses = where_clauses
+    @limit_count = limit_count
+  end
+
+  def where(cond, *binds)
+    Relation.new(table, where_clauses + [[cond, binds]], limit_count)
+  end
+
+  def limit(n)
+    Relation.new(table, where_clauses, n)
+  end
+
+  def to_sql
+    sql = "SELECT * FROM #{table}"
+    unless where_clauses.empty?
+      parts = where_clauses.map { |c, binds| "(#{c})" }
+      sql += " WHERE " + parts.join(" AND ")
+    end
+    sql += " LIMIT #{limit_count}" if limit_count
+    sql
+  end
+
+  def to_a(connection)
+    sql = to_sql
+    connection.execute(sql) # naive - prefer prepared statements
+  end
+end
+
+# Model sugar
+class Model
+  def self.table_name(name = nil)
+    @table_name = name if name
+    @table_name || self.name.downcase + "s"
+  end
+
+  def self.all
+    Relation.new(table_name)
+  end
+
+  def self.where(cond, *binds)
+    all.where(cond, *binds)
+  end
+end</code></pre>
+
+  <h2>Using metaprogramming for convenience</h2>
+  <ul>
+    <li><strong>Dynamic finders / attribute methods:</strong> define attribute accessors based on schema via <code>define_method</code> when model class is loaded.</li>
+    <li><strong>Named scopes:</strong> <code>def self.scope(name, body); define_singleton_method(name, &body); end</code></li>
+    <li><strong>SQL generation:</strong> use an AST builder (Arel-like) instead of concatenating strings.</li>
+  </ul>
+
+  <h2>Example: define named scope</h2>
+  <pre><code class="language-ruby">class Model
+  def self.scope(name, &block)
+    define_singleton_method(name) do |*args|
+      instance_exec(*args, &block)
+    end
+  end
+end
+
+class User &lt; Model
+  scope :recent, ->(n=5) { all.order("created_at DESC").limit(n) }
+end</code></pre>
+
+  <h2>Important engineering considerations</h2>
+  <ul>
+    <li><strong>SQL injection:</strong> Use prepared statements and parameter binding. Never interpolate user input into SQL strings.</li>
+    <li><strong>Performance:</strong> Keep relations lazy and build SQL only when necessary; cache prepared statements; use connection pooling.</li>
+    <li><strong>Testing:</strong> Unit test SQL generation and integration test against a real DB.</li>
+    <li><strong>Migrations & schema introspection:</strong> Dynamically define attribute methods based on schema metadata.</li>
+    <li><strong>Extensibility:</strong> Keep AST and SQL generator separate; add adapter-specific generators.</li>
+  </ul>
+
+  <h2>Summary</h2>
+  <p>Implementing an ActiveRecord-like DSL requires clear abstractions (Relation, AST, Adapter) and careful use of metaprogramming for ergonomics (define_method, scopes). Prioritize safety (parameter binding) and performance (lazy evaluation and caching).</p>
+</body>
+</html>

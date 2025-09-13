@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Dynamically define Ruby classes from JSON schema</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:20px;color:#111}
+    h1{color:#1a56db} h2{color:#0b5a78}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <h1>Generate Ruby classes with attributes and validations from a JSON Schema</h1>
+
+  <p>This is a common metaprogramming task: convert a JSON schema into runtime Ruby classes with attribute readers/writers and validations.</p>
+
+  <h2>High-level approach</h2>
+  <ol>
+    <li>Parse the JSON schema.</li>
+    <li>For each "object" definition, create a Class (or reuse existing) using <code>Class.new</code> and set a constant.</li>
+    <li>Define attribute accessors (<code>attr_accessor</code>) or typed readers.</li>
+    <li>Map schema validation keywords to ActiveModel validations (<code>presence</code>, <code>format</code>, <code>length</code>, <code>numericality</code>).</li>
+    <li>Cache generated classes to avoid redefinitions.</li>
+  </ol>
+
+  <h2>Example implementation (minimal)</h2>
+  <pre><code class="language-ruby">require 'json'
+require 'active_model' # for validations
+
+def generate_class_from_schema(name, schema)
+  klass = Class.new do
+    include ActiveModel::Validations
+    attr_accessor(*schema.fetch('properties', {}).keys)
+
+    # build validators
+    schema.fetch('properties', {}).each do |attr, opts|
+      if opts['minLength'] || opts['maxLength']
+        validates_length_of = {}
+        validates_length_of[:minimum] = opts['minLength'] if opts['minLength']
+        validates_length_of[:maximum] = opts['maxLength'] if opts['maxLength']
+        validates attr.to_sym, length: validates_length_of unless validates_length_of.empty?
+      end
+
+      if opts['pattern']
+        validates attr.to_sym, format: { with: Regexp.new(opts['pattern']) }
+      end
+
+      if opts['type'] == 'integer' || opts['type'] == 'number'
+        validates attr.to_sym, numericality: true
+      end
+    end
+
+    define_method(:initialize) do |hash = {}|
+      hash.each { |k,v| public_send("\#{k}=", v) if respond_to?("\#{k}=") }
+    end
+  end
+
+  Object.const_set(name, klass) unless Object.const_defined?(name)
+  klass
+end
+
+# Usage:
+schema = {
+  'type' => 'object',
+  'properties' => {
+    'name' => {'type' => 'string', 'minLength' => 2},
+    'age' => {'type' => 'integer', 'minimum' => 0}
+  }
+}
+User = generate_class_from_schema('User', schema)
+u = User.new('name' => 'Ada', 'age' => 28)
+u.valid? # => true</code></pre>
+
+  <h2>Considerations and extensions</h2>
+  <ul>
+    <li><strong>Nested objects:</strong> Recursively generate nested classes and reference them in attribute types.</li>
+    <li><strong>Arrays:</strong> Map <code>items</code> to element type validators.</li>
+    <li><strong>Type coercion:</strong> Consider adding type casting (e.g., convert numeric strings to integers).</li>
+    <li><strong>Schema refs ($ref):</strong> Resolve references and avoid duplicate class generation by caching.</li>
+    <li><strong>Security:</strong> Never generate classes with names from untrusted input without sanitization.</li>
+  </ul>
+
+  <h2>Testing</h2>
+  <p>Auto-generated classes must be covered by tests ensuring mapping correctness and that validations match schema constraints.</p>
+
+  <h2>Summary</h2>
+  <p>Converting JSON schema into runtime classes is straightforward with <code>Class.new</code>, <code>attr_accessor</code>, and ActiveModel::Validations. Handle nested schemas, caching, and security carefully.</p>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Performance Metrics for Controllers and APIs</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; padding:28px; background:#fbfcff; color:#071222; }
+    h1 { margin-bottom:8px; font-size:26px; color:#0b3d91; }
+    section { background:#fff; padding:16px; border-radius:10px; box-shadow:0 1px 6px rgba(8,12,24,0.06); margin-bottom:14px; }
+    ul { margin-left:18px; }
+    pre { background:#f3f6fb; padding:10px; border-radius:6px; overflow:auto; }
+    .metric { font-weight:700; color:#0b6d44; }
+    .toolbox { display:flex; gap:8px; flex-wrap:wrap; }
+    .pill { background:#eef6ff; padding:6px 10px; border-radius:999px; font-size:13px; color:#064e9a; }
+  </style>
+</head>
+<body>
+  <h1>Performance Metrics I Monitor for Controllers / API Requests</h1>
+  <section>
+    <h2>High-level SLIs & SLOs</h2>
+    <ul>
+      <li><span class="metric">Availability / Error rate</span> — success rate of requests (HTTP 2xx vs 5xx/4xx), e.g., SLO 99.9% for 5xx-free responses.</li>
+      <li><span class="metric">Latency percentiles</span> — p50, p90, p95, p99 per endpoint. SLOs often defined on p95 or p99 (e.g., p95 &lt; 300ms).</li>
+      <li><span class="metric">Throughput</span> — requests per second (RPS) and concurrency.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Endpoint-level telemetry (what I instrument)</h2>
+    <ul>
+      <li><strong>Request Duration</strong> (total time): server-side wall clock measured at entry/exit (include p50/p95/p99).</li>
+      <li><strong>DB Time</strong>: total time spent executing queries for a request (by summing SQL durations).</li>
+      <li><strong># of DB queries</strong>: watch for increases or spikes (N+1s).</li>
+      <li><strong>External call latency & error rate</strong>: downstream APIs, payment gateways, S3, etc.</li>
+      <li><strong>Allocations / memory churn</strong> per request (Ruby objects allocated) — high allocations can increase GC pause times.</li>
+      <li><strong>CPU and memory</strong> usage per service (aggregate) and per container/pod if applicable.</li>
+      <li><strong>Cache hit ratio</strong> for crucial caches (Redis/memcached).</li>
+      <li><strong>Payload size</strong> (request and response) and compression effectiveness.</li>
+      <li><strong>Queue/Background job lag</strong> when requests enqueue work instead of handling synchronously.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Why these metrics matter (examples)</h2>
+    <ul>
+      <li>High p95 with low p50: indicates tail latency — perhaps a single slow DB query or expensive I/O. Focus on p95/p99 for user experience.</li>
+      <li>Rising # of DB queries: typical sign of N+1 after a change — use Bullet or log slow queries.</li>
+      <li>High allocations: Ruby-specific signal that GC overhead will increase; consider object allocation reduction or reuse.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Tools & techniques</h2>
+    <div class="toolbox">
+      <span class="pill">Prometheus + Grafana</span>
+      <span class="pill">Datadog / NewRelic / Dynatrace</span>
+      <span class="pill">Skylight / Scout (Rails profiling)</span>
+      <span class="pill">ActiveSupport::Notifications</span>
+      <span class="pill">Rack-mini-profiler</span>
+      <span class="pill">Bullet (detect N+1)</span>
+      <span class="pill">pg_stat_statements / EXPLAIN ANALYZE</span>
+    </div>
+    <p>Instrument both application and infrastructure. Use tracing (OpenTelemetry) to follow requests across services.</p>
+  </section>
+
+  <section>
+    <h2>Practical controller-level checks I do when reviewing code</h2>
+    <ol>
+      <li>Is the controller doing heavy work? Move to a service/background job if CPU/IO heavy.</li>
+      <li>Is pagination applied on list endpoints? Avoid returning unbounded result sets.</li>
+      <li>Are database queries eager-loaded where needed to avoid N+1 (`includes`, `preload`)?</li>
+      <li>Are slow queries explained with indexes and alternative plans (EXPLAIN ANALYZE)?</li>
+      <li>Is caching leveraged for idempotent, read-heavy endpoints (HTTP cache headers, ETag, fragment caches)?</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Common performance issues and remediation</h2>
+    <ul>
+      <li><strong>N+1 queries</strong> — detect with Bullet; fix with `includes` or query redesign, batch loads.</li>
+      <li><strong>Large payloads</strong> — paginate, stream responses, or send summarized data.</li>
+      <li><strong>Slow DB queries</strong> — add indexes, rewrite queries, denormalize, materialized views, or precompute.</li>
+      <li><strong>High GC pause</strong> — reduce allocations, use object pools, tune Ruby GC flags, or scale horizontally.</li>
+      <li><strong>Third-party slowdowns</strong> — add circuit breakers, timeouts, fallbacks, or make calls asynchronous.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>How to set thresholds & alerts</h2>
+    <ul>
+      <li>Use historical baselines per endpoint to set p95/p99 thresholds rather than flat values across the board.</li>
+      <li>Alert on relative anomalies (e.g., p95 increased by 2x in last 1h) and on absolute breach (p95 &gt; target).</li>
+      <li>Combine alerts: p95 + error rate + DB slow queries to reduce noisy/irrelevant alerts.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Subquestions & short answers</h2>
+    <h3>Q: How do I profile a slow endpoint in production?</h3>
+    <p>Capture traces (OpenTelemetry), enable request sampling, inspect DB slow logs and use flamegraphs (Skylight) to find hotspots. Reproduce in staging with representative data, then run benchmarks.</p>
+
+    <h3>Q: How to detect N+1 in review?</h3>
+    <p>Search diffs for iterations calling associations inside loops (`each` + `user.posts.count`) or for code that fetches associations lazily. Ask for a query count metric or a Bullet log snippet.</p>
+
+    <h3>Q: Should I optimize prematurely in controllers?</h3>
+    <p>No. Prioritize correctness and clarity. Optimize when you have evidence: metrics or reproducible slowness. Use profiling to validate optimizations.</p>
+  </section>
+
+  <footer>
+    <p>Tip: keep a lightweight "performance checklist" in the PR template to encourage authors to include benchmarks, query counts, and expected traffic/scale.</p>
+  </footer>
+</body>
+</html>

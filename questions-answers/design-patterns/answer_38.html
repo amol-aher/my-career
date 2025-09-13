@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Null Object pattern in Rails</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Null Object pattern — cleaning up conditionals in Rails</h1>
+
+    <p><strong>Problem</strong>: Many controller/view conditionals like <code>if user</code> or <code>if current_account.present?</code> spread logic and lead to clutter.</p>
+
+    <h2>Null Object idea</h2>
+    <p>Create an object that responds to the same methods as the real object but implements no-op or sensible default behavior, eliminating many <code>nil</code> checks.</p>
+
+    <h2>Example: NullUser</h2>
+    <pre><code>class NullUser
+  def name; 'Guest'; end
+  def admin?; false; end
+  def email; nil; end
+  def present?; false; end
+end
+
+# controller helper
+def current_user
+  @current_user ||= (super || NullUser.new)
+end
+
+# view
+= current_user.name # always safe
+</code></pre>
+
+    <h2>Variants</h2>
+    <ul>
+      <li>Use <code>SimpleDelegator</code> to delegate unknown methods to a default object.</li>
+      <li>Use gems like <code>null_object</code> if you prefer structured implementations.</li>
+    </ul>
+
+    <h2>When to use</h2>
+    <ul>
+      <li>When the absence of an object is common and handling it with branch logic pollutes the codebase.</li>
+      <li>In views and presenters to simplify template logic.</li>
+    </ul>
+
+    <h2>Caveats</h2>
+    <ul>
+      <li>Make sure the Null object implements only safe defaults — unknown or unexpected behavior may hide bugs.</li>
+      <li>Do not use Null objects to mask real errors in business logic; they should represent true absence semantics.</li>
+    </ul>
+
+    <h2>Interview tip</h2>
+    <p>Describe how replacing conditional-heavy view code with Null objects improved readability and reduced bugs in your projects.</p>
+  </div>
+</body>
+</html>

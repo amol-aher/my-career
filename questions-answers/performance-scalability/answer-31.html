@@ -1,0 +1,109 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Integrating Redis or Memcached for Caching in a Rails App</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Integrating Redis or Memcached for Caching in a Rails App</h1>
+  <p>This document covers why you'd choose Redis vs Memcached, how to configure Rails to use them for different caching needs, examples, operational concerns, and common pitfalls.</p>
+
+  <h2>Redis vs Memcached — quick comparison</h2>
+  <ul>
+    <li><strong>Redis:</strong> Rich data structures, persistence options (AOF/RDB), pub/sub, Lua scripting, used for caching, queues, rate-limiting, session store.</li>
+    <li><strong>Memcached:</strong> Simple, memory-efficient, multi-threaded, pure key-value caching, no persistence, often slightly faster for simple caches.</li>
+  </ul>
+
+  <h2>When to use which</h2>
+  <ul>
+    <li>Use Redis when you need data structures (lists, sets), persistence, pub/sub (e.g., Sidekiq uses Redis).</li>
+    <li>Use Memcached when you want a lightweight cache layer and don’t need Redis features.</li>
+  </ul>
+
+  <h2>Rails configuration examples</h2>
+  <h3>Redis as cache_store</h3>
+  <pre><code># Gemfile
+gem 'redis'
+gem 'redis-rails' # optional
+# config/environments/production.rb
+config.cache_store = :redis_cache_store, {
+  url: ENV.fetch("REDIS_URL") { "redis://127.0.0.1:6379/1" },
+  error_handler: -> (method:, returning:, exception:) {
+    # report to error tracker like Sentry
+  }
+}
+  </code></pre>
+
+  <h3>Using Redis for sessions</h3>
+  <pre><code># Gemfile
+gem 'redis-rails' # or redis-session-store
+
+# config/initializers/session_store.rb
+Rails.application.config.session_store :cache_store, key: '_app_session'
+  </code></pre>
+
+  <h3>Memcached (Dalli) as cache_store</h3>
+  <pre><code># Gemfile
+gem 'dalli'
+
+# config/environments/production.rb
+config.cache_store = :mem_cache_store, "memcached1:11211", "memcached2:11211",
+  { pool_size: ENV.fetch("RAILS_MAX_THREADS") { 5 }.to_i, expires_in: 1.hour }
+  </code></pre>
+
+  <h2>What to cache where</h2>
+  <ul>
+    <li>Short-lived computed results and fragments — app cache (Redis/Memcached).</li>
+    <li>Session data — Redis (if sessions need persistence across restarts).</li>
+    <li>Distributed locks or leader election — Redis (SETNX), or Redlock with caution.</li>
+    <li>Rate limiting counters — Redis (INCR + EXPIRE) or token buckets.</li>
+  </ul>
+
+  <h2>Implementation patterns</h2>
+  <h3>Low-level caching</h3>
+  <pre><code>Rails.cache.fetch("hot:top_products", expires_in: 10.minutes) do
+  Product.order(sales_count: :desc).limit(50).to_a
+end
+  </code></pre>
+
+  <h3>Fragment caching in views</h3>
+  <pre><code>&lt;% cache product do %&gt;
+  &lt;%= render 'product', product: product %&gt;
+&lt;% end %&gt;
+  </code></pre>
+
+  <h3>Cache warming and stale-while-revalidate</h3>
+  <pre><code>value = Rails.cache.fetch(key, expires_in: 5.minutes) do
+  compute_value
+end
+# optionally background refresh when near expiry
+  </code></pre>
+
+  <h2>Operational considerations</h2>
+  <ul>
+    <li>Run Redis as a cluster (or managed AWS Elasticache) for HA, enable AUTH and TLS between app and Redis.</li>
+    <li>Monitor memory usage, eviction rates, latency and hit/miss ratio.</li>
+    <li>Use separate DB indices in Redis (DB 0,1,2) for isolation or separate clusters for critical data (sessions) and cache.</li>
+    <li>Set reasonable TTLs to avoid stale data and evictions.</li>
+  </ul>
+
+  <h2>Common pitfalls</h2>
+  <ul>
+    <li>Over-caching per-user highly-personalized data — increases memory use.</li>
+    <li>Thundering herd on cache expiry — use jitter and background refresh or locking.</li>
+    <li>Using Redis both for critical data and ephemeral cache fills up memory — separate clusters or RDB/AOF tuning helps.</li>
+  </ul>
+
+  <h2>Monitoring & metrics to track</h2>
+  <ul>
+    <li>Cache hit / miss ratio.</li>
+    <li>Evictions per second.</li>
+    <li>Redis memory used, connected clients, latency.</li>
+    <li>Application-level metrics: request latency when cache cold vs warm.</li>
+  </ul>
+
+  <h2>Wrap-up</h2>
+  <p>Both Redis and Memcached have their place. Redis is more versatile and commonly used in modern Rails stacks (sessions, Sidekiq, rate-limits). Memcached can be chosen for simple, high-throughput caches. In all cases, design TTLs and invalidation carefully, monitor, and separate critical stores from ephemeral caches.</p>
+</body>
+</html>

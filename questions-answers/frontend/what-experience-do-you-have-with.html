@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>What experience do you have with Vue.js? How would you structure a Vue app?</title>
+<style>
+body{font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; max-width:900px; margin:24px auto; line-height:1.6; padding:20px}
+h1{font-size:22px;margin-bottom:6px}
+h2{font-size:18px;margin-top:18px}
+pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+code{background:#f1f1f1;padding:2px 4px;border-radius:4px}
+.section{margin-bottom:18px}
+.followups li{margin-bottom:8px}
+small.meta{color:#666}
+</style>
+</head>
+<body>
+<h1>What experience do you have with Vue.js? How would you structure a Vue app?</h1>
+<div class="section"><p>Summary:<br>I have extensive experience building Vue apps (Vue 2 and Vue 3), using Options API and Composition API, migrating apps to Vue 3, implementing SSR with Nuxt, and building component libraries and design systems. I prefer component-driven design, strong typing with TypeScript, Pinia for state, and clear separation between presentation and business logic.</p></div>
+<div class="section"><p>How I structure a Vue app (detailed):<br>1. Project scaffold: Vite (fast dev server, HMR) + TypeScript + ESLint + Prettier + Vitest + Cypress.<br>2. Directory layout (typical):<br>   - src/<br>     - assets/ (images, fonts)<br>     - components/ (reusable UI components, atoms/molecules)<br>     - composables/ (reusable hooks using Composition API)<br>     - views/ (route-level components)<br>     - pages/ (Nuxt convention)<br>     - router/ (Vue Router setup)<br>     - store/ (Pinia stores organized by domain)<br>     - services/ (API clients, auth, utils)<br>     - plugins/ (global plugins and third-party integration)<br>     - types/ (shared TypeScript types)<br>     - App.vue, main.ts<br>3. State management:<br>   - Use Pinia for Vue 3 (modular stores per domain). Keep stores focused with explicit actions and getters.<br>   - Prefer server-state libraries (Vue Query / TanStack Query) for caching API responses and handling background refreshes.<br>4. Component patterns:<br>   - Small, testable components with clearly defined props and events.<br>   - Use slots for flexible composition; expose events instead of mutating parents.<br>   - Keep presentation vs container separation; containers fetch data and pass to presentational components.<br>5. Styling:<br>   - Scoped CSS in SFCs or CSS Modules; use Tailwind if project favors utility-first.<br>   - Centralize design tokens (colors/spacing) and support theming.<br>6. Testing &amp; CI:<br>   - Unit tests for components, integration tests for stores/services, E2E for critical flows, and visual regression tests for UI consistency.<br>7. Performance &amp; UX:<br>   - Lazy-load route components, code-splitting, image optimization, prefetching important resources, and SSR for SEO-critical pages.<br>8. Observability &amp; monitoring:<br>   - Integrate Sentry for errors, record user-impacting metrics, and instrument performance metrics (LCP, FID/INP).</p></div>
+<div class="section"><p>Example file structure:<br>```<br>src/<br>  assets/<br>  components/<br>    ui/<br>    layout/<br>  composables/<br>  views/<br>  router/<br>  store/<br>  services/<br>  plugins/<br>  App.vue<br>  main.ts<br>```</p></div>
+<div class="section"><p>Interviewer follow-ups:<br>- Q: How do you share code between Vue components and plain JS modules?<br>  A: Create composables for logic reuse, extract utilities into `services` or shared npm packages if multiple apps need them.<br>- Q: How do you migrate a Vue 2 app to Vue 3?<br>  A: Audit third-party deps for Vue 3 compatibility, migrate incrementally using compatibility build, update to Composition API patterns where beneficial, and run comprehensive tests.</p></div>
+<hr>
+<p class="meta"><small>Generated on 2025-09-10T08:27:04.672616</small></p>
+</body>
+</html>

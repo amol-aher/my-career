@@ -1,0 +1,41 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Build vs Buy Evaluation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>body{font-family:Arial, sans-serif;margin:24px;color:#111}h1{font-size:24px}h2{font-size:20px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ddd;padding:8px}pre{background:#f5f5f5;padding:12px;border-radius:6px;overflow:auto}</style>
+</head>
+<body>
+  <h1>Evaluating Build vs Buy Decisions at Scale</h1>
+
+  <section>
+    <h2>Criteria to consider</h2>
+    <ul>
+      <li>Strategic differentiation — is this core to our product?</li>
+      <li>Time to market — how fast do we need it?</li>
+      <li>Total cost of ownership — initial and ongoing maintenance costs.</li>
+      <li>Integration complexity and vendor lock-in risk.</li>
+      <li>Security, compliance, and data residency requirements.</li>
+      <li>Support & SLAs from a vendor versus internal support costs.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Decision matrix (example)</h2>
+    <pre><code># Simple scoring example (0-5)
+criteria: [strategic_value, time_to_market, tco, integration_risk, security]
+build: [5, 2, 3, 2, 4]  # sum = 16
+buy:   [2, 5, 4, 3, 3]  # sum = 17 -> buy chosen in this example</code></pre>
+
+  <section>
+    <h2>Example — Search: Elasticsearch vs Algolia</h2>
+    <ul>
+      <li>Build (Elasticsearch): more control, better for custom ranking and analytics, operational overhead higher.</li>
+      <li>Buy (Algolia): faster to ship, great developer experience, cost higher at scale and less customizable.</li>
+    </ul>
+    <p>We prototyped both for a sample index, measured relevance, latency, and TCO estimates, then chose based on prioritization of customization vs time-to-market.</p>
+  </section>
+</body>
+</html>

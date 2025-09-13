@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Essential components for an ideal system design</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:1000px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px}
+    h2{font-size:18px}
+    ul{line-height:1.5}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Tools and infrastructure components every robust system design should consider</h1>
+
+    <p>This is a checklist of components you’ll commonly include in production systems (web apps, APIs, services). For each, I explain purpose and design considerations.</p>
+
+    <h2>Networking & edge</h2>
+    <ul>
+      <li><strong>DNS</strong> — domain resolution, failover (Route53), and global traffic policies.</li>
+      <li><strong>CDN</strong> — CloudFront / Fastly for static assets, caching API responses where applicable, and TLS offload.</li>
+      <li><strong>Load Balancers</strong> — L4/L7 (ELB/ALB/NGINX/Envoy) for distributing traffic and health checks.</li>
+      <li><strong>WAF & DDoS protection</strong> — AWS WAF, Cloudflare, or vendor solutions to block malicious traffic.</li>
+    </ul>
+
+    <h2>Application layer</h2>
+    <ul>
+      <li><strong>Web servers / App servers</strong> — Puma/Unicorn for Rails, Node for frontend microservices; autoscaled behind LBs.</li>
+      <li><strong>API Gateway</strong> — centralize auth, routing, rate limiting, and metrics for public APIs.</li>
+      <li><strong>Service mesh / sidecars</strong> — Envoy/Linkerd for internal service-to-service observability and security in microservices architectures.</li>
+    </ul>
+
+    <h2>Data & storage</h2>
+    <ul>
+      <li><strong>Primary database</strong> — PostgreSQL / MySQL for transactional relational data; design for HA and backups.</li>
+      <li><strong>NoSQL / wide-column stores</strong> — Cassandra / DynamoDB for high-write scaled workloads and denormalized query patterns.</li>
+      <li><strong>Cache</strong> — Redis / Memcached for low-latency lookups, sessions, and counters.</li>
+      <li><strong>Search / analytics</strong> — Elasticsearch / OpenSearch for text search and aggregations.</li>
+      <li><strong>Object storage</strong> — S3 for media and large binary artifacts; lifecycle policies and signed URLs.</li>
+      <li><strong>Message broker / streaming</strong> — Kafka, RabbitMQ, or SQS for decoupling, async tasks, and event-driven systems.</li>
+    </ul>
+
+    <h2>Background processing & orchestration</h2>
+    <ul>
+      <li><strong>Worker queues</strong> — Sidekiq, Resque, Celery or serverless functions for heavy/async jobs.</li>
+      <li><strong>Workflow / orchestrator</strong> — Temporal, Cadence, or Step Functions for long-running and stateful workflows.</li>
+      <li><strong>Scheduler</strong> — Cron jobs, Kubernetes CronJob, or EventBridge for scheduled tasks.</li>
+    </ul>
+
+    <h2>Security & identity</h2>
+    <ul>
+      <li><strong>Identity provider</strong> — OAuth2/OpenID Connect (Auth0, Cognito) for auth and SSO.</li>
+      <li><strong>Secrets management</strong> — HashiCorp Vault, AWS Secrets Manager for DB credentials and API keys.</li>
+      <li><strong>Encryption</strong> — TLS in transit and KMS-managed encryption at rest.</li>
+    </ul>
+
+    <h2>Observability & operations</h2>
+    <ul>
+      <li><strong>Monitoring</strong> — Prometheus, CloudWatch metrics and dashboards (Grafana).</li>
+      <li><strong>Logging</strong> — Central logs (ELK/Fluentd/CloudWatch Logs) and structured formats.</li>
+      <li><strong>Tracing</strong> — OpenTelemetry, Jaeger for distributed traces and latency analysis.</li>
+      <li><strong>Alerts & Incident management</strong> — PagerDuty, Opsgenie for on-call and escalation.</li>
+    </ul>
+
+    <h2>Developer tooling & delivery</h2>
+    <ul>
+      <li><strong>CI/CD</strong> — GitHub Actions, GitLab CI, or Jenkins for builds, tests, deployments.</li>
+      <li><strong>Infrastructure as Code</strong> — Terraform, CloudFormation for reproducible infra.</li>
+      <li><strong>Feature flags and experimentation</strong> — LaunchDarkly or open-source tools for controlled rollouts.</li>
+    </ul>
+
+    <h2>Cross-cutting design patterns</h2>
+    <ul>
+      <li><strong>Health checks / readiness & liveness endpoints</strong> for orchestrators.</li>
+      <li><strong>Circuit breakers</strong> and bulkheads to avoid cascading failures.</li>
+      <li><strong>Rate limiting</strong> and backpressure at the API gateway to protect downstream services.</li>
+      <li><strong>Immutable infrastructure</strong> and blue/green or canary deployments.</li>
+    </ul>
+
+    <h2>Interview subquestions & short answers</h2>
+    <ul>
+      <li><strong>Q: Where do you put caching?</strong> Cache at multiple layers: CDN for static assets, edge for public API responses, Redis for per-user or computed views, and application-level fragment caching in Rails.</li>
+      <li><strong>Q: How to scale databases?</strong> Read replicas, partitioning/sharding, or migrating read-heavy data to specialized data stores; use connection pooling and optimize queries.</li>
+      <li><strong>Q: How to secure APIs?</strong> Use API gateway + mTLS for internal services, OAuth2/JWT for clients, WAF, rate limiting, and input validation.</li>
+    </ul>
+
+    <p style="color:#666;margin-top:12px">This checklist covers the main infrastructure building blocks you should mention in interviews. If you want a concrete reference architecture diagram (AWS/GCP) for a particular use-case, I can generate one next.</p>
+  </div>
+</body>
+</html>

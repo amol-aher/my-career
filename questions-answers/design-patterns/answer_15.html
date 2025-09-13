@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How users can configure workflows (no hardcoding)</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px}
+    h2{font-size:18px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    ul{line-height:1.5}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Allowing users to configure their own workflows</h1>
+
+    <p>There are several proven approaches to enable users to define workflows without hardcoding. Choose approaches depending on the target users (non-technical business users vs power users) and required safety/security.</p>
+
+    <h2>Primary approaches</h2>
+    <ol>
+      <li><strong>Visual flow builder (drag-and-drop)</strong> — users drag nodes (triggers, conditions, actions) and connect edges. The UI produces a serialized definition (JSON/YAML) the engine can execute.</li>
+      <li><strong>Declarative DSL / JSON schema</strong> — present a structured form or YAML editor where users provide conditions and actions using a constrained schema. Good for power users and programmatic configs.</li>
+      <li><strong>Template-based workflows</strong> — provide pre-built templates (e.g., "On order_shipped → generate_invoice → send_email") that users can customize via a form—fast time-to-value.
+      </li>
+      <li><strong>Rule builder (business rules)</strong> — a condition-action table where non-technical users build IF/THEN rules using high-level predicates and built-in actions.</li>
+    </ol>
+
+    <h2>Core implementation pieces</h2>
+    <ul>
+      <li><strong>Schema & validation</strong> — JSON Schema to validate user-supplied configs; lint in UI and server-side validation to prevent invalid definitions.</li>
+      <li><strong>Versioning</strong> — keep versions of workflow definitions to enable safe rollbacks and run historical executions with the exact definition used at that time.</li>
+      <li><strong>Capability gating</strong> — restrict which actions users may choose (e.g., only admins can call payment APIs) and provide a permissions model per organization.</li>
+      <li><strong>Testing / dry-run</strong> — provide a sandbox run mode or simulation with mock data to let users preview outputs without side effects.
+      </li>
+      <li><strong>Error handling</strong> — show clear validation errors and provide per-node retry and fallback options in UI.</li>
+    </ul>
+
+    <h2>Security & safety mechanisms</h2>
+    <ul>
+      <li>Whitelist actions: users cannot inject arbitrary code; only pre-approved actions can be used.</li>
+      <li>Parameter validation & sanitization for inputs to actions (avoid injection into downstream systems).</li>
+      <li>Secrets management: encourage storing secrets in the system vault; workflows reference secrets by id rather than embedding them.</li>
+      <li>Rate limits and quotas per user/tenant to prevent abuse.</li>
+    </ul>
+
+    <h2>User experience concerns</h2>
+    <ul>
+      <li>Provide helpful templates and an action library with descriptions, inputs, and outputs.</li>
+      <li>Offer visual debugging: step-through runs, logs per node, and payload inspection.</li>
+      <li>Localization and friendly error messages for non-technical users.</li>
+    </ul>
+
+    <h2>Sample serialized node (JSON)</h2>
+    <pre><code>{
+  "id": "send-invoice",
+  "type": "action",
+  "action": "generate_invoice",
+  "params": {"invoice_template": "standard"}
+}
+</code></pre>
+
+    <h2>Interview follow-ups & candidate answers</h2>
+    <ul>
+      <li><strong>How to support complex conditions?</strong> Use expression languages (JMESPath, JsonLogic) or provide a UI to construct condition trees; validate and sandbox expressions.</li>
+      <li><strong>How to handle changes to action signatures?</strong> Version action schemas and provide migration helpers for existing workflows.</li>
+      <li><strong>How to handle multi-tenant differences?</strong> Allow tenant-level catalogs of available actions and parameter presets.</li>
+    </ul>
+
+    <p style="color:#666;margin-top:12px">In interviews, demonstrate trade-offs: balance user flexibility vs security and system complexity. Show sample UI sketches or JSON examples if asked to go deeper.</p>
+  </div>
+</body>
+</html>

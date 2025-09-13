@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>About AASM (acts as state machine) gem</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:900px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px}
+    h2{font-size:18px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    ul{line-height:1.5}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>AASM — an overview and usage patterns</h1>
+
+    <p><strong>What is AASM?</strong> AASM (also known as acts_as_state_machine historically) is a lightweight Ruby gem that adds state machine behavior to Ruby classes (commonly ActiveRecord models). It provides a DSL to declare states, transitions, events, guards, and callbacks in a readable way.</p>
+
+    <h2>Why use AASM?</h2>
+    <ul>
+      <li>Clear state modeling — makes possible states and transitions explicit.</li>
+      <li>Centralizes state logic — avoids scattered status strings and `if` chains.</li>
+      <li>Integrates well with ActiveRecord — persists state to model column and supports scopes for each state.</li>
+    </ul>
+
+    <h2>Basic example</h2>
+    <pre><code>class Order &lt; ApplicationRecord
+  include AASM
+
+  aasm column: 'status' do
+    state :pending, initial: true
+    state :paid
+    state :shipped
+    state :cancelled
+
+    event :pay do
+      transitions from: :pending, to: :paid, after: :send_payment_confirmation
+    end
+
+    event :ship do
+      transitions from: :paid, to: :shipped, guards: [:inventory_available?]
+    end
+
+    event :cancel do
+      transitions from: [:pending, :paid], to: :cancelled, after: :refund_if_paid
+    end
+  end
+end
+</code></pre>
+
+    <h2>Key features</h2>
+    <ul>
+      <li><strong>Events & transitions</strong> — declare allowed transitions and run actions in callbacks (<code>before/after</code>).</li>
+      <li><strong>Guards</strong> — methods that return boolean to allow conditional transitions.</li>
+      <li><strong>Persistence</strong> — specify the column used to persist states; works with ActiveRecord and Sequel.</li>
+      <li><strong>Bang methods</strong> — AASM generates bang methods that raise errors if transition is invalid, and non-bang methods that return boolean for safe attempts.</li>
+      <li><strong>Scopes</strong> — generate ActiveRecord scopes for states (e.g., <code>Order.shipped</code>).</li>
+      <li><strong>Multiple state machines</strong> — you can define multiple machines on a single model using different columns.
+      </li>
+    </ul>
+
+    <h2>Advanced usage</h2>
+    <ul>
+      <li><strong>Transition hooks</strong> — use <code>before_enter</code>, <code>after_exit</code>, and similar hooks to trigger side effects.</li>
+      <li><strong>Internationalization</strong> — integrate with I18n to present friendly state names in the UI.</li>
+      <li><strong>Persistence strategies</strong> — store state as string, integer (with mapping), or serialized symbol depending on space/perf needs.</li>
+      <li><strong>Testing</strong> — test valid transitions, guards, callbacks, and invalid transitions (expect exceptions or false returns).</li>
+    </ul>
+
+    <h2>Pros and cons</h2>
+    <table style="width:100%;border-collapse:collapse;margin-top:10px">
+      <tr><th style="border:1px solid #eee;padding:8px;text-align:left">Pros</th><th style="border:1px solid #eee;padding:8px;text-align:left">Cons / Caveats</th></tr>
+      <tr><td style="border:1px solid #eee;padding:8px">Readable DSL; quick to add to models; good for straightforward workflows.</td>
+      <td style="border:1px solid #eee;padding:8px">Can encourage fat models if you put lots of side-effects in callbacks; not ideal for extremely complex long-running workflows (use a workflow/orchestrator).</td></tr>
+    </table>
+
+    <h2>When to prefer AASM</h2>
+    <ul>
+      <li>Model has a relatively small, well-defined set of states and transitions (orders, invoices, ticket lifecycle).</li>
+      <li>You want simple state validation and query helpers integrated alongside the model.</li>
+    </ul>
+
+    <h2>Alternatives</h2>
+    <ul>
+      <li><strong>state_machines / state_machines-activerecord</strong> — another popular state machine gem with advanced features.</li>
+      <li><strong>Temporal / Step Functions</strong> — for durable, long-running orchestrations rather than in-model state machines.</li>
+      <li><strong>Custom service objects</strong> — model transitions using explicit service classes and event logs if you want clearer separation of side-effects.</li>
+    </ul>
+
+    <h2>Interview subquestions</h2>
+    <ul>
+      <li><strong>How to avoid fat models with AASM?</strong> Keep side effects in service objects triggered by transition hooks. Use the state machine only to validate transitions and persist state.</li>
+      <li><strong>How to test transitions?</strong> Unit-test state transitions and assert side effects are delegated to collaborators (mocks/stubs).</li>
+    </ul>
+
+    <p style="color:#666;margin-top:12px">AASM is a pragmatic choice in Rails apps for modeling finite state domains. In interviews, emphasize separation of concerns: use AASM for state validation and small callbacks, and push heavier side-effects into services.</p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Best Practices in Ruby on Rails</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; margin-top: 30px; }
+        .section { background-color: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .code-block { background-color: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto; margin: 15px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<h1>API Best Practices in Ruby on Rails</h1>
+
+<div class="section">
+    <h2>Key Principles</h2>
+    
+    <h3>1. Versioning</h3>
+    <div class="code-block"># config/routes.rb
+namespace :api, defaults: { format: :json } do
+  resources :products
+end</div>
+    
+    <h3>2. Error Handling</h3>
+    <div class="code-block"># app/controllers/api/v1/products_controller.rb
+class ProductsController < ApplicationController
+  rescue_from ActiveRecord::RecordNotFound, with: :json
+
+  def show
+    product = Product.find(params[:id])
+    render json: product
+  end
+end</div>
+    
+    <h3>3. Serialization</h3>
+    <div class="code-block"># app/serializers/product_serializer.rb
+class ProductSerializer
+  include JSONAPI::SerializerResource
+
+  attributes :id, :name, :price
+  has_one :category
+end</div>
+    
+    <h3>4. Rate Limiting</h3>
+    <div class="code-block"># app/middleware/rate_limiter.rb
+class RateLimiter
+  def initialize(app)
+    @app = app
+  end
+
+  def call(env)
+    status, headers, response = @app.call(env)
+
+    if rate_exceeded?(env)
+      return [429, {'Content-Type' => 'application/json'}, '{"error": "Rate limit exceeded"}]
+    end
+
+    [status, headers, response]
+  end
+
+  private
+
+  def rate_exceeded?(env)
+    current_time = Time.now.to_i
+    key = "rate_limit:#{env['REMOTE_ADDR']}"
+    
+    Redis.current.get(key) > MAX_REQUESTS_PER_MINUTE
+  end
+end</div>
+    
+    <h3>5. Security Headers</h3>
+    <div class="code-block"># config/initializers/security_headers.rb
+Rails.application.configure do |config|
+  config.middleware.insert_before Rack::Sendfile, Rack::Deflater
+  config.middleware.use Rack::SSL, :exclude => proc { |env| env["HTTPS"] != "on" }
+end</div>
+    
+    <h2>Best Practices Summary</h2>
+    <ul>
+        <li>Use versioned APIs (e.g., `/api/v1/resource`)</li>
+        <li>Implement proper authentication (JWT/OAuth)</li>
+        <li>Include pagination parameters (`page`, `per_page`)</li>
+        <li>Add etag support for caching</li>
+        <li>Implement rate limiting and throttling</li>
+        <li>Use HSTS and secure cookies</li>
+    </ul>
+</div>
+
+</body>
+</html>

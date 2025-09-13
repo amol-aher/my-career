@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 54</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 54: How do you iterate over an array?</h1>
+<h2>Concept</h2>
+<p>Iteration is commonly done with <code>each</code>, but Ruby provides many enumeration methods.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Use <code>array.each</code> with a block for simple iteration, or <code>map</code>, <code>select</code>, <code>for</code> loop when appropriate.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>each_with_index?</strong> — Provides index during iteration.</li>
+<li><strong>Enumerator?</strong> — If no block is given, <code>each</code> returns an Enumerator.</li>
+</ul>
+
+<h2>Example</h2>
+<pre><code class="language-ruby">arr = [1,2,3]
+arr.each { |x| puts x }
+arr.each_with_index { |x,i| puts "\#{i}: \#{x}" }</code></pre>
+
+<hr/><footer>Generated HTML for question 54</footer>
+</body></html>

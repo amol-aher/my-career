@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Counter Cache in Ruby on Rails</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; margin-top: 30px; }
+        .section { background-color: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .code-block { background-color: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto; margin: 15px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<h1>Counter Cache in Ruby on Rails</h1>
+
+<div class="section">
+    <h2>Understanding Counter Cache</h2>
+    
+    <h3>What is Counter Cache?</h3>
+    <p>A feature that maintains a cached count of associated records on a parent model, avoiding expensive COUNT queries.</p>
+    
+    <h3>Implementation Requirements</h3>
+    <ul>
+        <li>Parent model must have a `counter_cache` column</li>
+        <li>Child model must declare `belongs_to` with `counter_cache: true`</li>
+        <li>Database triggers or callbacks to keep counts synchronized</li>
+    </ul>
+    
+    <h3>Basic Setup</h3>
+    <div class="code-block"># app/models/post.rb
+class Post < ApplicationRecord
+  belongs_to :category, counter_cache: true
+end
+
+# app/models/category.rb
+class Category < ApplicationRecord
+  has_many :posts
+end</div>
+    
+    <h3>Database Column</h3>
+    <div class="code-block"># db/migrate/xxxxxx_add_counter_cache_to_categories.rb
+add_column :categories, :posts_count, :integer, default: 0</div>
+    
+    <h3>Keeping Counts Updated</h3>
+    <p>Use ActiveRecord callbacks to increment/decrement counters:</p>
+    <div class="code-block"># app/models/post.rb
+after_save :increment_posts_count
+after_destroy :decrement_posts_count
+
+private
+
+def increment_posts_count
+  category.increment!(:posts_count)
+end
+
+def decrement_posts_count
+  category.decrement!(:posts_count)
+end</div>
+    
+    <h3>Performance Benefits</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Scenario</th>
+                <th>Without Counter Cache</th>
+                <th>With Counter Cache</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Displaying post count</td>
+                <td>SELECT COUNT(*) FROM posts WHERE category_id = X</td>
+                <td>SELECT posts_count FROM categories WHERE id = X</td>
+            </tr>
+            <tr>
+                <td>Update frequency</td>
+                <td>Every read operation</td>
+                <td>Only when posts are added/removed</td>
+            </tr>
+            <tr>
+                <td>Performance impact</td>
+                <td>High for large datasets</td>
+                <td>Constant time lookup</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h3>Advanced Usage Patterns</h3>
+    <ul>
+        <li>Conditional counter caching with scopes</li>
+        <li>Multi-level nested counter caches</li>
+        <li>Custom named counters for different relationships</li>
+    </ul>
+    
+    <h3>Limitations</h3>
+    <ul>
+        <li>Requires careful synchronization</li>
+        <li>Not suitable for highly dynamic counts</li>
+        <li>May require eventual consistency checks</li>
+    </ul>
+</div>
+
+</body>
+</html>

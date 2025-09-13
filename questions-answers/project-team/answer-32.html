@@ -1,0 +1,46 @@
+<!doctype html><html><head><meta charset='utf-8'><title>Walking through a project managed start-to-finish</title>
+<style>
+body{font-family:Segoe UI,Arial,Helvetica,sans-serif;line-height:1.6;padding:24px;max-width:900px;margin:auto;color:#111}
+header{border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:18px}
+h1{font-size:20px;margin:0 0 6px 0}
+.role{color:#555;font-size:13px;margin-bottom:6px}
+pre{background:#f6f6f6;padding:12px;border-radius:6px;overflow:auto}
+code{font-family:monospace;font-size:13px}
+section{margin-bottom:18px}
+.sub{font-weight:600;margin-top:8px}
+ul{margin-left:18px}
+ol{margin-left:18px}
+</style></head><body><header><h1>Walking through a project managed start-to-finish</h1><div class='role'>System architect · Technical lead · Senior software engineer (Ruby on Rails, AWS, SQL, Vue.js)</div></header>
+<section>
+<p><strong>Summary:</strong> I manage projects through discovery, planning, delivery, and post-launch. Below is a concrete walk-through using a payments integration as an example.</p>
+
+<div class='sub'>Project phases</div>
+<ol>
+<li><strong>Discovery (1-2 weeks):</strong> stakeholder interviews, data collection, risk analysis, and spikes for unknowns.</li>
+<li><strong>Planning:</strong> define epics, create backlog, estimate, and set milestones. Create deployment and rollback plans.</li>
+<li><strong>Design & Architecture:</strong> define APIs, DB changes, security, and compliance requirements.</li>
+<li><strong>Implementation:</strong> sprint execution with CI/CD, code reviews, and QA cycles.</li>
+<li><strong>Release:</strong> staged rollout, canary testing, and monitoring.</li>
+<li><strong>Post-launch:</strong> collect metrics, iterate on feedback, and close project with a retrospective.</li>
+</ol>
+
+<div class='sub'>Example artifacts and templates</div>
+<pre><code>Project plan:
+- Goal: integrate Provider X for payments
+- Success metrics: payment success rate >= 99.5%, <1% transaction latency increase
+- Milestones:
+  - Spike & feasibility (2w)
+  - API & data model (1w)
+  - Implementation & tests (4w)
+  - Canary & rollback (1w)
+  - Full launch</code></pre>
+
+<div class='sub'>Checklist before launch</div>
+<ul>
+<li>End-to-end tests pass in staging</li>
+<li>Runbook and rollback plan verified</li>
+<li>Monitoring dashboards and alerts configured</li>
+<li>Stakeholder sign-off obtained</li>
+</ul>
+</section>
+</body></html>

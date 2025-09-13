@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>How Rails uses the Active Record pattern</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px;margin-bottom:6px}
+    h2{font-size:18px;margin-top:18px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>How Rails uses the Active Record pattern</h1>
+
+    <p><strong>Summary</strong>: Rails' Active Record (the <code>ActiveRecord::Base</code> family) is a direct implementation of the Active Record design pattern — model objects are tightly coupled to the database rows they represent and include persistence, querying, validation and related behavior.</p>
+
+    <h2>Responsibilities provided by Active Record</h2>
+    <ul>
+      <li><strong>Object-relational mapping</strong> — maps tables/columns to Ruby classes/attributes.</li>
+      <li><strong>CRUD APIs</strong> — <code>.create</code>, <code>.find</code>, <code>#save</code>, <code>#destroy</code>.</li>
+      <li><strong>Associations</strong> — <code>has_many</code>, <code>belongs_to</code>, <code>has_one</code>, with eager/lazy loading.</li>
+      <li><strong>Validations</strong> — declarative validation rules on models.</li>
+      <li><strong>Callbacks & lifecycle hooks</strong> — <code>before_save</code>, <code>after_commit</code>, etc.</li>
+      <li><strong>Scopes & query generation</strong> — composable ActiveRecord::Relation queries.</li>
+    </ul>
+
+    <h2>Typical example</h2>
+    <pre><code>class User &lt; ApplicationRecord
+  has_many :posts
+  validates :email, presence: true, uniqueness: true
+
+  scope :active, -> { where(active: true) }
+end
+
+# usage
+user = User.create!(email: 'a@example.com')
+posts = User.find(user.id).posts.where(published: true).limit(10)
+</code></pre>
+
+    <h2>Benefits</h2>
+    <ul>
+      <li>Fast developer productivity — simple, convention-driven APIs.</li>
+      <li>Concise code for common use-cases; built-in features (migrations, schema rake tasks).</li>
+      <li>Clear mapping between domain and persistence for many CRUD apps.</li>
+    </ul>
+
+    <h2>Trade-offs and limitations</h2>
+    <ul>
+      <li><strong>Tight coupling:</strong> domain logic and persistence live together — harder to swap DB or use domain objects decoupled from persistence.</li>
+      <li><strong>Fat models:</strong> it's easy to accumulate business logic (violating SRP) inside models; use Service Objects, Query Objects, etc., to keep models focused.</li>
+      <li><strong>Performance at scale:</strong> complex joins, N+1 queries and large batch processing may require denormalization, read replicas, or using other stores (NoSQL, data warehouses).</li>
+    </ul>
+
+    <h2>When to move away from Active Record responsibilities</h2>
+    <ul>
+      <li>Complex domain logic: extract into service objects or domain models separate from persistence concerns.</li>
+      <li>Heavy read-optimized paths: use read models, materialized views, or denormalized tables.</li>
+      <li>High throughput where ORMs add overhead: use lower-level query builders or native SQL and connection pooling.</li>
+    </ul>
+
+    <h2>Interview subquestions</h2>
+    <ul>
+      <li><strong>How do you avoid N+1?</strong> Use <code>.includes(:association)</code> or batch loading (pluck ids then load), and monitor with tools like Bullet.</li>
+      <li><strong>When to use raw SQL?</strong> For complex analytics/aggregations or when you need performance not achievable with ARel; wrap raw SQL in Query Objects for testability.</li>
+      <li><strong>How to test models?</strong> Keep model tests focused on validations, simple behaviors, and delegate complex flows to service spec/integration tests.</li>
+    </ul>
+
+    <p style="color:#666">In interviews, show you know both the convenience of Active Record and its limitations — explain when you extracted responsibilities into other patterns (service objects, repositories) and how you handled scaling and maintainability.</p>
+  </div>
+</body>
+</html>

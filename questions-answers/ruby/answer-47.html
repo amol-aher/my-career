@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 47</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 47: What’s the difference between ==, eql?, and equal?</h1>
+<h2>Concept</h2>
+<p>Ruby offers multiple equality operators serving different semantics: <code>==</code> for value equality (overridable), <code>eql?</code> for hash key equality (strict), and <code>equal?</code> for object identity (same object).</p>
+
+<h2>Optimal answer (concise)</h2>
+<p><code>==</code> checks value equality (often overridden), <code>eql?</code> is used by Hash for key comparison (strict, e.g., 1.eql?(1.0) is false), and <code>equal?</code> checks object identity (same object id).</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>Examples:</strong> <code>a == b</code> compares values; <code>a.eql?(b)</code> is stricter; <code>a.equal?(b)</code> checks object_id equality.</li>
+<li><strong>Hash keys:</strong> Hash uses <code>eql?</code> and <code>hash</code> for key comparison.</li>
+</ul>
+
+<h2>Example</h2>
+<pre><code class="language-ruby">a = "hi"
+b = "hi"
+a == b        # => true (value)
+a.equal?(b)   # => false (different objects)
+1 == 1.0      # => true
+1.eql?(1.0)   # => false</code></pre>
+
+<h2>Best practices / Pitfalls</h2>
+<ul>
+<li>Implement <code>eql?</code> and <code>hash</code> together when defining custom hash-keyable objects.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 47</footer>
+</body></html>

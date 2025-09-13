@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTTP Status Codes 500 Series</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1, h2, h3 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .code-block { margin: 20px 0; }
+        .subquestion { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>HTTP Status Codes in the 500 Series</h1>
+    
+    <p>The 500 series indicates server-side errors where the server failed to process a valid request. These should be rare in production but require proper handling.</p>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Status Code</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Typical Causes</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>500</td>
+                <td>Internal Server Error</td>
+                <td>Generic server failure</td>
+                <td>Unhandled exceptions, configuration errors</td>
+            </tr>
+            <tr>
+                <td>501</td>
+                <td>Not Implemented</td>
+                <td>Feature not yet implemented</td>
+                <li>New API endpoint under development</li>
+            </tr>
+            <tr>
+                <td>502</td>
+                <td>Bad Gateway</td>
+                <td>Upstream server failure</td>
+                <li>Database connection timeout</li>
+                <li>External service outage</li>
+            </tr>
+            <tr>
+                <td>503</td>
+                <td>Service Unavailable</td>
+                <td>Temporarily overloaded or under maintenance</td>
+                <li>High load causing queue buildup</li>
+                <li>Scheduled maintenance window</li>
+            </tr>
+            <tr>
+                <td>504</td>
+                <td>Gateway Timeout</td>
+                <td>Upstream server didn't respond in time</td>
+                <li>Slow database query</li>
+                <li>External API latency</li>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h2>Error Handling Best Practices</h2>
+    <ol>
+        <li><strong>Never Leak Stack Traces:</strong> Return generic messages in production</li>
+        <li><strong>Log Detailed Errors:</strong> Capture full exception details internally</li>
+        <li><strong>Implement Circuit Breakers:</strong> Prevent cascading failures</li>
+        <li><strong>Use Retry Mechanisms:</strong> For transient errors with exponential backoff</li>
+    </ol>
+    
+    <h2>Rails Exception Handling</h2>
+    <pre class="code-block"># config/application.rb
+config.exceptions_app = self.routes
+
+# app/controllers/concerns/error_handler.rb
+module ErrorHandler
+  extend ActiveSupport::Concern
+  
+  included do
+    rescue_from StandardError, with: :handle_internal_error
+    rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
+  end
+  
+  private
+  
+  def handle_internal_error(exception)
+    logger.error "#{exception.class}: #{exception.message}"
+    render json: { error: "Server encountered an unexpected error" }, status: :internal_server_error
+  end
+  
+  def record_not_found(exception)
+    render json: { error: "Resource not found" }, status: :not_found
+  end
+end</pre>
+    
+    <div class="subquestion">
+        <h3>Common Subquestions:</h3>
+        
+        <h4>Q: How do you differentiate between 500 and 502 errors?</h4>
+        <p>500 indicates internal application failure, while 502 signals problems with upstream dependencies. Monitor both separately in monitoring systems.</p>
+        
+        <h4>Q: Should you retry after receiving 503 Service Unavailable?</h4>
+        <p>Yes, but implement exponential backoff. Include Retry-After header if provided by server to guide client retries.</p>
+        
+        <h4>Q: How do you handle 504 Gateway Timeouts in distributed systems?</h4>
+        <p>Set reasonable timeouts, implement fallback strategies (cached data), and use asynchronous processing for long-running tasks.</p>
+    </div>
+</body>
+</html>

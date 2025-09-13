@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Rails and N+1 Queries — Detection & Resolution</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Rails and N+1 Queries — Detection & Resolution</h1>
+  <p>N+1 occurs when you query an association inside a loop, causing N additional DB queries. Rails provides tools and community practices to detect and eliminate them.</p>
+
+  <h2>How N+1 happens</h2>
+  <pre><code>posts = Post.all
+posts.each do |p|
+  puts p.author.name   # triggers a query per post unless eager loaded
+end
+  </code></pre>
+
+  <h2>Detection</h2>
+  <ul>
+    <li>Bullet gem: warns on N+1 and unused eager loading.</li>
+    <li>APM/tracing: look for endpoints with many DB queries or high DB time.</li>
+    <li>Review tests with query counters (e.g., ActiveSupport::Notifications or custom helpers).</li>
+  </ul>
+
+  <h2>Resolution</h2>
+  <pre><code># Eager load associations
+posts = Post.includes(:author).all
+posts.each do |p|
+  puts p.author.name
+end
+
+# For nested associations
+posts = Post.includes(author: :profile).all
+  </code></pre>
+
+  <h2>Advanced strategies</h2>
+  <ul>
+    <li>Use <code>pluck</code> when you only need specific columns to avoid object instantiation.</li>
+    <li>Use <code>find_each</code> for large datasets to batch process rows.</li>
+    <li>Denormalize or cache computed values if access patterns require it.</li>
+  </ul>
+
+  <h2>Example: test that asserts query count</h2>
+  <pre><code>assert_queries(2) do
+  get :index
+end
+  </code></pre>
+</body>
+</html>

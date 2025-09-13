@@ -1,0 +1,72 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Database Migrations in CI/CD Pipelines</title>
+  <style>
+    body{font-family:Inter,Arial,Helvetica,sans-serif;margin:24px;color:#222;line-height:1.6}
+    h1{background:#0dcaf0;color:#fff;padding:12px;border-radius:8px}
+    h2{color:#0dcaf0;margin-top:18px}
+    pre{background:#f0fbff;padding:12px;border-radius:6px;overflow:auto}
+    ul{margin:8px 0 8px 20px}
+  </style>
+</head>
+<body>
+  <h1>How to Handle Database Migrations in a CI/CD Pipeline</h1>
+
+  <h2>Principles</h2>
+  <ul>
+    <li><strong>Make migrations backward-compatible</strong> (additive changes first).</li>
+    <li><strong>Keep migration execution and code deploy separate</strong> so you can control order and retry behaviors.</li>
+    <li><strong>Automate backups and have rollback plans</strong> before destructive changes.</li>
+  </ul>
+
+  <h2>Patterns</h2>
+  <h3>Safe (zero-downtime) migration sequence</h3>
+  <ol>
+    <li>Add new columns or tables (nullable/defaults).</li>
+    <li>Deploy code that writes to both old and new schema (dual-write) but reads from old.</li>
+    <li>Backfill data into new schema.</li>
+    <li>Deploy code to read from new schema and stop writing old fields.</li>
+    <li>Remove old columns after safe verification.</li>
+  </ol>
+
+  <h3>Running migrations in pipeline</h3>
+  <p>Add a dedicated migration stage in your pipeline before switching traffic or during the deployment process:</p>
+  <pre><code>stages:
+- build
+- deploy (new artifact to green)
+- run-migrations (ephemeral job against DB)
+- verify (smoke tests)
+- switch-traffic</code></pre>
+
+  <h2>Tools and techniques</h2>
+  <ul>
+    <li><strong>Rails:</strong> Use `rails db:migrate` in a controlled environment.</li>
+    <li><strong>Flyway / Liquibase:</strong> Versioned migration frameworks that support rollbacks and auditing.</li>
+    <li><strong>Feature flags:</strong> Toggle usage of new schema until fully validated.</li>
+    <li><strong>Backups:</strong> Automated DB snapshots before destructive changes.</li>
+  </ul>
+
+  <h2>Handling migrations for microservices</h2>
+  <p>For services with separate databases, apply service-level migrations under that service's pipeline. For cross-service schema changes, coordinate via a release plan with multiple services and feature flags.</p>
+
+  <h2>Dealing with failures</h2>
+  <ul>
+    <li>For non-destructive migrations, revert application code to previous version and keep new schema changes; fix and reapply migration if needed.</li>
+    <li>For destructive migrations, restore from backup if necessary and follow postmortem to reduce risk.</li>
+  </ul>
+
+  <h2>Subquestions</h2>
+  <h3>When do you run migrations — pre-deploy or post-deploy?</h3>
+  <p>A: Typically run migrations after deploying the new code to a green environment and before switching traffic. For additive migrations, it can run before code deploy. Sequence depends on compatibility.</p>
+
+  <h3>How to test migrations?</h3>
+  <p>A: Run migrations in ephemeral environments with production-like data subsets and run integration tests. Use schema drift checks and CI-based dry-run validations.</p>
+
+  <h2>Conclusion</h2>
+  <p>Design migrations to be backward-compatible, automate them in a controlled pipeline stage with backups and verification, and use feature flags to minimize user impact and enable quick rollback when needed.</p>
+</body>
+</html>

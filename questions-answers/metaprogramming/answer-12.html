@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Risks of monkey-patching in dynamic languages</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; margin:20px; color:#111 }
+    h1 { color:#1a56db } h2 { color:#0b5a78 }
+    pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto }
+    code { font-family: monospace; }
+  </style>
+</head>
+<body>
+  <h1>Risks of monkey‑patching in dynamic languages</h1>
+
+  <p><strong>Definition:</strong> Monkey‑patching means modifying or reopening existing classes/modules at runtime to change or extend behavior. Languages like Ruby, Python, JavaScript permit it (e.g., opening core classes to add methods).</p>
+
+  <h2>Main risks</h2>
+  <ul>
+    <li><strong>Global impact / fragility:</strong> Changing core classes affects every consumer. A library that monkey‑patches <code>Array#map</code> or <code>String</code> globally can break unrelated code.</li>
+    <li><strong>Compatibility and upgrade breakage:</strong> Patches that relied on internal behavior may break when the next language version or third‑party gem changes.</li>
+    <li><strong>Hard-to-find bugs:</strong> Unexpected behavior or subtle regressions appear in other parts of the system, making debugging expensive.</li>
+    <li><strong>Namespace collisions:</strong> Multiple libraries may define the same method differently, causing conflicts.</li>
+    <li><strong>Security:</strong> A malicious or buggy patch can alter correctness or introduce vulnerabilities.</li>
+    <li><strong>Tooling and introspection confusion:</strong> Static analysis, documentation tools, and IDEs don’t account for runtime patches; developer expectations fail.</li>
+    <li><strong>Performance:</strong> Replacing optimized native methods with slower Ruby/Python/JS code can harm performance.</li>
+    <li><strong>Thread safety:</strong> Patching at runtime in multi-threaded environments can produce race conditions.</li>
+  </ul>
+
+  <h2>Examples</h2>
+  <pre><code class="language-ruby"># Dangerous monkey-patch (Ruby)
+class String
+  def palindrome?
+    self == reverse
+  end
+end</code></pre>
+
+  <p>This will add <code>palindrome?</code> to every string globally. If another gem defines the same method with different semantics, conflict arises.</p>
+
+  <pre><code class="language-javascript">// Dangerous in JS
+Array.prototype.flatten = function() { /* custom algorithm */ };</code></pre>
+
+  <h2>Safer alternatives & mitigations</h2>
+  <ul>
+    <li><strong>Refinements (Ruby):</strong> Provide scoped monkey‑patching limited to a module or lexical scope.</li>
+    <li><strong>Explicit wrappers/adapters:</strong> Create your own subclass or module and use delegation instead of changing core.</li>
+    <li><strong>Use namespacing:</strong> Add methods under your namespace (e.g., <code>MyApp::StringHelpers.palindrome?(s)</code>).</li>
+    <li><strong>Module prepend:</strong> In Ruby, <code>prepend</code> can be used to override behavior in a controlled way; however it still mutates the class’s ancestor chain.</li>
+    <li><strong>Feature flags and runtime guards:</strong> Only enable patches in test or specific runtime configurations.</li>
+    <li><strong>Isolate in processes:</strong> Run risky code in subprocesses or containers to limit blast radius.</li>
+    <li><strong>Automated tests:</strong> Have strong integration tests to detect regressions caused by patches.</li>
+  </ul>
+
+  <h2>Best practices</h2>
+  <ol>
+    <li>Avoid changing well-known core behaviors.</li>
+    <li>Favor composition over modification.</li>
+    <li>Scope changes narrowly (use refinements or singleton class modifications for one object).</li>
+    <li>Document clearly and add compatibility tests.</li>
+  </ol>
+
+  <h2>When monkey‑patching is acceptable</h2>
+  <ul>
+    <li>Polyfills for platforms that lack features (and when done carefully).</li>
+    <li>Temporary shims during migration with a clear deprecation strategy.</li>
+    <li>Testing and mocking inside test suites where scope is controlled.</li>
+  </ul>
+
+  <h2>Conclusion</h2>
+  <p>Monkey‑patching is powerful but dangerous. Treat it like a surgical tool — use for narrowly-scoped needs with strong tests, documentation, and a migration plan. Prefer safer alternatives when possible.</p>
+</body>
+</html>

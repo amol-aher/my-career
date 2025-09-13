@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Key entities for a sample web application</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:1000px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px}
+    h2{font-size:18px}
+    p,li{line-height:1.5}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    th,td{border:1px solid #eee;padding:8px;text-align:left}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Key entities for a sample web application (e-commerce / financial)</h1>
+
+    <p>This document lists the core domain entities you should model for a typical web application. I’ll cover two examples—an e-commerce system and a finance/accounting system—and then common cross-cutting concerns (audit, multi-tenancy, events).</p>
+
+    <h2>E-commerce — core entities</h2>
+    <table>
+      <tr><th>Entity</th><th>Purpose / Key attributes</th></tr>
+      <tr><td>Users / Customers</td><td>id, email, name, password_hash, roles, preferences, billing/shipping addresses, created_at, last_login</td></tr>
+      <tr><td>Products</td><td>id, sku, title, description, price, currency, inventory_count, categories, media_refs, attributes (JSON), created_at</td></tr>
+      <tr><td>Catalog / Categories</td><td>hierarchy, metadata, SEO fields, visibility</td></tr>
+      <tr><td>Carts</td><td>user_id, items [{product_id, qty, price, metadata}], token (for guest carts), prices_snapshot</td></tr>
+      <tr><td>Orders</td><td>id, user_id, order_number, items, total_amount, currency, status, payment_status, shipping_address, billing_address, placed_at</td></tr>
+      <tr><td>Payments</td><td>order_id, provider_txn_id, amount, currency, status, method, gateway_response, refunded_at</td></tr>
+      <tr><td>Shipments</td><td>order_id, carrier, tracking_number, status, estimated_delivery, shipped_at</td></tr>
+      <tr><td>Inventory</td><td>product_id, location_id, available, reserved (locks for pending orders), restock_events</td></tr>
+      <tr><td>Promotions / Coupons</td><td>code, type (percentage/fixed), eligibility rules, expiry</td></tr>
+      <tr><td>Reviews / Ratings</td><td>product_id, user_id, rating, text, moderation_status</td></tr>
+    </table>
+
+    <h2>Finance / Accounting — core entities</h2>
+    <table>
+      <tr><th>Entity</th><th>Purpose / Key attributes</th></tr>
+      <tr><td>Accounts</td><td>account_id, type (asset/liability/revenue/expense/equity), currency, balance, currency_conversion_rules</td></tr>
+      <tr><td>Transactions / Journal Entries</td><td>transaction_id, date, lines [{account_id, debit, credit, description}], reference, status, posted_at</td></tr>
+      <tr><td>Invoices</td><td>invoice_number, customer_id, line_items, subtotal, taxes, total, due_date, status</td></tr>
+      <tr><td>Payments</td><td>invoice_id, amount, payment_method, cleared_at, reconciled_flag</td></tr>
+      <tr><td>Customers / Vendors</td><td>contact info, tax_id, payment_terms</td></tr>
+      <tr><td>Tax Rules</td><td>jurisdiction, rates, applicability rules</td></tr>
+    </table>
+
+    <h2>Cross-cutting entities & concerns</h2>
+    <ul>
+      <li><strong>Audit logs</strong> — who changed what and when (store as append-only events for compliance).</li>
+      <li><strong>Attachments / media</strong> — references to S3 objects and derived sizes.
+      </li>
+      <li><strong>Tenants / Organizations</strong> — for multi-tenant systems; tenant_id scoping, isolation boundaries, and billing info.
+      </li>
+      <li><strong>Integration records</strong> — external ids and sync statuses for 3rd-party systems (Shopify id, Amazon order id).</li>
+      <li><strong>Feature flags and permissions</strong> — AB testing and RBAC/ACL models (roles, permissions, policies).</li>
+      <li><strong>Event store</strong> — asynchronous events that power audit, projections, and integrations (Kafka/SNS topic names).</li>
+    </ul>
+
+    <h2>Modeling tips (DB & schema design)</h2>
+    <ul>
+      <li><strong>Use a canonical primary key</strong> (UUID) plus human-friendly sequential numbers where needed (order_number) for external visibility.</li>
+      <li><strong>Denormalize for read performance</strong> when necessary (order snapshots, product price snapshots) but keep canonical source of truth.</li>
+      <li><strong>Index thoughtfully</strong> — indexes on relations/filters: user_id, product.sku, order.status, created_at.
+      </li>
+      <li><strong>Use event-driven patterns</strong> for integrations and slow processes: emit domain events (order.created) and process asynchronously.</li>
+      <li><strong>Consider data retention</strong> and GDPR requirements — soft deletes, anonymization, and archiving for old records.</li>
+    </ul>
+
+    <h2>Likely interview subquestions & short answers</h2>
+    <ul>
+      <li><strong>Q: How do you handle inventory consistency?</strong><br> Use pessimistic locking for critical stock operations or optimistic locks with reservation tables; maintain a reserved counter to avoid oversell and reconcile with background jobs.</li>
+      <li><strong>Q: Multi-currency pricing?</strong><br> Store amounts in minor units (cents) and keep currency codes; use FX rates service for conversions and keep rate timestamps for reproducibility.</li>
+      <li><strong>Q: Data partitioning / sharding?</strong><br> Shard large tables by customer_id or time ranges; use read replicas for read-heavy workloads; consider NoSQL for high-scale time-series or event data.</li>
+    </ul>
+
+    <p style="color:#666;margin-top:12px">This entity map gives you a clear domain model to discuss in interviews. I can also provide sample DDLs or an ER diagram for any of these entities on request.</p>
+  </div>
+</body>
+</html>

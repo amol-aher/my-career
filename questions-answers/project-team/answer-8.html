@@ -1,0 +1,38 @@
+<!doctype html><html><head><meta charset='utf-8'><title>Estimation techniques: Planning Poker & Fibonacci</title>
+<style>
+body{font-family:Segoe UI,Arial,Helvetica,sans-serif;line-height:1.5;padding:24px;max-width:900px;margin:auto;color:#111}
+header{border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:18px}
+h1{font-size:20px;margin:0 0 6px 0}
+.role{color:#555;font-size:13px;margin-bottom:6px}
+pre{background:#f6f6f6;padding:12px;border-radius:6px;overflow:auto}
+code{font-family:monospace;font-size:13px}
+section{margin-bottom:18px}
+.sub{font-weight:600;margin-top:8px}
+ul{margin-left:18px}
+ol{margin-left:18px}
+</style></head><body><header><h1>Estimation techniques: Planning Poker & Fibonacci</h1><div class='role'>System architect · Technical lead · Senior software engineer (Ruby on Rails, AWS, SQL, Vue.js)</div></header>
+<section>
+<p><strong>Summary:</strong> We use Planning Poker with Fibonacci sequence (1,2,3,5,8,13...) because it accelerates convergence and encodes uncertainty. For very small or high-level work we use T-shirt sizing or buckets.</p>
+
+<div class='sub'>Why Fibonacci?</div>
+<ul>
+<li>Non-linear progression reflects uncertainty growth.</li>
+<li>Encourages discussion where estimates diverge.</li>
+<li>Quick to reach consensus for relative sizing.</li>
+</ul>
+
+<div class='sub'>Estimation meeting best practices</div>
+<ul>
+<li>Ensure stories are INVEST-compliant (Independent, Negotiable, Valuable, Estimable, Small, Testable).</li>
+<li>Explain assumptions before voting.</li>
+<li>Discuss outliers and re-vote after clarifications.</li>
+<li>Record final chosen estimate and assumptions in ticket comments.</li>
+</ul>
+
+<div class='sub'>Alternative methods</div>
+<ul>
+<li>T-shirt sizing for roadmap-level planning.</li>
+<li>Story slicing: break bigger stories until they fit into a story point size.</li>
+</ul>
+</section>
+</body></html>

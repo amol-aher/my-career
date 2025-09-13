@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRY Violations Analysis</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px; }
+        .violation-type { background-color: #fff3cd; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .reason-box { background-color: #f8d7da; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .code-example { background-color: #e9ecef; padding: 15px; border-radius: 5px; margin: 15px 0; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>DRY Violations: Detection and Root Causes</h1>
+
+    <div class="violation-type">
+        <h2>Common DRY Violations</h2>
+        <ul>
+            <li><strong>Logic Duplication:</strong> Identical validation rules in User and Admin models</li>
+            <li><strong>Template Reuse Failure:</strong> Same form layout copied across 6 different views</li>
+            <li><strong>Utility Method Sprawl:</strong> Date parsing functions defined in 8+ locations</li>
+            <li><strong>Config Propagation:</strong> Environment variables hardcoded in 15+ configuration files</li>
+        </ul>
+    </div>
+
+    <div class="reason-box">
+        <h2>Why DRY Isn't Enforced During Development</h2>
+        
+        <h3>1. Time-to-Market Pressures</h3>
+        <p>Developers prioritize feature completion over architectural purity. Example: Copying working authentication code from Feature A to Feature B to meet sprint deadlines.</p>
+
+        <h3>2. Ambiguous Requirements</h3>
+        <p>Lack of clear specifications leads to redundant implementations. When requirements change mid-sprint, teams duplicate rather than refactor existing code.</p>
+
+        <h3>3. Knowledge Silos</h3>
+        <p>New team members unaware of existing utility modules recreate functionality. Example: 3 different CSV parsing implementations discovered during code review.</p>
+
+        <h3>4. Tooling Limitations</h3>
+        <ul>
+            <li>Poor IDE refactoring support leading to manual copy-paste</li>
+            <li>Lack of static analysis tools detecting duplication</li>
+            <li>Inefficient search capabilities making reuse difficult</li>
+        </ul>
+
+        <h3>5. Fear of Breaking Changes</h3>
+        <p>Teams avoid extracting shared logic due to uncertainty about downstream impacts. "If it works, don't touch it" mentality prevails.</p>
+    </div>
+
+    <div class="code-example">
+        <h3>Example: Authentication Logic Duplication</h3>
+        <pre>// In UsersController
+def authenticate
+  return unless params[:token] == ENV['USER_TOKEN']
+  session[:user_id] = find_user.id
+end
+
+// In AdminController
+def authenticate_admin
+  return unless params[:token] == ENV['ADMIN_TOKEN'] 
+  session[:admin_id] = find_admin.id
+end</pre>
+    </div>
+
+    <div class="reason-box">
+        <h2>Code Review Blind Spots</h2>
+        <ul>
+            <li><strong>Focus on Functionality Over Architecture:</strong> Reviews prioritize bug detection over DRY compliance</li>
+            <li><strong>Inconsistent Standards:</strong> Teams lack agreed-upon refactoring guidelines</li>
+            <li><strong>Context Switching:</strong> Reviewers miss duplication when examining isolated PRs</li>
+            <li><strong>Time Constraints:</strong> Rushed reviews skip deeper architectural analysis</li>
+        </ul>
+    </div>
+
+    <div class="solution">
+        <h2>Mitigation Strategies</h2>
+        <ul>
+            <li>Implement automated duplication detection (e.g., RuboCop's Metrics/CyclomaticComplexity)</li>
+            <li>Create reusable component libraries with clear documentation</li>
+            <li>Conduct quarterly architecture retrospectives</li>
+            <li>Introduce "refactoring sprints" focused solely on DRY improvements</li>
+        </ul>
+    </div>
+</body>
+</html>

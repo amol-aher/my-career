@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Multi-Region Deployment for High Availability</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Multi-Region Deployment for High Availability</h1>
+
+  <h2>Goals & trade-offs</h2>
+  <p>Multi-region deployments improve resilience against regional outages and reduce latency for geographically distributed users. Trade-offs include higher cost, data replication complexity, and operational overhead (deploys, monitoring, consistency).</p>
+
+  <h2>Key components</h2>
+  <ul>
+    <li>Global DNS: Route53 with latency-based or geo routing and health checks.</li>
+    <li>Edge layer: CloudFront or Global Accelerator for faster global ingress.</li>
+    <li>Compute in each region: ECS/EKS/EC2/Lambda stacks deployed per region.</li>
+    <li>Data replication: Use services suited for cross-region replication (DynamoDB Global Tables, Aurora Global DB, S3 Cross-Region Replication, RDS read-replicas or logical replication).</li>
+    <li>Stateful services: Put session/state in globally accessible stores (DynamoDB, Cognito, or replicate Redis via global datastore), or prefer stateless app servers.</li>
+    <li>CI/CD: Automated multi-region deployment pipelines, canarying, and coordinate DB schema changes with backward compatibility.</li>
+  </ul>
+
+  <h2>Design patterns</h2>
+  <ol>
+    <li><strong>Active-active</strong> (if your datastore supports multi-master or eventual consistency): route traffic to nearest region and replicate writes. Use DynamoDB global tables or multi-master databases.</li>
+    <li><strong>Active-passive with failover</strong>: Primary region handles traffic; replicates to secondary for DR. Use Route53 failover routing and automated promotion scripts.</li>
+    <li><strong>Read-local, write-primary</strong>: Allow reads from replicas in other regions and writes to primary region (common with RDS/Aurora read replicas).</li>
+  </ol>
+
+  <h2>Operational checklist</h2>
+  <ul>
+    <li>Automate DNS failover and health checks (Route53 health checks + CloudWatch alarms).</li>
+    <li>Practice failover drills and validate RTO/RPO.</li>
+    <li>Implement cross-region replication for backups and snapshots.</li>
+    <li>Monitor cross-region replication lag and set alerts.</li>
+    <li>Keep backward-compatible DB migrations (expand/contract pattern).</li>
+  </ul>
+
+  <h2>Example: Route53 + CloudFront + multi-region app</h2>
+  <pre><code>Users -> CloudFront (edge) -> ALB regional endpoints (us-east-1, eu-west-1)
+Route53 uses latency-based routing to point clients to nearest region.
+Data: DynamoDB Global Tables or events replicated via Kafka/SNS + consumers to build local read models.
+  </code></pre>
+
+  <h2>Subquestions you may be asked</h2>
+  <p><strong>How to handle database writes across regions?</strong> Prefer single write region or use multi-master systems (DynamoDB global tables, CockroachDB). Use Sagas or compensation patterns for distributed transactions.</p>
+
+  <h2>Summary</h2>
+  <p>Multi-region architecture requires careful choices for data replication, routing, and deploy processes. Start with well-automated deployments, stateless services, and pick data technologies that match your consistency and latency requirements.</p>
+</body>
+</html>

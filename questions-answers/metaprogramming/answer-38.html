@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Sandboxed evaluator for Ruby code snippets</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:20px;color:#111}
+    h1{color:#1a56db} h2{color:#0b5a78}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <h1>Building a safe sandboxed evaluator for Ruby code snippets</h1>
+
+  <p>Running arbitrary Ruby code safely is hard. The most robust solution is to run untrusted code out-of-process with hard OS-level restrictions. Below are patterns, trade-offs, and a practical example.</p>
+
+  <h2>Requirements checklist</h2>
+  <ul>
+    <li>Process isolation (fork/exec) or containerization.</li>
+    <li>Resource limits (CPU, memory, disk, file descriptors).</li>
+    <li>Timeouts to avoid infinite loops.</li>
+    <li>No sensitive data or credentials available to the child.</li>
+    <li>Controlled networking (deny outbound access).</li>
+    <li>Safe library loading (restrict require/load).</li>
+  </ul>
+
+  <h2>Recommended architecture</h2>
+  <ol>
+    <li>Run the snippet in a docker container or sandboxed VM with a restricted user.</li>
+    <li>Set ulimits (ulimit -v, -t) and cgroups to bound memory and CPU.</li>
+    <li>Mount a read-only filesystem or ephemeral tmpfs for execution.</li>
+    <li>Use a small bootstrapper binary that loads a minimal Ruby interpreter and runs the code.</li>
+    <li>Collect stdout/stderr and ensure the parent enforces a wall-clock timeout and kills the container if exceeded.</li>
+  </ol>
+
+  <h2>Practical lightweight example (subprocess + timeout)</h2>
+  <pre><code class="language-ruby">require 'open3'
+def run_safely(code, timeout: 2)
+  # Note: this is a simple example, not a complete secure sandbox.
+  cmd = "ruby -e #{Shellwords.escape(code)}"
+  stdout = ''
+  stderr = ''
+  status = nil
+
+  Open3.popen3(cmd) do |i,o,e,t|
+    i.close
+    begin
+      Timeout.timeout(timeout) do
+        stdout = o.read
+        stderr = e.read
+      end
+    rescue Timeout::Error
+      Process.kill('KILL', t.pid) rescue nil
+      return {error: 'timeout'}
+    end
+    status = t.value
+  end
+  {stdout: stdout, stderr: stderr, status: status.exitstatus}
+end
+
+# Usage:
+run_safely("puts 'hello'; STDOUT.flush", timeout: 1)</code></pre>
+
+  <p><strong>Warnings:</strong> The above approach still runs arbitrary Ruby on the host. Use containers or restricted VMs for production.</p>
+
+  <h2>Advanced controls</h2>
+  <ul>
+    <li><strong>Use seccomp / AppArmor</strong> to restrict syscalls inside containers.</li>
+    <li><strong>Network isolation:</strong> disable networking or use internal network with strict egress rules.</li>
+    <li><strong>Filesystem:</strong> run with no persistent mounts and no access to secrets.</li>
+    <li><strong>Use wasm/other sandboxed runtimes:</strong> compile Ruby in a restricted interpreter or run code in WASM for stronger sandboxing guarantees.</li>
+  </ul>
+
+  <h2>Alternatives</h2>
+  <ul>
+    <li>Use a domain-specific non-Turing-complete language for user snippets (safer and easier to sandbox).</li>
+    <li>Expose a safe API/DSL instead of raw Ruby — interpret allowed expressions only.</li>
+  </ul>
+
+  <h2>Conclusion</h2>
+  <p>Do not run untrusted code in-process. Use containers/VMs, strict OS-level limits, and short timeouts. For full safety combine multiple isolation layers (containers, cgroups, seccomp) and audit continuously.</p>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!doctype html><html><head><meta charset='utf-8'><title>Diagnosing missed sprint commitments — key metrics</title>
+<style>
+body{font-family:Segoe UI,Arial,Helvetica,sans-serif;line-height:1.5;padding:24px;max-width:900px;margin:auto;color:#111}
+header{border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:18px}
+h1{font-size:20px;margin:0 0 6px 0}
+.role{color:#555;font-size:13px;margin-bottom:6px}
+pre{background:#f6f6f6;padding:12px;border-radius:6px;overflow:auto}
+code{font-family:monospace;font-size:13px}
+section{margin-bottom:18px}
+.sub{font-weight:600;margin-top:8px}
+ul{margin-left:18px}
+ol{margin-left:18px}
+</style></head><body><header><h1>Diagnosing missed sprint commitments — key metrics</h1><div class='role'>System architect · Technical lead · Senior software engineer (Ruby on Rails, AWS, SQL, Vue.js)</div></header>
+<section>
+<p><strong>Summary:</strong> To diagnose missed commitments I track velocity, sprint predictability, cycle time, WIP, blocked time, defect rate, review time, and unplanned work. These metrics together point to root causes like over-commitment, bottlenecks, QA slowdowns, or unstable requirements.</p>
+
+<div class='sub'>Core metrics</div>
+<ul>
+<li><strong>Velocity:</strong> story points completed per sprint (trend over time)</li>
+<li><strong>Sprint predictability:</strong> % of committed points completed</li>
+<li><strong>Cycle time & lead time:</strong> time from 'in progress' to 'done' and 'ready' to 'done'</li>
+<li><strong>WIP:</strong> number of active stories per developer</li>
+<li><strong>Blocked time:</strong> time tickets spend blocked</li>
+<li><strong>Review & Merge time:</strong> time from PR opened to merged</li>
+<li><strong>Escaped defects:</strong> bugs found in production related to sprint work</li>
+<li><strong>Unplanned work percentage:</strong> how much of sprint capacity consumed by incidents/urgent tasks</li>
+</ul>
+
+<div class='sub'>How to use the data</div>
+<ol>
+<li>Low velocity + high WIP → too many concurrent tasks; reduce WIP and focus on finishing.</li>
+<li>High merge time → code review bottleneck; rotate reviewers or enforce SLA for reviews.</li>
+<li>High blocked time → identify recurring blockers and create mitigation (sandbox envs, infra availability).</li>
+<li>High unplanned work → measure and allocate capacity for interrupts or create a stable on-call rota.</li>
+</ol>
+
+<div class='sub'>Dashboard example</div>
+<p>Create a sprint dashboard showing velocity trend, cycle time distribution, PR age, and blocked tickets. Use these visuals in retros to make data-driven decisions.</p>
+</section>
+</body></html>

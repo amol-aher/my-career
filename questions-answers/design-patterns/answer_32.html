@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Service Object pattern in Rails</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Service Object pattern and when to use it in Rails</h1>
+
+    <p><strong>Definition</strong>: A Service Object is a PORO (plain Ruby object) that encapsulates a single business operation or workflow, keeping controllers and models thin and focused.</p>
+
+    <h2>When to use Service Objects</h2>
+    <ul>
+      <li>Complex business logic or multi-step processes (order checkout, payment processing).</li>
+      <li>Orchestration between multiple models and external services.</li>
+      <li>To make code more testable and easily injectable for background processing.</li>
+    </ul>
+
+    <h2>Typical structure</h2>
+    <ul>
+      <li>Single public method (commonly <code>#call</code> or <code>.call</code> class method).</li>
+      <li>Accept dependencies via initializer (dependency injection).</li>
+      <li>Return a well-defined result object or raise errors for exceptional states.</li>
+    </ul>
+
+    <h2>Example: CreateOrder service</h2>
+    <pre><code>class CreateOrder
+  Result = Struct.new(:success?, :order, :errors)
+
+  def initialize(user:, cart:, payment_gateway:)
+    @user = user
+    @cart = cart
+    @payment_gateway = payment_gateway
+  end
+
+  def call
+    ActiveRecord::Base.transaction do
+      order = Order.create!(user: @user, total_cents: @cart.total_cents)
+      charge = @payment_gateway.charge(amount: order.total_cents, id: order.id)
+      unless charge.success?
+        raise ActiveRecord::Rollback
+      end
+      order.update!(payment_status: 'paid')
+      NotifyOrderJob.perform_later(order.id)
+      Result.new(true, order, nil)
+    end
+  rescue => e
+    Result.new(false, nil, [e.message])
+  end
+end
+
+# controller
+def create
+  result = CreateOrder.new(user: current_user, cart: cart, payment_gateway: StripeGateway.new).call
+  if result.success?
+    render json: result.order, status: :created
+  else
+    render json: {errors: result.errors}, status: :unprocessable_entity
+  end
+end
+</code></pre>
+
+    <h2>Testing</h2>
+    <p>Service objects are easy to unit-test directly: stub external dependencies (payment gateway), assert transactions, and test edge cases.</p>
+
+    <h2>Organization & conventions</h2>
+    <ul>
+      <li>Place in <code>app/services</code> or <code>app/interactors</code>.</li>
+      <li>Use a consistent API: <code>.call</code> or <code>#call</code> returning a Result pattern.</li>
+      <li>Single Responsibility: keep each service focused and extract sub-operations into smaller services as needed.</li>
+    </ul>
+
+    <h2>Alternatives & related patterns</h2>
+    <ul>
+      <li><strong>Interactors</strong> (gem) — opinionated structure for organizing service-like components.</li>
+      <li><strong>Command pattern</strong> — when you want undo or queuing of operations; commands map well to services.</li>
+    </ul>
+
+    <h2>Interview tips</h2>
+    <p>Show an example like the one above, explain why you extract logic from controllers/models, and describe how you test and monitor these services in production.</p>
+  </div>
+</body>
+</html>

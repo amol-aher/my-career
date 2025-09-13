@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Factory Method in Ruby</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Factory Method pattern — implementation in Ruby</h1>
+
+    <p><strong>Intent</strong>: define an interface for creating an object, but let subclasses decide which class to instantiate. Useful when a class can’t anticipate which concrete class it must create.</p>
+
+    <h2>Simple example — notifications</h2>
+    <pre><code>class Notification
+  def deliver; raise NotImplementedError; end
+end
+
+class EmailNotification &lt; Notification
+  def deliver; puts 'send email'; end
+end
+
+class SmsNotification &lt; Notification
+  def deliver; puts 'send sms'; end
+end
+
+class Notifier
+  def initialize(factory)
+    @factory = factory
+  end
+
+  def notify(type, payload)
+    notification = @factory.create(type, payload)
+    notification.deliver
+  end
+end
+
+class NotificationFactory
+  def create(type, payload)
+    case type
+    when :email then EmailNotification.new(payload)
+    when :sms   then SmsNotification.new(payload)
+    else raise 'unknown type'
+    end
+  end
+end
+
+# usage
+factory = NotificationFactory.new
+notifier = Notifier.new(factory)
+notifier.notify(:email, {to: 'a@x.com'})
+</code></pre>
+
+    <h2>Variations</h2>
+    <ul>
+      <li>Use dependency injection to pass different factories for testing or runtime configuration.</li>
+      <li>Use registries or a hash map to avoid big case statements: <code>registry[type].new</code>.</li>
+    </ul>
+
+    <h2>Registry-based factory (extensible)</h2>
+    <pre><code>class NotificationFactory
+  def initialize
+    @registry = {}
+  end
+
+  def register(type, klass)
+    @registry[type] = klass
+  end
+
+  def create(type, payload)
+    klass = @registry[type] or raise 'unknown type'
+    klass.new(payload)
+  end
+end
+
+# register providers
+factory = NotificationFactory.new
+factory.register(:email, EmailNotification)
+factory.register(:sms, SmsNotification)
+</code></pre>
+
+    <h2>Interview tip</h2>
+    <p>Discuss why factories reduce coupling and make it easier to add new implementations without touching clients. Demonstrate both case-based and registry-based approaches.</p>
+  </div>
+</body>
+</html>

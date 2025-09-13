@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Observer pattern in Ruby</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Observer pattern — explanation and Ruby example</h1>
+
+    <p><strong>Intent</strong>: define a one-to-many dependency so when one object changes state, all its dependents are notified automatically. Useful for event subscriptions, decoupling producers and consumers.</p>
+
+    <h2>Simple example — a PriceTracker and multiple observers</h2>
+    <pre><code>module Observable
+  def observers
+    @observers ||= []
+  end
+
+  def add_observer(o)
+    observers << o
+  end
+
+  def notify(event, payload = {})
+    observers.each { |o| o.update(event, payload) }
+  end
+end
+
+class PriceTracker
+  include Observable
+
+  def initialize(product)
+    @product = product
+  end
+
+  def price_changed(new_price)
+    # business logic
+    notify(:price_changed, product: @product, price: new_price)
+  end
+end
+
+class EmailNotifier
+  def update(event, payload)
+    return unless event == :price_changed
+    puts "Email: price of #{payload[:product]} changed to #{payload[:price]}"
+  end
+end
+
+class Analytics
+  def update(event, payload)
+    puts "Analytics: got #{event} for #{payload[:product]}"
+  end
+end
+
+# usage
+tracker = PriceTracker.new('widget')
+tracker.add_observer(EmailNotifier.new)
+tracker.add_observer(Analytics.new)
+tracker.price_changed(19.99)
+</code></pre>
+
+    <h2>Ruby stdlib & alternatives</h2>
+    <p>Ruby historically included an <code>Observable</code> module in the standard library, but it’s minimal. In Rails, ActiveSupport::Notifications is a powerful pub/sub facility for instrumenting events and decoupling listeners.</p>
+
+    <h2>When to use</h2>
+    <ul>
+      <li>UI update propagation (MVC)</li>
+      <li>Cross-cutting event reactions (logging, metrics, notifications)</li>
+      <li>Decoupling components in plugin systems</li>
+    </ul>
+
+    <h2>Trade-offs</h2>
+    <ul>
+      <li>Observers add indirection — harder to trace control flow.</li>
+      <li>Order of notifications may matter; design contract for observers carefully.</li>
+      <li>Ensure performance — synchronous observers can slow the producer; consider async delivery via background jobs or message queues.</li>
+    </ul>
+
+    <h2>Interview tips</h2>
+    <p>Show the simple module-based example and also mention Rails’ <code>ActiveSupport::Notifications.instrument</code> and using message buses (Kafka) for scaling observers across services.</p>
+  </div>
+</body>
+</html>

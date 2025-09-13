@@ -1,0 +1,65 @@
+<!doctype html><html><head><meta charset='utf-8'><title>Revisiting past solutions using hashes — migration to structured schema or JSONB</title>
+<style>
+body{font-family:Segoe UI,Arial,Helvetica,sans-serif;line-height:1.6;padding:24px;max-width:900px;margin:auto;color:#111}
+header{border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:18px}
+h1{font-size:20px;margin:0 0 6px 0}
+.role{color:#555;font-size:13px;margin-bottom:6px}
+pre{background:#f6f6f6;padding:12px;border-radius:6px;overflow:auto}
+code{font-family:monospace;font-size:13px}
+section{margin-bottom:18px}
+.sub{font-weight:600;margin-top:8px}
+ul{margin-left:18px}
+ol{margin-left:18px}
+</style></head><body><header><h1>Revisiting past solutions using hashes — migration to structured schema or JSONB</h1><div class='role'>System architect · Technical lead · Senior software engineer (Ruby on Rails, AWS, SQL, Vue.js)</div></header>
+<section>
+<p><strong>Problem:</strong> Storing deeply nested Ruby hashes (serialized) in a single column made querying, indexing, and reporting slow and complex. It complicated joins and analytics.</p>
+
+<div class='sub'>Options to refactor</div>
+<ol>
+<li>Normalize into relational tables (preferred for frequently queried fields and joins).</li>
+<li>Use Postgres JSONB with proper indexes for semi-structured data.</li>
+<li>Create materialized views or derived columns for hot queries.</li>
+</ol>
+
+<div class='sub'>Migration approach — step by step</div>
+<ol>
+<li>Catalog queries & identify hot fields used in WHERE/JOIN clauses.</li>
+<li>Design normalized tables for fields that need indexing and joins.</li>
+<li>Write a safe migration plan: add new columns/tables, backfill in batches, add indexes, switch code to read new representation, then drop old column.</li>
+</ol>
+
+<div class='sub'>Example migration (JSONB approach & ActiveRecord)</div>
+<pre><code>-- 1) add jsonb column and index
+ALTER TABLE users ADD COLUMN profile jsonb;
+UPDATE users SET profile = to_jsonb(profile_hash);
+CREATE INDEX idx_users_profile_city ON users ((profile->>'city'));
+
+-- 2) ActiveRecord usage
+class User &lt; ApplicationRecord
+  scope :by_city, ->(city) { where("profile->>'city' = ?", city) }
+end
+
+-- 3) For normalized table (addresses)
+class CreateAddresses &lt; ActiveRecord::Migration[6.1]
+  def change
+    create_table :addresses do |t|
+      t.references :user, null: false, foreign_key: true
+      t.string :city
+      t.string :state
+      t.timestamps
+    end
+    add_index :addresses, :city
+  end
+end</code></pre>
+
+<div class='sub'>Querying performance tips</div>
+<ul>
+<li>Use GIN indexes for existence and containment queries on JSONB.</li>
+<li>Extract frequently queried fields into generated columns (Postgres 12+) for faster queries.</li>
+<li>For analytics, maintain ETL into a warehouse (Redshift/Snowflake) for large aggregations.</li>
+</ul>
+
+<div class='sub'>When hashes are still OK</div>
+<p>If the fields are truly ad-hoc metadata rarely queried, keep JSONB and document the schema. Use schema migration/validation tools to track changes.</p>
+</section>
+</body></html>

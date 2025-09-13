@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>method_missing in Ruby</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; margin:20px; color:#111 }
+    h1 { color:#1a56db } h2 { color:#0b5a78 }
+    pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto }
+    code { font-family: monospace; }
+  </style>
+</head>
+<body>
+  <h1>How <code>method_missing</code> works, how to use it, and dangers of overuse</h1>
+
+  <p><strong>Short explanation:</strong> <code>method_missing(name, *args, &block)</code> is invoked when Ruby's method lookup cannot find a method. You can override it to provide dynamic behavior, delegation, or DSL-like syntax. But it must be used carefully — it can mask bugs, break introspection, and hurt performance.</p>
+
+  <h2>How it works (lookup flow)</h2>
+  <ol>
+    <li>Ruby looks up the method name in the receiver's method table and its ancestors.</li>
+    <li>If not found, Ruby calls <code>method_missing</code> on the receiver.</li>
+    <li>If <code>method_missing</code> calls <code>super</code>, a <code>NoMethodError</code> is raised.</li>
+  </ol>
+
+  <h2>Method signature</h2>
+  <pre><code class="language-ruby">def method_missing(name, *args, &block)
+  # name is a Symbol
+  super # to raise NoMethodError when appropriate
+end</code></pre>
+
+  <h2>Common usages</h2>
+  <ul>
+    <li><strong>Delegation / Proxy:</strong> forward unknown methods to an internal object.</li>
+    <li><strong>Lazy define:</strong> handle first call dynamically and define a concrete method for subsequent calls.</li>
+    <li><strong>DSLs:</strong> interpret method names and arguments as commands.</li>
+    <li><strong>Compatibility layers:</strong> support legacy method names or provide shims.</li>
+  </ul>
+
+  <h2>Examples</h2>
+  <h3>Simple delegation</h3>
+  <pre><code class="language-ruby">class Proxy
+  def initialize(target) @target = target end
+
+  def method_missing(name, *args, &block)
+    if @target.respond_to?(name)
+      @target.public_send(name, *args, &block)
+    else
+      super
+    end
+  end
+
+  def respond_to_missing?(name, include_private=false)
+    @target.respond_to?(name, include_private) || super
+  end
+end</code></pre>
+
+  <h3>Define-on-first-call (performance)</h3>
+  <pre><code class="language-ruby">class Lazy
+  def method_missing(name, *args, &block)
+    self.class.define_method(name) do |*a, &b|
+      # computed logic
+      "computed #{name} with #{a.inspect}"
+    end
+    send(name, *args, &block)
+  end
+
+  def respond_to_missing?(name, include_private=false) true end
+end</code></pre>
+
+  <h2>Dangers and pitfalls</h2>
+  <ul>
+    <li><strong>Masks bugs:</strong> A typo in method name may silently be handled and return unexpected results rather than raising an error.</li>
+    <li><strong>Introspection breaks:</strong> <code>respond_to?</code>, <code>methods</code>, and doc tools won't recognise virtual methods unless <code>respond_to_missing?</code> is implemented.</li>
+    <li><strong>Performance:</strong> <code>method_missing</code> is slower than direct method calls; heavy use in hot paths is costly.</li>
+    <li><strong>Infinite recursion:</strong> Calling undefined helper method inside <code>method_missing</code> can re-enter the same path leading to stack overflow.</li>
+    <li><strong>Thread-safety:</strong> Dynamically defining methods in multi-threaded code requires synchronization.</li>
+    <li><strong>Visibility and security:</strong> Ensure you don't unintentionally expose private methods or secrets via delegation.</li>
+  </ul>
+
+  <h2>Best practices</h2>
+  <ol>
+    <li>Always implement <code>respond_to_missing?</code> to reflect dynamic methods.</li>
+    <li>Check whether you can <code>define_method</code> instead — it's often clearer and faster.</li>
+    <li>Limit the scope: only respond to a narrow set of method name patterns.</li>
+    <li>Use explicit exceptions and clear messages when rejecting unknown names.</li>
+    <li>Add thorough unit tests for dynamic behavior.</li>
+  </ol>
+
+  <h2>Subquestions you may get</h2>
+  <h3>Q: When should I use <code>method_missing</code> vs <code>define_method</code>?</h3>
+  <p>Use <code>method_missing</code> when you need very flexible catch-all behavior. If you can determine methods that will be used, prefer <code>define_method</code> at class-definition time or define-on-first-call for performance.</p>
+
+  <h3>Q: How to avoid interfering with private methods?</h3>
+  <p>Use <code>public_send</code> when delegating to ensure you don't call private methods unintentionally. Honor the <code>include_private</code> parameter in <code>respond_to_missing?</code> if appropriate.</p>
+
+  <h2>Conclusion</h2>
+  <p><code>method_missing</code> is a useful metaprogramming primitive but should be used with restraint and proper safeguards (respond_to_missing?, tests, define-on-first-call) to avoid the common pitfalls.</p>
+</body>
+</html>

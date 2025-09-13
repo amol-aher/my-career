@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Detecting and Handling Cascading Failures</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Detecting and Handling Cascading Failures</h1>
+
+  <h2>Detection</h2>
+  <ul>
+    <li>Monitor error rates, latency p95/p99, and active connections.</li>
+    <li>Watch queue growth and consumer lag.</li>
+    <li>Use distributed tracing to find spike origins.</li>
+  </ul>
+
+  <h2>Mitigation</h2>
+  <ul>
+    <li>Circuit breakers to stop repeated failing calls.</li>
+    <li>Bulkheads to isolate resource pools.</li>
+    <li>Rate limiting and backpressure to reduce incoming load.</li>
+    <li>Graceful degradation: serve cached or reduced functionality.</li>
+  </ul>
+
+  <h2>Example incident flow</h2>
+  <ol>
+    <li>Service A latency spikes -> A times out calling B -> A's retries increase load on B -> B fails -> cascade.</li>
+    <li>Fix: open circuit on A for B, apply rate-limits, scale B if appropriate, remove retries or add jitter.</li>
+  </ol>
+</body>
+</html>

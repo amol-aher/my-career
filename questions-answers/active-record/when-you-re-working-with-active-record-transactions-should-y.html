@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>When you’re working with Active Record transactions, should you use ! (bang) methods or not?</title>
+<style>
+body{font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; max-width:900px; margin:24px auto; line-height:1.6; padding:20px}
+h1{font-size:22px;margin-bottom:6px}
+h2{font-size:18px;margin-top:18px}
+pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+code{background:#f1f1f1;padding:2px 4px;border-radius:4px}
+.section{margin-bottom:18px}
+</style>
+</head>
+<body>
+<h1>When you’re working with Active Record transactions, should you use ! (bang) methods or not?</h1>
+<h2>Summary</h2>
+<p>Use bang methods (<code>save!</code>, <code>create!</code>, <code>update!</code>) inside transaction blocks when you want exceptions to be raised automatically on failure — this makes rollbacks reliable and keeps code simpler. Use non-bang methods when you want to handle validation failures gracefully without exceptions, but then you must explicitly control rollback behavior.</p>
+
+<h2>Deep dive — tradeoffs between bang and non-bang</h2>
+<ul>
+  <li><strong>Bang methods:</strong> raise exceptions (e.g., <code>ActiveRecord::RecordInvalid</code>) which will cause the transaction to rollback if uncaught. Good when failures are exceptional and you want to abort the entire operation.</li>
+  <li><strong>Non-bang methods:</strong> return <code>false</code> on validation failure. This requires explicit checks and manual rollback (e.g., <code>raise ActiveRecord::Rollback</code>). Without explicit handling, you might end up with partial success or a commit with missing components.</li>
+  <li><strong>Readability and maintainability:</strong> Bang methods lead to clearer intent in transactional flows and reduce boilerplate checks. Non-bang methods can be used when conditional logic needs to continue on validation failure.</li>
+</ul>
+
+<h2>Practical guidelines</h2>
+<ol>
+  <li>Prefer bang methods in transactional code paths where partial writes are unacceptable.</li>
+  <li>If using non-bang methods, always check return values and raise/rollback explicitly on failure.</li>
+  <li>Keep transactions short and don't call external services inside them; if you must, wrap external calls and handle compensating actions.</li>
+</ol>
+
+<h2>Code examples</h2>
+<pre><code># Preferred: bang methods inside transaction
+ActiveRecord::Base.transaction do
+  order = Order.create!(user: user, total: 100)
+  charge = Payment.create!(order: order, amount: 100)
+end
+
+# If using non-bang, explicitly rollback
+ActiveRecord::Base.transaction do
+  order = Order.create(user: user, total: 100)
+  unless order.persisted?
+    raise ActiveRecord::Rollback, "Order invalid"
+  end
+  charge = Payment.create(user: order, amount: 100)
+  unless charge.persisted?
+    raise ActiveRecord::Rollback, "Payment failed"
+  end
+end</code></pre>
+
+<h2>Interviewer follow-ups</h2>
+<ul>
+  <li><strong>Q: Are there cases where you prefer non-bang?</strong><br><em>A: Yes — when you want to accumulate errors and show validation messages to the user without using exceptions for control flow; but then don't forget explicit rollback handling.</em></li>
+  <li><strong>Q: What about performance/exception cost?</strong><br><em>A: Raising exceptions has a small cost but is negligible compared to DB work; clarity and correctness usually trump micro-optimizations.</em></li>
+</ul>
+
+<hr>
+<p style="color:#666;font-size:0.9em">Generated on 2025-09-10T08:32:28.840213</p>
+</body>
+</html>

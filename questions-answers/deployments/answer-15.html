@@ -1,0 +1,83 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Managing Infrastructure as Code (CloudFormation / CDK / Terraform)</title>
+  <style>
+    body{font-family:Inter,Arial,Helvetica,sans-serif;margin:22px;color:#111;line-height:1.65}
+    h1{background:#ff6f00;color:#fff;padding:14px;border-radius:8px}
+    h2{color:#ff6f00;margin-top:18px}
+    pre{background:#fff8f1;padding:12px;border-radius:6px;overflow:auto}
+    ul{margin:8px 0 8px 20px}
+    .protip{background:#fff9f0;padding:10px;border-left:4px solid #ff6f00;border-radius:6px;margin:10px 0}
+  </style>
+</head>
+<body>
+  <h1>Managing Infrastructure as Code (CloudFormation / CDK / Terraform)</h1>
+
+  <h2>Principles of IaC</h2>
+  <ul>
+    <li>Keep infrastructure definitions in version control and review changes.</li>
+    <li>Use modular, reusable components.</li>
+    <li>Automate plan & apply via pipelines with approvals for production.</li>
+    <li>Ensure secrets are not stored in code or state files.</li>
+  </ul>
+
+  <h2>Tool comparisons</h2>
+  <table style="width:100%;border-collapse:collapse">
+    <tr><th style="text-align:left;padding:8px;border:1px solid #eee;background:#fff3e0">Tool</th><th style="text-align:left;padding:8px;border:1px solid #eee;background:#fff3e0">Notes</th></tr>
+    <tr><td style="padding:8px;border:1px solid #eee">CloudFormation</td><td style="padding:8px;border:1px solid #eee">AWS-native declarative JSON/YAML; strong service coverage; stacks and change sets; slower iteration for complex logic.</td></tr>
+    <tr><td style="padding:8px;border:1px solid #eee">CDK (Cloud Development Kit)</td><td style="padding:8px;border:1px solid #eee">Use familiar languages (TS/Python/Java) to generate CloudFormation; good for higher-level constructs and abstractions.</td></tr>
+    <tr><td style="padding:8px;border:1px solid #eee">Terraform</td><td style="padding:8px;border:1px solid #eee">Provider ecosystem & multi-cloud; declarative HCL; remote state and locking; large community modules.</td></tr>
+  </table>
+
+  <h2>Best practices & patterns</h2>
+  <ul>
+    <li><strong>Modularization:</strong> split infra into environment-aware modules (network, compute, database).</li>
+    <li><strong>Remote state & locking:</strong> Terraform: S3 + DynamoDB; CDK/CFN: use change sets and parameterization.</li>
+    <li><strong>State hygiene:</strong> avoid sensitive values in state; use data sources to fetch secrets at runtime where possible.</li>
+    <li><strong>Testing:</strong> unit tests (cdk assertions), integration tests (Terratest), linting (tflint, cfn-lint).</li>
+    <li><strong>Policy-as-code:</strong> enforce guardrails with OPA, Sentinel, AWS Config, or IAM boundaries.</li>
+    <li><strong>Drift detection:</strong> schedule drift checks and have remediation paths.</li>
+  </ul>
+
+  <h2>Workflow example (Terraform)</h2>
+  <ol>
+    <li>Develop module locally and run <code>terraform fmt</code>, <code>terraform validate</code>.</li>
+    <li>Create a PR — CI runs <code>terraform plan</code> against a workspace and shows diffs in the PR.</li>
+    <li>After review, merge — pipeline runs <code>terraform apply</code> with proper credentials and remote state lock.</li>
+    <li>Use a promotion model: separate state/workspace for staging and production with controlled approvals.</li>
+  </ol>
+
+  <h2>Handling secrets in IaC</h2>
+  <ul>
+    <li>Do not hardcode secrets in templates.</li>
+    <li>Use Secrets Manager or SSM to store sensitive values and reference them (using data sources) at deploy-time, or inject secrets via CI/CD without writing to state.</li>
+    <li>Encrypt remote state with KMS and restrict access to state storage.</li>
+  </ul>
+
+  <h2>Change management & governance</h2>
+  <ul>
+    <li>Require PR reviews for all infra changes.</li>
+    <li>Use CI to run static analysis and policy checks on IaC changes.</li>
+    <li>Keep a change log and use tagging conventions for resources for cost allocation and ownership.</li>
+  </ul>
+
+  <div class="protip"><strong>Pro tip:</strong> Use versioned modules and semantic versioning for infra modules to allow safe upgrades and rollbacks.</div>
+
+  <h2>Common interview subquestions</h2>
+  <h3>How do you handle drift?</h3>
+  <p>Detect drift with periodic checks (terraform plan against remote state or CloudFormation drift detection) and remediate via automated pipelines or runbooks after validating the cause.</p>
+
+  <h3>When to use CDK vs Terraform?</h3>
+  <p>Use CDK when you want high-level constructs and tight CloudFormation integration and prefer language DSLs. Use Terraform when you need multi-cloud support and a mature ecosystem of reusable modules.</p>
+
+  <h3>How to test IaC?</h3>
+  <p>Unit-level assertions (cdk assertions), static linting (cfn-lint, tflint), and integration tests (Terratest, localstack) in pipelines. Run plans in CI and require PR approvals before apply.</p>
+
+  <h2>Conclusion</h2>
+  <p>Managing IaC is about people and process as much as tooling. Choose a tool that fits team skills, enforce review and testing, secure remote state and secrets, and implement policy checks to keep environments safe and predictable.</p>
+</body>
+</html>

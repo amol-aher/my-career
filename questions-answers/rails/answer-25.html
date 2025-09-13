@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth Login Strategy</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; margin-top: 30px; }
+        .section { background-color: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .code-block { background-color: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto; margin: 15px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<h1>OAuth Login Strategy</h1>
+
+<div class="section">
+    <h2>Why Users Prefer OAuth Login</h2>
+    
+    <h3>1. Convenience for Users</h3>
+    <p>Users can log in using existing social accounts without creating new credentials.</p>
+    
+    <h3>2. Enhanced Security</h3>
+    <p>Delegated authentication means passwords aren't stored directly by your application.</p>
+    
+    <h3>3. Social Proof and Trust</h3>
+    <p>Users trust platforms they recognize (Google, Facebook, GitHub) more than unknown sites.</p>
+    
+    <h3>4. Simplified Account Management</h3>
+    <p>Users manage account details through familiar interfaces.</p>
+    
+    <h3>5. Analytics and Demographics</h3>
+    <p>Access to user profile information for personalized experiences.</p>
+    
+    <h2>Implementation Overview</h3>
+    
+    <h3>Step 1: Choose Provider</h3>
+    <div class="code-block"># Gemfile
+gem 'omniauth-google'
+gem 'omniauth-facebook'
+gem 'omniauth-github'</div>
+    
+    <h3>Step 2: Configure Strategy</h3>
+    <div class="code-block"># config/initializers/omniauth.rb
+Rails.application.config.middleware.use OmniAuth::Builder do
+  provider :google, ENV['GOOGLE_CLIENT_ID'], ENV['GOOGLE_CLIENT_SECRET']
+  provider :facebook, ENV['FACEBOOK_APP_ID'], ENV['FACEBOOK_APP_SECRET']
+end</div>
+    
+    <h3>Step 3: Create Callback Route</h3>
+    <div class="code-block"># routes.rb
+get '/auth/:provider/callback', to: 'sessions#create'
+</div>
+    
+    <h3>Step 4: Handle Authentication</h3>
+    <div class="code-block"># sessions_controller.rb
+def create
+  auth = request.env['omniauth.auth']
+  user = User.from_omniauth(auth)
+  session[:user_id] = user.id
+  redirect_to root_path
+rescue
+  flash[:error] = "Authentication failed"
+  redirect_to login_path
+end</div>
+    
+    <h3>Potential Concerns</h3>
+    <ul>
+        <li>Privacy considerations with data sharing</li>
+        <li>Dependency on third-party services</li>
+        <li>Account hijacking risks</li>
+    </ul>
+    
+    <h3>Best Practices</h3>
+    <ul>
+        <li>Use HTTPS for all communications</li>
+        <li>Store minimal necessary data only</li>
+        <li>Provide clear privacy policies</li>
+        <li>Allow users to disconnect accounts easily</li>
+    </ul>
+</div>
+
+</body>
+</html>

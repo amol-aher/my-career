@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>API Gateway internal structure — recommended architecture</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;line-height:1.6;color:#111;background:#f6f8fb;padding:28px}
+    .container{max-width:1000px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px}
+    h2{font-size:18px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>API Gateway internal structure — recommended architecture</h1>
+
+    <p><strong>Overview</strong>: Internally an API Gateway is composed of modular layers: ingress, security, routing, orchestration, and observability. Each layer can be a separate component/process to keep the system maintainable and scalable. Design for horizontal scaling, fast path (hot path) optimizations, and pluggable policies configured dynamically.</p>
+
+    <h2>Logical layers</h2>
+    <ol>
+      <li><strong>Ingress & TLS termination</strong> — accept connections, terminate TLS, handle HTTP/2 and websockets.</li>
+      <li><strong>Authentication & Authorization</strong> — validate tokens, fetch policies, and enrich requests with identity headers for downstream services.</li>
+      <li><strong>Rate limiting & QoS</strong> — per-token/client quotas, burst controls, circuit breakers.</li>
+      <li><strong>Routing & Service discovery</strong> — map to backend endpoints using service registry or static config; support retries and timeouts per route.</li>
+      <li><strong>Transformation & Composition</strong> — JSON transforms, protocol conversion, aggregation of multiple backend calls.</li>
+      <li><strong>Caching</strong> — edge caches for GETs and configurable keying.
+      </li>
+      <li><strong>Observability</strong> — emit metrics, logs, traces; sample sensitive data; record latency and error codes.
+      </li>
+    </ol>
+
+    <h2>Data plane vs control plane</h2>
+    <p>Split into:</p>
+    <ul>
+      <li><strong>Data plane</strong> — handles per-request processing at high throughput (implemented in fast runtimes, C/C++/Go or optimized Java). Should be horizontally scalable and stateless where possible.</li>
+      <li><strong>Control plane</strong> — management APIs, routing/policy configuration, certificate management, and reporting. Control plane persists configuration and pushes it to data plane nodes.</li>
+    </ul>
+
+    <h2>State management</h2>
+    <p>Keep ephemeral state limited to the instance. Externalize shared state: rate limit counters, API keys, and quotas should be stored in Redis or a dedicated datastore for consistency across nodes.</p>
+
+    <h2>High-performance considerations</h2>
+    <ul>
+      <li>Use connection pooling to backends.</li>
+      <li>Implement fast path for common routes—minimal processing for cached responses.</li>
+      <li>Keep transformations lightweight; offload heavy composition to dedicated services if needed.</li>
+    </ul>
+
+    <h2>Example component diagram (textual)</h2>
+    <pre><code>Client -> Load Balancer -> Gateway Instances (Data Plane)
+  Gateway Instance:
+    - TLS / HTTP parser
+    - Authn/Authz (token validation + policy check)
+    - Rate limiter (Redis)
+    - Router (service discovery)
+    - Transformer (Lua/JS plugin)
+    - Cache (local LRU + Redis)
+    - Upstream call (with retries/backoff)
+    - Response transform / logging / tracing
+
+Control Plane: Admin UI, Policy API, Certificate manager, Push config to data plane
+
+Shared services: Redis (rate limits), Consul/Eureka (service discovery), Prometheus/Grafana
+</code></pre>
+
+    <h2>Interview subquestions</h2>
+    <ul>
+      <li><strong>How to ensure gateway availability?</strong> Use multiple instances across AZs, autoscaling, and health checks; deploy control plane redundantly and use rolling updates.</li>
+      <li><strong>How to minimize latency added by gateway?</strong> Optimize hot paths, cache validation, and keep policy checks lightweight; use compiled languages for data plane if needed.</li>
+      <li><strong>How to secure the control plane?</strong> Use RBAC, mTLS for internal comms, and audit logging for config changes.</li>
+    </ul>
+
+    <p style="color:#666">When answering in an interview, sketch the layers and explain trade-offs: centralization of cross-cutting concerns vs potential throughput/availability bottlenecks. Show how you'd monitor and scale the gateway itself.</p>
+  </div>
+</body>
+</html>

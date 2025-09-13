@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Implementing a proxy/delegator without Forwardable</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:18px;color:#111}
+    h1{color:#1a56db} h2{color:#0b5a78}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <h1>Implement a Proxy / Delegator class in Ruby (without Forwardable)</h1>
+
+  <p>We'll show a robust implementation that supports delegation, introspection (<code>respond_to?</code>), and optional explicit delegators defined at class-level.</p>
+
+  <h2>Simple dynamic delegator using <code>method_missing</code></h2>
+  <pre><code class="language-ruby">class SimpleProxy
+  def initialize(target)
+    @target = target
+  end
+
+  def method_missing(name, *args, &blk)
+    if @target.respond_to?(name)
+      @target.public_send(name, *args, &blk)
+    else
+      super
+    end
+  end
+
+  def respond_to_missing?(name, include_private = false)
+    @target.respond_to?(name, include_private) || super
+  end
+end
+
+# Usage
+proxy = SimpleProxy.new([1,2,3])
+proxy.push(4)       # delegated to Array#push
+proxy.respond_to?(:push) # => true</code></pre>
+
+  <h2>Adding explicit delegator definitions (performance & discoverability)</h2>
+  <pre><code class="language-ruby">class Delegator
+  def self.delegate(*methods, to:)
+    methods.each do |m|
+      define_method(m) do |*args, &blk|
+        __send__(to).public_send(m, *args, &blk)
+      end
+    end
+  end
+
+  def initialize(target) @target = target end
+  private
+  attr_reader :_target
+end
+
+class MyWrapper &lt; Delegator
+  delegate :push, :pop, to: :_target
+end</code></pre>
+
+  <p>This defines concrete methods and avoids method_missing overhead and improves IDE discoverability.</p>
+
+  <h2>Per-instance delegators (define_singleton_method)</h2>
+  <pre><code class="language-ruby">obj = Object.new
+target = [1,2]
+%w[push pop].each do |m|
+  obj.define_singleton_method(m) { |*a, &b| target.public_send(m, *a, &b) }
+end</code></pre>
+
+  <h2>Considerations</h2>
+  <ul>
+    <li><strong>Performance:</strong> <code>method_missing</code> is flexible but slower than concrete methods. Use define-on-first-call to optimize repeated calls.</li>
+    <li><strong>Visibility:</strong> Use <code>public_send</code> to avoid calling private methods on target.</li>
+    <li><strong>Thread-safety:</strong> Defining methods at runtime requires synchronization in multi-threaded apps.</li>
+    <li><strong>Introspection:</strong> Implement <code>respond_to_missing?</code> so callers and libraries see the delegated methods.</li>
+  </ul>
+
+  <h2>Advanced: define-on-first-call pattern</h2>
+  <pre><code class="language-ruby">class FastProxy
+  def initialize(target) @target = target end
+
+  def method_missing(name, *args, &blk)
+    if @target.respond_to?(name)
+      # Define method on the proxy class for speed
+      self.class.define_method(name) do |*a, &b|
+        @target.public_send(name, *a, &b)
+      end
+      send(name, *args, &blk)
+    else
+      super
+    end
+  end
+
+  def respond_to_missing?(name, include_private=false)
+    @target.respond_to?(name, include_private) || super
+  end
+end</code></pre>
+
+  <h2>Summary</h2>
+  <p>Forwarding can be implemented simply with <code>method_missing</code> and <code>respond_to_missing?</code>. For performance and clarity, prefer explicit <code>delegate</code>/<code>define_method</code> definitions or define-on-first-call strategies.</p>
+</body>
+</html>

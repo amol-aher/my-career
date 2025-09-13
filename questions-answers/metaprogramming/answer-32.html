@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Performance pitfalls in metaprogramming-heavy code</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:20px;color:#111}
+    h1{color:#1a56db} h2{color:#0b5a78}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <h1>Performance pitfalls in heavy metaprogramming code</h1>
+
+  <p>Metaprogramming can cost performance in several ways. Here are the common pitfalls and how to mitigate them.</p>
+
+  <h2>1. Excessive <code>method_missing</code> dispatch</h2>
+  <p><code>method_missing</code> is slower than direct method calls. If hot paths invoke dynamic dispatch frequently, it becomes a bottleneck.</p>
+  <p><strong>Mitigation:</strong> define-on-first-call pattern to convert dynamic dispatch into normal calls.</p>
+  <pre><code class="language-ruby">def method_missing(name, *args, &blk)
+  if can_handle?(name)
+    self.class.define_method(name) { |*a, &b| handle(name, *a, &b) }
+    send(name, *args, &blk)
+  else
+    super
+  end
+end</code></pre>
+
+  <h2>2. String <code>eval</code> and <code>class_eval</code> with source strings</h2>
+  <p>String eval disables many VM optimizations, is harder to JIT, and is insecure.</p>
+  <p><strong>Mitigation:</strong> prefer <code>define_method</code> or <code>class_eval</code> with blocks rather than strings.</p>
+
+  <h2>3. Creating many anonymous classes/modules or singleton classes</h2>
+  <p>Creating thousands of anonymous classes or many singleton classes (per-object) increases memory usage and GC pressure.</p>
+  <p><strong>Mitigation:</strong> reuse modules/classes when possible, avoid per-object class creation at scale, or use lightweight data-based dispatch instead of per-object methods.</p>
+
+  <h2>4. Closures retaining large objects</h2>
+  <p>Blocks used to create methods close over variables. If those variables reference large objects, memory may be retained longer than intended.</p>
+  <p><strong>Mitigation:</strong> duplicate minimal data into the closure, use weak references, or avoid unnecessarily capturing heavy state.</p>
+
+  <h2>5. Tracing and heavy instrumentation</h2>
+  <p>TracePoint and verbose logging can drastically slow the system.</p>
+  <p><strong>Mitigation:</strong> use sampling, restrict to a short window, or use efficient native tracing mechanisms (DTrace, eBPF, APM).</p>
+
+  <h2>6. Method definition churn in hot loops</h2>
+  <p>Defining methods repeatedly inside loops is expensive.</p>
+  <p><strong>Mitigation:</strong> move definition outside the loop or guard so you only define once.</p>
+
+  <h2>7. I/O or reflection inside metaprogramming hooks</h2>
+  <p>Heavy reflection (e.g., repeatedly calling <code>const_get</code>, <code>ObjectSpace</code> queries) can be costly.</p>
+  <p><strong>Mitigation:</strong> cache reflection results and avoid global queries in tight loops.</p>
+
+  <h2>Profiling & diagnosis</h2>
+  <ul>
+    <li>Use ruby-prof, stackprof, or flamegraph to find hotspots.</li>
+    <li>Benchmark key paths with Benchmark module.</li>
+    <li>Use memory profilers (memory_profiler, objspace) to find retained objects.</li>
+  </ul>
+
+  <h2>Example checklist</h2>
+  <ol>
+    <li>Identify hot paths (flamegraphs).</li>
+    <li>Replace repeated <code>method_missing</code> calls with define-on-first-call.</li>
+    <li>Avoid string <code>eval</code>.</li>
+    <li>Reduce per-object singleton class creation at scale.</li>
+    <li>Minimize captured state in closures.</li>
+  </ol>
+
+  <h2>Conclusion</h2>
+  <p>Metaprogramming is not inherently slow, but careless use can create significant runtime and memory overhead. Measure first, then optimize using the patterns above.</p>
+</body>
+</html>

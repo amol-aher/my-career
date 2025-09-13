@@ -1,0 +1,34 @@
+<!doctype html><html><head><meta charset='utf-8'><title>Breaking down a large project into manageable tasks</title>
+<style>
+body{font-family:Segoe UI,Arial,Helvetica,sans-serif;line-height:1.6;padding:24px;max-width:900px;margin:auto;color:#111}
+header{border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:18px}
+h1{font-size:20px;margin:0 0 6px 0}
+.role{color:#555;font-size:13px;margin-bottom:6px}
+pre{background:#f6f6f6;padding:12px;border-radius:6px;overflow:auto}
+code{font-family:monospace;font-size:13px}
+section{margin-bottom:18px}
+.sub{font-weight:600;margin-top:8px}
+ul{margin-left:18px}
+ol{margin-left:18px}
+</style></head><body><header><h1>Breaking down a large project into manageable tasks</h1><div class='role'>System architect · Technical lead · Senior software engineer (Ruby on Rails, AWS, SQL, Vue.js)</div></header>
+<section>
+<p><strong>Summary:</strong> Start with outcomes, create epics, slice into vertical user-value stories, then into implementation tasks with clear acceptance criteria and estimates.</p>
+
+<div class='sub'>Step-by-step</div>
+<ol>
+<li><strong>Define success:</strong> what does 'done' look like?</li>
+<li><strong>Create epics:</strong> group functionality by theme or milestone.</li>
+<li><strong>Vertical slicing:</strong> split epics into stories that deliver end-to-end value.</li>
+<li><strong>Sub-tasks:</strong> implement UI, API, DB, infra, tests, and docs for each story.</li>
+<li><strong>Spike when unknown:</strong> time-box research to reduce uncertainty before sizing.</li>
+</ol>
+
+<div class='sub'>Example slice</div>
+<pre><code>Epic: Multi-address shipping
+Stories:
+- User can add an address (API + UI + tests)
+- User can list and select address at checkout
+- Admin can bulk import addresses
+Each story: split into backend, frontend, tests, infra config</code></pre>
+</section>
+</body></html>

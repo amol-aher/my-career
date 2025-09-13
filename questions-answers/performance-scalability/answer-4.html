@@ -1,0 +1,62 @@
+
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Caching Strategies and Locations</title>
+  <style>
+    body {font-family: Arial, sans-serif; margin:40px;}
+    h1 {color:#1f4e79;}
+    pre {background:#f6f8fa;padding:12px;border-radius:6px;}
+  </style>
+</head>
+<body>
+  <h1>Caching Strategies and Where to Cache</h1>
+  <p>This document describes caching layers, what to cache, eviction, and concrete examples used in production.</p>
+
+  <h2>Common Cache Locations</h2>
+  <ul>
+    <li><strong>Browser / CDN:</strong> Cache static assets and publicly cacheable API responses.</li>
+    <li><strong>Edge / CDN (CloudFront, Fastly):</strong> Cache whole responses or GraphQL responses for unauthenticated or shared data.</li>
+    <li><strong>API Gateway / Reverse proxy (Varnish):</strong> Cache at HTTP layer for high traffic endpoints.</li>
+    <li><strong>Application-level in-memory (Rails.cache backed by Redis/Memcached):</strong> Cache computed fragments, query results, rendered templates.</li>
+    <li><strong>Local in-process caches:</strong> LRU cache for extremely hot items to avoid network hops.</li>
+    <li><strong>Database-level caching:</strong> Materialized views, result caching (Postgres pg_stat_statements for planning).</li>
+  </ul>
+
+  <h2>What to Cache</h2>
+  <ul>
+    <li>Expensive queries and aggregations.</li>
+    <li>Computed business data (leaderboards, trending).</li>
+    <li>HTTP responses for public endpoints.</li>
+    <li>Third-party API responses (with proper TTL).</li>
+  </ul>
+
+  <h2>Eviction and Consistency Strategies</h2>
+  <ul>
+    <li><strong>TTL-based:</strong> Simple expiration for eventually-consistent data.</li>
+    <li><strong>Write-through / Write-behind:</strong> Update cache synchronously or asynchronously on writes.</li>
+    <li><strong>Cache invalidation:</strong> Invalidate keys on update events using Pub/Sub or application hooks.</li>
+    <li><strong>Stale-while-revalidate:</strong> Serve stale data while refreshing in background.</li>
+  </ul>
+
+  <h2>Rails example: Caching a Query Result</h2>
+  <pre><code>def top_products
+  Rails.cache.fetch("top_products_v1", expires_in: 10.minutes) do
+    Product.order(sales_count: :desc).limit(50).to_a
+  end
+end
+  </code></pre>
+
+  <h2>Where I personally cache in systems</h2>
+  <ol>
+    <li>Redis cluster for application-level caches and rate-limits.</li>
+    <li>Cloud CDN (CloudFront) for static + public API caching.</li>
+    <li>Memcached for ephemeral low-latency caches when needed.</li>
+    <li>Local in-process LRU for microservices that require ultra-low latency lookups.</li>
+  </ol>
+
+  <h2>Monitoring Cache Effectiveness</h2>
+  <p>Track cache hit/miss rates, Redis memory usage, eviction rates, and request latency when cache is cold vs warm.</p>
+</body>
+</html>

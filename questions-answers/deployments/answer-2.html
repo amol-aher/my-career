@@ -1,0 +1,84 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Deploying Microservices — Steps and Considerations</title>
+  <style>
+    body{font-family:Inter,Arial,Helvetica,sans-serif;margin:24px;line-height:1.6;color:#222}
+    h1{background:#1f6feb;color:#fff;padding:12px;border-radius:8px}
+    h2{color:#1f6feb;margin-top:20px}
+    pre{background:#f7f9fc;padding:12px;border-radius:6px;overflow:auto}
+    code{background:#eef;padding:2px 6px;border-radius:4px}
+    .step{background:#f0f7ff;padding:12px;border-left:4px solid #1f6feb;margin:10px 0;border-radius:6px}
+  </style>
+</head>
+<body>
+  <h1>Deploying Microservices — Steps and Considerations</h1>
+  <h2>Overview</h2>
+  <p>Deploying microservices reliably requires planning across multiple domains: design, build, deploy, operate and observe. Below are the common, practical steps I follow when deploying a microservices-based system in production.</p>
+
+  <h2>End-to-end steps</h2>
+  <div class="step"><strong>1. Design the service boundaries and contracts</strong>
+    <p>Define APIs, events, owned data and contracts. Prefer backward-compatible changes and use OpenAPI/GraphQL schemas to formalize APIs.</p></div>
+
+  <div class="step"><strong>2. Containerize and standardize runtime</strong>
+    <p>Create small, secure Docker images using multi-stage builds. Define a standard base image and runtime environment variables via config maps or env files.</p></div>
+
+  <div class="step"><strong>3. CI pipeline — build, test, scan</strong>
+    <p>CI runs unit tests, linters, builds artifacts/images, performs SCA (software composition analysis) and pushes artifacts to a registry (ECR/GCR).</p></div>
+
+  <div class="step"><strong>4. Provision infrastructure as code</strong>
+    <p>Use Terraform/CDK/CloudFormation to provision networking, clusters, load balancers, databases, and IAM. Keep infra in reusable modules and apply peer-reviewed changes via GitOps or CI.</p></div>
+
+  <div class="step"><strong>5. Service discovery and API gateway</strong>
+    <p>Configure service discovery (DNS, Cloud Map, or Consul) and an API gateway (API Gateway / ALB / Kong / Ambassador) to centralize routing, authentication and rate limits.</p></div>
+
+  <div class="step"><strong>6. Deploy to staging with orchestration</strong>
+    <p>Use Kubernetes (EKS) with Helm charts or ECS with task definitions. Deploy to staging and run integration and contract tests, and end-to-end tests.</p></div>
+
+  <div class="step"><strong>7. Observability and testing in staging</strong>
+    <p>Ensure each service exports metrics, traces and structured logs. Add synthetic tests and SLO-based alerting.</p></div>
+
+  <div class="step"><strong>8. Production deployment — safe release strategy</strong>
+    <p>Promote using blue-green, canary or progressive rollout. Automate health checks and monitor for errors and latency regressions.</p></div>
+
+  <div class="step"><strong>9. Post-deploy validation and rollback plan</strong>
+    <p>Run smoke tests, validate business metrics, and keep the old version on standby for quick rollback.</p></div>
+
+  <div class="step"><strong>10. Ongoing maintenance</strong>
+    <p>Patch images, rotate keys, handle schema migrations (with backward-compatible techniques or online migrations), and run periodic chaos experiments.</p></div>
+
+  <h2>Common subquestions (and answers)</h2>
+  <h3>How do you handle database schema changes?</h3>
+  <p>Prefer backward-compatible changes: add columns nullable by default, avoid removing columns or changing types. Use feature flags, run dual-write if necessary, and perform data backfills during low-traffic windows. For breaking changes, use a multi-step migration (deploy consumer-compatible change, backfill, switch readers, remove old column).</p>
+
+  <h3>How to handle inter-service transactions?</h3>
+  <p>Use eventual consistency patterns and compensate with sagas or idempotent operations. Prefer storing state changes in domain events and using event-driven workflows where eventual consistency is acceptable.</p>
+
+  <h3>How do you do service discovery?</h3>
+  <p>In Kubernetes, use native DNS and headless services. For ECS, use AWS Cloud Map or ALB routing. For multi-cloud, use Consul or a service mesh (Istio/Linkerd) to provide cross-cluster discovery.</p>
+
+  <h3>What about configuration and secrets?</h3>
+  <p>Centralize configs in a ConfigMap or parameter store and secrets in AWS Secrets Manager or HashiCorp Vault. Use environment variables injected at runtime and ensure secrets never appear in logs.</p>
+
+  <h3>How do you protect against cascading failures?</h3>
+  <ul>
+    <li>Apply circuit breakers, bulkheads, retries with exponential backoff, and rate limiting.</li>
+    <li>Isolation via namespace/cluster separation and resource quotas.</li>
+    <li>Graceful degradation of non-critical functionality.</li>
+  </ul>
+
+  <h2>Practical checklist before a microservice goes to production</h2>
+  <ul>
+    <li>Automated tests (unit/integration/e2e) pass in pipeline.</li>
+    <li>Image vulnerability scan cleared.</li>
+    <li>Resource requests/limits set; readiness and liveness probes configured.</li>
+    <li>Logging, metrics, traces configured and visible in dashboards.</li>
+    <li>Runbook and rollback plan documented.</li>
+  </ul>
+
+  <p style="margin-top:18px">This file contains an overview and practical checklist — if you'd like, I can produce Helm templates, a sample GitHub Actions matrix for multi-service builds, or a Terraform module skeleton next.</p>
+</body>
+</html>

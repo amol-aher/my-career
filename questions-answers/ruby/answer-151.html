@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 151</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 151: Explain priority inversion and possible remedies in Ruby systems.</h1>
+<h2>Concept</h2>
+<p>Priority inversion happens when a low-priority thread holds a resource needed by a high-priority thread, and a medium-priority thread prevents the low-priority thread from running to release the resource.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>In Ruby, thread priorities are advisory and platform-dependent, so priority inversion is usually addressed by avoiding reliance on priorities: keep critical sections short, use timeouts, and design fairness into queues. If using priority-based scheduling, consider priority inheritance or use dedicated worker pools per priority.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>Priority inheritance:</strong> temporarily raise the priority of the lock-holder to the highest waiting priority to reduce inversion.</li>
+<li><strong>Alternative:</strong> use multiple queues or executors for different priority classes.</li>
+</ul>
+
+<h2>Example</h2>
+<pre><code class="language-ruby"># approach: separate pools per priority
+high_pool = ThreadPool.new(5)
+low_pool = ThreadPool.new(1)
+# schedule high-priority tasks to high_pool to avoid blocking by low-priority work</code></pre>
+
+<h2>Best practices / Pitfalls</h2>
+<ul>
+<li>Avoid depending on Thread#priority for correctness. Design queues and backpressure rather than priority juggling.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 151</footer>
+</body></html>

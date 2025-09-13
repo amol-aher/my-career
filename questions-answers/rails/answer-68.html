@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Key Principles of RESTful Architecture</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #2980b9;
+            margin-top: 30px;
+        }
+        .section {
+            margin-bottom: 25px;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        .key-point {
+            background-color: #e8f4fd;
+            border-left: 4px solid #3498db;
+            padding: 10px 15px;
+            margin: 15px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Key Principles of RESTful Architecture</h1>
+
+    <div class="section">
+        <h2>Introduction to REST</h2>
+        <p><strong>REST (Representational State Transfer)</strong> is an architectural style for designing networked applications. It was introduced by Roy Fielding in his 2000 doctoral dissertation and has become the dominant design model for web services.</p>
+        
+        <p>REST emphasizes stateless communication, uniform interfaces, and resource-oriented design, making systems more scalable, reliable, and easy to maintain.</p>
+    </div>
+
+    <div class="section">
+        <h2>Principle 1: Client-Server Architecture</h2>
+        <p>This principle separates concerns between client and server:</p>
+        
+        <ul>
+            <li><strong>Client Responsibility</strong>: User interface and user experience</li>
+            <li><strong>Server Responsibility</strong>: Data storage, business logic, and resource management</li>
+        </ul>
+        
+        <p>This separation allows each component to evolve independently, improving scalability and maintainability.</p>
+    </div>
+
+    <div class="section">
+        <h2>Principle 2: Stateless Communication</h2>
+        <p>In REST, each request from client to server must contain all the information needed to understand and process the request. The server does not store client context between requests.</p>
+        
+        <p>Benefits include:</p>
+        <ul>
+            <li><strong>Scalability</strong>: Servers can handle requests from any client without maintaining session state</li>
+            <li><strong>Reliability</strong>: Requests are independent and can be retried if failed</li>
+            <li><strong>Simplicity</strong>: Easier to implement and debug</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Principle 3: Cacheability</h2>
+        <p>Responses should explicitly define whether they can be cached by the client or intermediary proxies. This improves performance and reduces server load.</p>
+        
+        <p>Cache directives can be implemented using HTTP headers:</p>
+        
+        <div class="code-block">
+            # Example cache control headers<br>
+            Cache-Control: public<br>
+            Cache-Control: max-age=3600<br>
+            ETag: "abc123"
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Principle 4: Uniform Interface</h2>
+        <p>A uniform interface between components is a key element of REST. This is achieved through:</p>
+        
+        <ol>
+            <li><strong>Resource Identification</strong>: Each resource is identified by a URI</li>
+            <li><strong>Manipulation of Resources through Representations</strong>: Clients manipulate resources using representations (typically JSON or XML)</li>
+            <li><strong>Self-descriptive Messages</strong>: Each message contains enough information to describe how to process it</li>
+            <li><strong>Hypermedia as the Engine of Application State (HATEOAS)</strong>: Responses contain links to related resources</li>
+        </ol>
+    </div>
+
+    <div class="section">
+        <h2>Principle 5: Layered System</h2>
+        <p>A layered system architecture allows an application to be composed of hierarchical layers, each with specific responsibilities. Layers can be added or modified without affecting other layers.</p>
+        
+        <p>Examples of layers include:</p>
+        <ul>
+            <li>Load balancers</li>
+            <li>Reverse proxy servers</li>
+            <li>Web servers</li>
+            <li>Application servers</li>
+            <li>Database servers</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Principle 6: Code on Demand (Optional)</hh2>
+        <p>This principle allows systems to extend functionality by downloading and executing code from the server. While not always required, it provides flexibility for evolving systems.</p>
+        
+        <p>Examples include:</p>
+        <ul>
+            <li>JavaScript snippets for dynamic UI elements</li>
+            <li>Plugin architectures</li>
+            <li>Dynamic configuration loading</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>RESTful Design Patterns</h2>
+        <p>Several patterns emerge from applying REST principles:</p>
+        
+        <ul>
+            <li><strong>Resource Naming</strong>: Use nouns instead of verbs (e.g., /users instead of /getUser)</li>
+            <li><strong>HTTP Methods</strong>: Use appropriate verbs (GET, POST, PUT, DELETE)</li>
+            <li><strong>Hypermedia Controls</strong>: Include links to related resources in responses</li>
+            <li><strong>Error Handling</strong>: Return appropriate HTTP status codes for different scenarios</li>
+            <li><strong>Versioning</strong>: Clearly indicate API versions</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Subquestion: How does HATEOAS fit into REST?</h2>
+        <p>HATEOAS (Hypermedia As The Engine Of Application State) is a key aspect of REST that allows clients to discover resources dynamically through hyperlinks provided in responses.</p>
+        
+        <p>Example response:</p>
+        <div class="code-block">
+            {<br>
+              "id": 1,<br>
+              "name": "John Doe",<br>
+              "email": "john@example.com",<br>
+              "_links": {<br>
+                "self": { "href": "/users/1" },<br>
+                "orders": { "href": "/users/1/orders" },<br>
+                "address": { "href": "/users/1/address" }<br>
+              }<br>
+            }
+        </div>
+        
+        <p>This approach makes APIs self-documenting and allows clients to navigate the API without prior knowledge of all available endpoints.</p>
+    </div>
+
+    <div class="section">
+        <h2>Subquestion: Why is statelessness important in REST?</h2>
+        <p>Statelessness is crucial because:</p>
+        
+        <ul>
+            <li><strong>Scalability</strong>: Servers can handle requests from any client without maintaining session state</li>
+            <li><strong>Reliability</strong>: Failed requests can be retried without side effects</li>
+            <li><strong>Simplicity</strong>: Easier to implement, test, and debug</li>
+            <li><strong>Load Balancing</strong>: Any server can handle any request, enabling horizontal scaling</li>
+            <li><strong>Caching Efficiency</strong>: Responses can be cached more effectively since they're not tied to specific client sessions</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Subquestion: How do you handle authentication in RESTful APIs?</h2>
+        <p>Authentication in RESTful APIs can be implemented using:</p>
+        
+        <ul>
+            <li><strong>Token-Based Authentication</strong>: JWT (JSON Web Tokens) or OAuth 2.0 tokens passed in Authorization header</li>
+            <li><strong>API Keys</strong>: Unique identifiers passed in headers or query parameters</li>
+            <li><strong>HTTP Basic Auth</strong>: Username and password encoded in Base64</li>
+            <li><strong>OAuth 2.0</strong>: Industry-standard protocol for authorization</li>
+        </ul>
+        
+        <p>Example with JWT:</p>
+        <div class="code-block">
+            # Request header<br>
+            Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Conclusion</h2>
+        <p>The key principles of RESTful architecture provide a robust foundation for building scalable, maintainable, and interoperable web services. By adhering to these principles—client-server separation, statelessness, cacheability, uniform interface, layered systems, and optional code-on-demand—developers can create APIs that are easy to consume, extend, and maintain over time. These principles have stood the test of time and remain the gold standard for web service design.</p>
+    </div>
+</body>
+</html>

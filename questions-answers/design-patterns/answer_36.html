@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Query Object pattern in Rails</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Query Object pattern — encapsulating complex queries</h1>
+
+    <p><strong>Purpose</strong>: move complex database query logic out of models and controllers into a focused object that returns an <code>ActiveRecord::Relation</code> or result set. Improves testability and readability.</p>
+
+    <h2>Benefits</h2>
+    <ul>
+      <li>Single place for query tuning, indexing decisions and ARel complexity.</li>
+      <li>Reusable across controllers and services.</li>
+      <li>Encourages composition (chain queries).</li>
+    </ul>
+
+    <h2>Example — Posts::SearchQuery</h2>
+    <pre><code>module Posts
+  class SearchQuery
+    def initialize(relation = Post.all)
+      @relation = relation
+      @filters = {}
+    end
+
+    def by_user(user_id)
+      @filters[:user_id] = user_id
+      self
+    end
+
+    def with_terms(terms)
+      @filters[:terms] = terms
+      self
+    end
+
+    def call
+      rel = @relation
+      rel = rel.where(user_id: @filters[:user_id]) if @filters[:user_id]
+      if @filters[:terms]
+        rel = rel.where("to_tsvector('english', content) @@ plainto_tsquery(?)", @filters[:terms])
+      end
+      rel.order(created_at: :desc)
+    end
+  end
+end
+
+# usage
+posts = Posts::SearchQuery.new.call.by_user(1).with_terms('rails').call
+</code></pre>
+
+    <h2>Testing & organization</h2>
+    <ul>
+      <li>Unit-test the query object with seeded records and assert SQL structure or results.</li>
+      <li>Place query objects under <code>app/queries</code> or <code>app/queries/posts</code>.</li>
+    </ul>
+
+    <h2>Interview tip</h2>
+    <p>Explain how query objects help you move complex SQL out of models and reduce duplication, and mention using database explain plans to optimize the queries encapsulated by the object.</p>
+  </div>
+</body>
+</html>

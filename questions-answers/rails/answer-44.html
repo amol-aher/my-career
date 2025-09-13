@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Handling Failures in Distributed Systems</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; }
+        .subquestion { margin-top: 30px; padding-left: 15px; border-left: 3px solid #3498db; }
+        .code-block { background-color: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; padding: 12px; margin: 15px 0; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>Handling Failures in Distributed Systems</h1>
+
+    <p>Distributed systems are inherently prone to partial failures due to network issues, hardware problems, or software bugs. Effective failure handling requires proactive strategies to maintain system resilience and availability.</p>
+
+    <h2>Key Failure Handling Strategies:</h2>
+
+    <ol>
+        <li><strong>Circuit Breakers:</strong> Stop making requests to failing services to prevent cascading failures</li>
+        <li><strong>Retry Mechanisms:</strong> Automatically retry transient errors with exponential backoff</li>
+        <li><strong>Fallbacks:</strong> Provide alternative responses when primary operations fail</li>
+        <li><strong>Timeouts:</strong> Set strict time limits for operations to prevent hung requests</li>
+        <li><strong>Health Checks:</strong> Regularly monitor service health and status</li>
+    </ol>
+
+    <div class="subquestion">
+        <h2>Sub-question: How does circuit breaker pattern work?</h2>
+        <p>The circuit breaker pattern monitors service calls and "opens" the circuit when failures exceed a threshold:</p>
+        <ul>
+            <li><strong>Closed State:</strong> Normal operation, requests pass through</li>
+            <li><strong>Open State:</strong> All requests immediately fail, preventing overload</li>
+            <li><strong>Half-Open State:</strong> Limited test requests allowed to check if service recovers</li>
+        </ul>
+        <p>Implementation libraries like Netflix Hystrix or Resilience4j provide ready-to-use implementations.</p>
+    </div>
+
+    <div class="subquestion">
+        <h2>Sub-question: How do you handle database failures?</h2>
+        <p>Database failures require special consideration:</p>
+        <ul>
+            <li><strong>Connection Pooling:</strong> Manage database connections efficiently</li>
+            <li><strong>Read Replicas:</strong> Use replica databases for read operations during primary failure</li>
+            <li><strong>Transaction Management:</strong> Implement idempotent transactions with proper rollbacks</li>
+            <li><strong>Backup and Recovery:</strong> Regular backups and tested restore procedures</li>
+        </ul>
+    </div>
+
+    <div class="subquestion">
+        <h2>Sub-question: How do you implement retries effectively?</h2>
+        <p>Effective retry strategies include:</p>
+        <ul>
+            <li><strong>Exponential Backoff:</strong> Increasing delay between retries (e.g., 1s, 2s, 4s)</li>
+            <li><strong>Jitter:</strong> Adding randomness to backoff intervals to avoid thundering herd</li>
+            <li><strong>Maximum Attempts:</strong> Limiting total retry count to prevent infinite loops</li>
+            <li><strong>Idempotency:</strong> Ensuring repeated requests don't cause unintended side effects</li>
+        </ul>
+        <pre class="code-block">// Example retry implementation in Ruby
+def with_retries(max_attempts: 3)
+  attempts = 0
+  begin
+    yield
+  rescue TransientError => e
+    attempts += 1
+    raise e if attempts >= max_attempts
+    sleep(2**attempts + rand(100)/100.0) # Exponential backoff with jitter
+    retry
+  end
+end</pre>
+    </div>
+
+    <div class="subquestion">
+        <h2>Sub-question: How do you monitor and alert on failures?</h2>
+        <p>Essential monitoring components include:</p>
+        <ul>
+            <li><strong>Error Tracking:</strong> Tools like Sentry, Rollbar, or Datadog</li>
+            <li><strong>Metrics Collection:</strong> Prometheus, CloudWatch, or Graphite</li>
+            <li><strong>Logging:</span> Structured logging with correlation IDs</li>
+            <li><strong>Alerting:</strong> Threshold-based alerts for error rates, latency spikes, and availability</li>
+        </ul>
+        <p>Implement distributed tracing with OpenTelemetry or Jaeger to understand request flows across services.</p>
+    </div>
+</body>
+</html>

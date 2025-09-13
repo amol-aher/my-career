@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Queue Systems: Sidekiq, Kafka, and AWS SQS</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; }
+        .subquestion { margin-top: 30px; padding-left: 15px; border-left: 3px solid #3498db; }
+        .code-block { background-color: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; padding: 12px; margin: 15px 0; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>Message Queue Systems: Sidekiq, Kafka, and AWS SQS</h1>
+
+    <p>Message queues are essential for building scalable, resilient distributed systems. They enable asynchronous communication, decouple services, and provide fault tolerance. Here's a detailed comparison of three popular options:</p>
+
+    <h2>1. Sidekiq</h2>
+    <p>Sidekiq is a lightweight background job processor for Ruby applications, built on top of Redis.</p>
+    
+    <ul>
+        <li><strong>Architecture:</strong> Uses Redis lists to store jobs in queues</li>
+        <li><strong>Job Processing:</strong> Multi-threaded workers process jobs concurrently</li>
+        <li><strong>Features:</strong> Retries, batch processing, scheduled jobs, dead job management</li>
+        <li><strong>Integration:</strong> Seamless Rails integration via Active Job adapter</li>
+        <li><strong>Use Cases:</strong> Email sending, PDF generation, API calls, data processing</li>
+    </ul>
+
+    <h2>2. Apache Kafka</h2>
+    <p>Kafka is a distributed streaming platform designed for high-throughput, fault-tolerant data pipelines.</p>
+    
+    <ul>
+        <li><strong>Architecture:</strong> Distributed log architecture with partitions and replicas</li>
+        <li><strong>Throughput:</strong> Millions of messages per second with minimal latency</li>
+        <li><strong>Persistence:</strong> Durably stores messages on disk with configurable retention policies</li>
+        <li><strong>Consumer Groups:</strong> Multiple consumers can read from topics in parallel</li>
+        <li><strong>Use Cases:</strong> Real-time analytics, event sourcing, stream processing, log aggregation</li>
+    </ul>
+
+    <h2>3. AWS Simple Queue Service (SQS)</h2>
+    <p>AWS SQS is a fully managed message queuing service that enables decoupling of distributed systems.</p>
+    
+    <ul>
+        <li><strong>Architecture:</strong> Standard and FIFO queues with different ordering guarantees</li>
+        <li><strong>Scalability:</strong> Automatically scales to handle any volume of messages</li>
+        <li><strong>Reliability:</strong> At-least-once delivery with built-in redundancy</li>
+        <li><strong>Integration:</strong> Native AWS ecosystem integration with Lambda, EC2, ECS</li>
+        <li><strong>Use Cases:</strong> Task distribution, workflow automation, microservice communication</li>
+    </ul>
+
+    <div class="subquestion">
+        <h2>Sub-question: When would you choose one over the others?</h2>
+        <table>
+            <tr>
+                <th>Scenario</th>
+                <th>Recommended Solution</th>
+                <th>Reason</th>
+            </tr>
+            <tr>
+                <td>Ruby/Rails background jobs</td>
+                <td>Sidekiq</td>
+                <td>Seamless integration and simplicity</td>
+            </tr>
+            <tr>
+                <td>High-throughput real-time streams</td>
+                <td>Kafka</td>
+                <td>Superior performance and durability</td>
+            </tr>
+            <tr>
+                <td>Cloud-native microservices</td>
+                <td>AWS SQS</td>
+                <td>Managed service with AWS ecosystem integration</td>
+            </tr>
+            <tr>
+                <td>Complex event processing</td>
+                <td>Kafka</td>
+                <td>Stream processing capabilities</td>
+            </tr>
+            <tr>
+                <td>Simple task queue</td>
+                <td>Any of the above</td>
+                <td>Depends on existing infrastructure</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="subquestion">
+        <h2>Sub-question: How do you ensure message delivery reliability?</h2>
+        <p>All three systems provide mechanisms for reliable messaging:</p>
+        <ul>
+            <li><strong>Sidekiq:</strong> Automatic retries with exponential backoff, dead job tracking</li>
+            <li><strong>Kafka:</strong> Replication across brokers, consumer offset tracking, exactly-once semantics (with limitations)</li>
+            <li><strong>AWS SQS:</strong> Visibility timeouts, dead-letter queues, message deduplication</li>
+        </ul>
+        <p>Additional best practices include idempotent consumers, proper error handling, and monitoring message processing times.</p>
+    </div>
+</body>
+</html>

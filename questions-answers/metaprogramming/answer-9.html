@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Explaining metaprogramming to junior developers</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:18px;color:#111}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{font-family:monospace}
+    h1{color:#1a56db}
+    h2{color:#0b5a78}
+  </style>
+</head>
+<body>
+  <h1>How to explain metaprogramming to junior developers so they don’t misuse it</h1>
+
+  <p><strong>Goal:</strong> Give a simple conceptual model, show safe examples, and provide rules-of-thumb to prevent abuse.</p>
+
+  <h2>Simple explanation</h2>
+  <p>“Metaprogramming is writing programs that write or change programs.” In Ruby that often means creating or intercepting methods at runtime. It’s similar to creating templates or macros: you automate repetitive code patterns.</p>
+
+  <h2>Analogy</h2>
+  <p>Think of metaprogramming as buying a sewing machine (it automates stitches). It makes some work much faster, but if you use it for every little stitch you may create a tangled quilt.</p>
+
+  <h2>Rules of thumb</h2>
+  <ol>
+    <li><strong>Readability first:</strong> If a simple class is clearer, choose it over a magic metaprogram.</li>
+    <li><strong>Prefer narrow scope:</strong> Put metaprogramming in a small helper or library, not all over the codebase.</li>
+    <li><strong>Document generated behavior:</strong> Write README notes and tests demonstrating the dynamic API.</li>
+    <li><strong>Use tests:</strong> Unit tests and integration tests must cover dynamic paths.</li>
+    <li><strong>Avoid eval:</strong> Prefer closures (<code>define_method</code>) to string evals.</li>
+  </ol>
+
+  <h2>Examples new devs can safely use</h2>
+  <pre><code class="language-ruby"># small, safe: attribute builders
+class Config
+  %w[host port debug].each do |name|
+    attr_accessor name.to_sym
+  end
+end</code></pre>
+
+  <h2>Common mistakes</h2>
+  <ul>
+    <li>Overgeneralizing <code>method_missing</code>: catching everything breaks debugging.</li>
+    <li>Using metaprogramming to avoid writing a few extra lines — the cognitive cost can be higher than the saved lines.</li>
+    <li>Not writing tests for dynamic behavior.</li>
+  </ul>
+
+  <h2>Code review checklist for metaprogramming</h2>
+  <ul>
+    <li>Is the dynamic logic localized and documented?</li>
+    <li>Are there tests for common and edge cases?</li>
+    <li>Is performance acceptable?</li>
+    <li>Could this be implemented more explicitly without repetition?</li>
+  </ul>
+
+  <h2>Closing</h2>
+  <p>Encourage junior devs to learn metaprogramming gradually: start with <code>define_method</code>, small attribute generation, and decorators. Avoid global magic and always pair dynamic code with clear tests and docs.</p>
+</body>
+</html>

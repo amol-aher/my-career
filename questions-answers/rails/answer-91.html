@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>CSRF (Cross-Site Request Forgery) — What it is and Rails Mitigations</title><style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.6; padding:28px; color:#111; background:#fff; }
+    .container{max-width:980px;margin:0 auto;}
+    header{border-bottom:1px solid #e6e6e6;margin-bottom:18px;padding-bottom:8px;}
+    h1{font-size:26px;margin:0 0 6px 0;}
+    h2{font-size:18px;margin-top:18px;color:#0b69ff;}
+    h3{font-size:15px;margin-top:14px;color:#0b69ff;}
+    p{margin:8px 0;}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:4px;}
+    ul{margin:8px 0 8px 20px;}
+    table{border-collapse:collapse;width:100%;margin:8px 0;}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+    .muted{color:#666;font-size:13px;}
+    footer{border-top:1px solid #e6e6e6;margin-top:22px;padding-top:12px;color:#666;font-size:13px;}
+    .kbd{background:#f4f4f4;padding:2px 6px;border-radius:4px;font-family:monospace;}
+    </style></head>
+<body>
+<div class="container">
+<header>
+<h1>CSRF (Cross-Site Request Forgery) — What it is and Rails Mitigations</h1>
+<p class="muted">Prepared by: Senior Software Engineer &amp; System Architect — Rails / AWS / SQL / Vue.js</p>
+<p class="muted">Date: 2025-09-10 (UTC)</p>
+</header>
+
+<p class="muted"><strong>Overview</strong></p>
+<p>Definition, attack vectors, and detailed Rails-specific mitigations including examples and API considerations.</p>
+
+<section><h2>What is CSRF?</h2>
+<p>Cross-Site Request Forgery is an attack where a victim's browser is tricked into making authenticated requests to a target site where the victim is logged in. The attacker leverages the browser's automatic credential handling (cookies, HTTP auth) to perform actions on behalf of the user.</p>
+<ul>
+<li>Typical vector: Attacker hosts a malicious page that submits a form or issues an XHR/fetch to the victim site while the victim has an active session.</li>
+<li>Important note: CSRF relies on the presence of credentials the browser attaches automatically (cookies, basic auth), so token-based Authorization headers are not vulnerable in the same way.</li>
+</ul>
+</section>
+<section><h2>How Rails mitigates CSRF by default</h2>
+<p>Rails uses an authenticity token pattern by default for state-changing requests (non-GET). Key elements:</p>
+<ul>
+<li><strong>Authenticity token:</strong> A per-session (or per-form) token embedded in server-rendered forms (<code>form_with</code>, <code>form_for</code>) and verified on the server.</li>
+<li><strong>protect_from_forgery:</strong> Rails controllers include <code>protect_from_forgery with: :exception</code> in ApplicationController by default for HTML apps.</li>
+<li><strong>CSRF header:</strong> For AJAX, Rails UJS sends the token in <code>X-CSRF-Token</code> header automatically.</li>
+<li><strong>SameSite cookies:</strong> Modern Rails sets session cookies with <code>SameSite=Lax</code> by default which mitigates some cross-site POST vectors.</li>
+</ul>
+<pre><code># application_controller.rb
+class ApplicationController &lt; ActionController::Base
+  protect_from_forgery with: :exception
+end
+</code></pre>
+</section>
+<section><h2>How the authenticity token works (mechanics)</h2>
+<p>Rails embeds a hidden input with the token in forms. On submit, the token is sent and compared to the server-side stored value (session or HMAC). If missing/invalid, the request is rejected.</p>
+<ul>
+<li>Token generation: secure random or HMAC-based token tied to session.</li>
+<li>Validation: server checks that incoming token matches expected token for the session or signed value.</li>
+</ul>
+</section>
+<section><h2>API-only apps & CSRF differences</h2>
+<p>If you're building an API consumed by SPAs or mobile apps, different patterns apply:</p>
+<ul>
+<li><strong>Token-based auth (Authorization header):</strong> Using Bearer tokens in headers prevents CSRF since browsers won't add Authorization headers automatically across sites.</li>
+<li><strong>Cookie-based sessions for SPA:</strong> If you use cookies, you must implement CSRF protections: include CSRF token fetching endpoint and send token in header for state-changing requests, and use SameSite cookies.</li>
+<li><strong>Disable CSRF where appropriate:</strong> You can skip CSRF checks for JSON API endpoints if they strictly require Authorization headers, e.g., <code>skip_before_action :verify_authenticity_token, if: -> { request.format.json? }</code> — but do this only when you fully understand implications.</li>
+</ul>
+</section>
+<section><h2>Additional mitigations and best practices</h2>
+<ul>
+<li>Use <strong>SameSite</strong> cookie attribute (Lax/Strict) to limit cookie sending on cross-site requests.</li>
+<li>Require <strong>CSRF tokens for state-changing requests</strong> and send them in custom headers for AJAX.</li>
+<li>Implement <strong>Content Security Policy (CSP)</strong> to limit where scripts can be loaded from; CSP doesn't prevent CSRF but reduces XSS which can expose tokens.</li>
+<li>Prefer <strong>Authorization header</strong> for APIs and avoid relying on cookies for authentication in cross-origin contexts.</li>
+<li>Log and monitor failed CSRF attempts to detect attack patterns.</li>
+</ul>
+</section>
+<section><h2>Example: SPA + Rails CSRF flow</h2>
+<ol>
+<li>Browser requests an initial HTML or calls an endpoint <code>/csrf-token</code> to fetch the token.</li>
+<li>SPA stores the token in memory (not localStorage) and includes it in <code>X-CSRF-Token</code> header for mutating requests.</li>
+<li>Server validates token and processes the request.</li>
+</ol>
+<pre><code># Controller providing token
+class CsrfController &lt; ActionController::API
+  def token
+    render json: { csrf: form_authenticity_token }
+  end
+end
+</code></pre>
+</section>
+<section><h2>Subquestions you should expect</h2>
+<ol>
+<li><strong>Is SameSite enough?</strong><br/>SameSite helps but doesn't solve all CSRF scenarios (older browsers, cross-site POSTs using <code>target="_blank"</code>, etc.). Use it in combination with tokens and proper headers.</li>
+<li><strong>Why not store JWT in cookies?</strong><br/>Storing JWT in cookies exposes you to CSRF; if you must use cookies store short-lived cookies with CSRF tokens, or use HttpOnly cookies with backend rotation and double-submit tokens.</li>
+<li><strong>How to test CSRF protections?</strong><br/>Write request tests that omit or tamper tokens and expect rejection; run integration tests that simulate malicious cross-site requests.</li>
+</ol>
+</section>
+
+
+<footer>I can generate a sample Rails SPA CSRF flow with endpoints and client JS to demo secure token fetch & usage.</footer>
+</div>
+</body>
+</html>

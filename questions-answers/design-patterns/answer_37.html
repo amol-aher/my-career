@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Applying the Repository pattern in Rails</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Repository pattern in a Rails application</h1>
+
+    <p><strong>Intent</strong>: abstract data access so domain logic depends on repository interfaces, not on Active Record directly. Useful for isolating persistence concerns and enabling easier testing.</p>
+
+    <h2>When to use</h2>
+    <ul>
+      <li>When you want to swap persistence stores or run domain logic independent of database schema.</li>
+      <li>When you need complex read models or caching layers behind a unified interface.</li>
+    </ul>
+
+    <h2>Example repository</h2>
+    <pre><code>class UserRepository
+  def find_by_id(id)
+    User.find_by(id: id)
+  end
+
+  def find_by_email(email)
+    User.find_by(email: email)
+  end
+
+  def save(user)
+    user.save!
+  end
+
+  def recent_active(limit: 10)
+    User.where(active: true).order(last_login_at: :desc).limit(limit)
+  end
+end
+
+# usage in a service
+class SomeService
+  def initialize(user_repo: UserRepository.new)
+    @user_repo = user_repo
+  end
+
+  def call(user_id)
+    user = @user_repo.find_by_id(user_id)
+    # business logic...
+  end
+end
+</code></pre>
+
+    <h2>Trade-offs</h2>
+    <ul>
+      <li>Extra layer of indirection and boilerplate — adds maintenance cost.</li>
+      <li>In Rails, ActiveRecord already provides rich querying; repositories can duplicate that if not carefully designed.</li>
+      <li>Best when you need decoupling (hexagonal/clean architecture) or when you have multiple data sources to unify.</li>
+    </ul>
+
+    <h2>Testing advantages</h2>
+    <p>Repositories are easy to mock in tests, allowing you to write unit tests for domain logic without hitting the DB.</p>
+
+    <h2>Interview tip</h2>
+    <p>Explain scenarios where you applied a repository to isolate read heavy models or to support a migration from ActiveRecord to a microservice-backed store.</p>
+  </div>
+</body>
+</html>

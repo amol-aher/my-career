@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>How CloudFront Improves Global Performance</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>How CloudFront Improves Global Performance</h1>
+
+  <h2>Key benefits</h2>
+  <ul>
+    <li><strong>Edge caching:</strong> Cache static and dynamic content at edge locations close to users, reducing latency.</li>
+    <li><strong>TLS termination & HTTP/2:</strong> Faster TLS handshakes and multiplexed requests.</li>
+    <li><strong>Origin shield:</strong> Reduces load on origin by adding another caching layer.</li>
+    <li><strong>Compression & optimized delivery:</strong> Brotli/Gzip and support for range requests.</li>
+    <li><strong>Security integration:</strong> WAF integration, Shield and geo-restriction.</li>
+    <li><strong>Lambda@Edge / CloudFront Functions:</strong> Run lightweight code at edge for personalization, A/B testing, auth.</li>
+  </ul>
+
+  <h2>Typical setup</h2>
+  <pre><code>Origin: S3 + ALB (API)
+CloudFront distribution -> caches assets, forwards API requests to ALB with caching disabled or short TTLs.
+Use signed URLs/CloudFront Functions to implement auth at edge.
+  </code></pre>
+
+  <h2>Practical advice</h2>
+  <ul>
+    <li>Set proper Cache-Control and ETag headers on origin.</li>
+    <li>Use versioned asset filenames for easy invalidation.</li>
+    <li>Enable compression at origin or CloudFront for faster transfer.</li>
+    <li>Leverage Lambda@Edge for edge-based header rewrites or authorization checks.</li>
+  </ul>
+</body>
+</html>

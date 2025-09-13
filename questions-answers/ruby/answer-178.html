@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 178</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 178: Implement an asynchronous HTTP fetcher using Fibers or async/nio4r (benchmarking and tuning)</h1>
+<h2>Concept</h2>
+<p>Benchmarking async fetchers requires measuring throughput, latency p50/p95/p99, and resource usage (CPU, memory, sockets). Use realistic workloads and tune pool sizes and concurrency based on results.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Use wrk or custom ruby scripts to drive load against your client/server. Measure and tune connection pool sizes, per-host limits, and timeouts. Profile to find bottlenecks (GC, scheduling).</p>
+
+<h2>Benchmark outline</h2>
+<pre><code class="language-bash"># run a simple benchmark using parallel requests
+ruby benchmark_client.rb --concurrency 50 --requests 1000
+# measure CPU, memory, and sockets (ss -s)</code></pre>
+
+<h2>Notes</h2>
+<p>Warm up the client, run multiple iterations, and profile (flamegraphs) to determine tuning knobs.</p>
+
+<hr/><footer>Generated HTML for question 178</footer>
+</body></html>

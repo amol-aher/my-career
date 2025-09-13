@@ -1,0 +1,60 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Connecting Git Providers to AWS CodePipeline</title>
+  <style>
+    body{font-family:Inter,Arial,Helvetica,sans-serif;margin:24px;color:#222;line-height:1.6}
+    h1{background:#fd7e14;color:#fff;padding:12px;border-radius:8px}
+    h2{color:#fd7e14;margin-top:18px}
+    pre{background:#fff6eb;padding:12px;border-radius:6px;overflow:auto}
+    ul{margin:8px 0 8px 20px}
+  </style>
+</head>
+<body>
+  <h1>How to Connect GitHub / GitLab / Bitbucket to AWS CodePipeline</h1>
+
+  <h2>Recommended: Use CodeStar Connections (for GitHub / Bitbucket)</h2>
+  <p>CodeStar Connections provides a secure, managed connection between CodePipeline and third-party Git providers (GitHub, GitHub Enterprise, Bitbucket). It avoids storing personal access tokens and uses OAuth under the hood.</p>
+
+  <h2>Steps for GitHub (CodeStar Connections)</h2>
+  <ol>
+    <li>In the AWS Console, go to CodeStar Connections and create a new connection.</li>
+    <li>Choose GitHub (or GitHub Enterprise) and follow the OAuth flow to authorize the connection.</li>
+    <li>In CodePipeline, create a Source action and select the CodeStar Connection you created; choose repository and branch.</li>
+    <li>When commits are pushed, CodePipeline is triggered automatically via the connection/webhook.</li>
+  </ol>
+
+  <h2>GitLab integration options</h2>
+  <p>GitLab is not directly supported by CodeStar Connections. Options:</p>
+  <ul>
+    <li><strong>Use GitLab CI to push artifacts to S3/ECR</strong> and trigger CodePipeline from an S3 source or by calling StartPipelineExecution via the AWS SDK/webhook.</li>
+    <li><strong>Use a webhook:</strong> Configure GitLab to call an API Gateway endpoint that triggers a Lambda which starts the pipeline.</li>
+    <li><strong>Self-hosted integration:</strong> Use a small bridge service or Jenkins to act as the source trigger for CodePipeline.</li>
+  </ul>
+
+  <h2>Security & best practices</h2>
+  <ul>
+    <li>Prefer CodeStar Connections or OIDC for secure, short-lived credentials.</li>
+    <li>Limit repository access, and create separate connections per organization/project if necessary.</li>
+    <li>Use branch filters to avoid triggering pipelines for irrelevant branches.</li>
+  </ul>
+
+  <h2>Example: Triggering CodePipeline from GitLab via Lambda</h2>
+  <pre><code>1. Create API Gateway endpoint (POST) that invokes a Lambda.
+2. Configure GitLab webhook to POST commit events to the endpoint.
+3. Lambda validates the payload and calls StartPipelineExecution for the target pipeline via the AWS SDK.</code></pre>
+
+  <h2>Subquestions & answers</h2>
+  <h3>Q: Can I use OIDC with GitHub Actions to avoid tokens?</h3>
+  <p>A: Yes — use GitHub Actions OIDC to obtain temporary AWS credentials and call CodePipeline/StartExecution or push artifacts to S3/ECR securely without long-lived secrets.</p>
+
+  <h3>Q: How do I handle monorepos?</h3>
+  <p>A: Use path filters in the source action or inspect commits in a webhook to decide which pipeline(s) should run. Alternatively, split into smaller repositories if feasible.</p>
+
+  <h2>Conclusion</h2>
+  <p>Use CodeStar Connections for the simplest, secure integration with GitHub/Bitbucket. For GitLab, use webhooks or leverage GitLab CI to push artifacts and trigger pipelines. Always prefer short-lived credentials and least-privilege access.</p>
+</body>
+</html>

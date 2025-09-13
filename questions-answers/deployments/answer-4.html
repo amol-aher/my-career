@@ -1,0 +1,52 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Experience with Cloud Technologies</title>
+  <style>
+    body{font-family:Verdana,Arial,sans-serif;margin:24px;color:#222;line-height:1.6}
+    h1{background:#673ab7;color:#fff;padding:12px;border-radius:8px}
+    h2{color:#673ab7}
+    ul{margin:8px 0 8px 20px}
+    pre{background:#fafafa;padding:12px;border-radius:6px;overflow:auto}
+  </style>
+</head>
+<body>
+  <h1>Experience with Cloud Technologies</h1>
+  <h2>Cloud platforms I’ve worked with</h2>
+  <ul>
+    <li><strong>AWS:</strong> Extensive, production-grade experience across compute, storage, databases, networking, security, observability and managed services.</li>
+    <li><strong>GCP:</strong> Used for analytics and data workloads (BigQuery, GKE, Cloud Storage).</li>
+    <li><strong>Azure:</strong> Familiarity through enterprise migrations and identity integrations (Azure AD).</li>
+    <li><strong>On-prem / hybrid:</strong> Experience with VMware-based clusters and hybrid networking (Direct Connect, VPN).</li>
+  </ul>
+
+  <h2>Cloud-native patterns I'm fluent with</h2>
+  <ul>
+    <li>Immutable infrastructure & containerization</li>
+    <li>Microservices, event-driven architectures, serverless functions</li>
+    <li>Infrastructure as Code (Terraform, CloudFormation, CDK)</li>
+    <li>GitOps for continuous delivery (ArgoCD/Flux)</li>
+    <li>Observability: metrics, logs, traces (Prometheus, Grafana, CloudWatch, X-Ray)</li>
+    <li>Security: Zero-trust networking, IAM policies, key management</li>
+  </ul>
+
+  <h2>DevOps & developer tooling</h2>
+  <p>I regularly design and maintain CI/CD platforms (GitHub Actions, Jenkins, CircleCI, CodePipeline), automated testing strategies, and artifact repositories. I’ve also led teams to adopt IaC and integrated policy-as-code using tools like Terraform Sentinel or Open Policy Agent.</p>
+
+  <h2>Interview subquestions (examples)</h2>
+  <h3>How do you pick services during architecture?</h3>
+  <p>Start with non-functional requirements: availability, latency, scaling model, operational overhead and cost. Prefer managed services where operational burden is high and cost is acceptable; choose self-managed (EKS/EC2) where you need fine-grained control.</p>
+
+  <h3>How do you handle multi-cloud concerns?</h3>
+  <p>Design abstraction layers where possible (service contracts, portable IaC) and keep cloud-specific services limited to the edges (e.g., direct use of BigQuery for analytics vs common APIs for app logic). Emphasize testing and deployment automation in each target cloud.</p>
+
+  <h3>What about compliance?</h3>
+  <p>Implement encryption at rest/in transit, audit trails, least-privilege access, and automate security (CIS benchmarks, automated scans) using CSPM tools and IaC scanning. Maintain documented SOPs and run regular penetration tests.</p>
+
+  <h2>Closing</h2>
+  <p>My cloud experience is broad and pragmatic: I pick the right tool for the problem, automate deployments and ops, and always prioritize maintainability, security and cost-effectiveness.</p>
+</body>
+</html>

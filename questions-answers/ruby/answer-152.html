@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 152</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 152: What is the correctness definition for a concurrent data structure (e.g., linearizability)? How could you test for it in Ruby?</h1>
+<h2>Concept</h2>
+<p>Linearizability means each operation appears to occur atomically at some point between its invocation and response, preserving real-time order and behaving like a sequential execution.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Test linearizability by recording histories of concurrent operations (start/end timestamps, inputs, outputs) and checking if an equivalent sequential history exists that respects real-time ordering. Use tools or write validators to explore possible sequentializations.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>Testing approach:</strong> fuzz tests, record operation traces, and run a linearizability checker offline.</li>
+<li><strong>Tools:</strong> no mainstream Ruby linearizability checker, but you can implement history recording and use external validators or port a checker.</li>
+</ul>
+
+<h2>Example approach</h2>
+<pre><code class="language-ruby"># record operations with timestamps and results, then run a validator
+history = []
+# instrument operations: {op: :inc, start: t1, end: t2, result: val}
+# export history to a checker</code></pre>
+
+<h2>Best practices / Pitfalls</h2>
+<ul>
+<li>Deterministic replay and heavy stress-testing help expose subtle invariants. Use small bounded tests and exhaustive validation where feasible.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 152</footer>
+</body></html>

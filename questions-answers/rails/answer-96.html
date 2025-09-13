@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Creating Real-time PDFs in Rails</title><style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.6; padding:28px; color:#111; background:#fff; }
+    .container{max-width:980px;margin:0 auto;}
+    header{border-bottom:1px solid #e6e6e6;margin-bottom:18px;padding-bottom:8px;}
+    h1{font-size:26px;margin:0 0 6px 0;}
+    h2{font-size:18px;margin-top:18px;color:#0b69ff;}
+    h3{font-size:15px;margin-top:14px;color:#0b69ff;}
+    p{margin:8px 0;}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:4px;}
+    ul{margin:8px 0 8px 20px;}
+    table{border-collapse:collapse;width:100%;margin:8px 0;}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+    .muted{color:#666;font-size:13px;}
+    footer{border-top:1px solid #e6e6e6;margin-top:22px;padding-top:12px;color:#666;font-size:13px;}
+    .kbd{background:#f4f4f4;padding:2px 6px;border-radius:4px;font-family:monospace;}
+    </style></head>
+<body>
+<div class="container">
+<header>
+<h1>Creating Real-time PDFs in Rails</h1>
+<p class="muted">Prepared by: Senior Software Engineer &amp; System Architect — Rails / AWS / SQL / Vue.js</p>
+<p class="muted">Date: 2025-09-10 (UTC)</p>
+</header>
+
+<p class="muted"><strong>Overview</strong></p>
+<p>Options for generating PDFs in real-time: libraries (WickedPDF/wkhtmltopdf, Prawn, Grover), streaming, background processing for heavy PDF generation, and UX considerations.</p>
+
+<section><h2>Common PDF libraries and tradeoffs</h2>
+<ul>
+<li><strong>WickedPDF / wkhtmltopdf:</strong> Renders HTML/CSS via headless WebKit. Good for converting complex HTML templates with CSS; heavyweight because it shells out to wkhtmltopdf.</li>
+<li><strong>Grover (Puppeteer/Chrome):</strong> Uses headless Chrome for high-fidelity rendering; supports modern CSS, JS, and complex layouts.</li>
+<li><strong>Prawn:</strong> Ruby-native PDF generation for programmatic PDFs (invoices, tickets); great for precision but more code for layouts.</li>
+<li><strong>PrinceXML / DocRaptor:</strong> Commercial tools with excellent CSS support and performance guarantees.</li>
+</ul>
+</section>
+<section><h2>Real-time strategies</h2>
+<ul>
+<li><strong>Lightweight PDFs:</strong> If generation is quick (<200–500ms), generate synchronously in request and stream the response with appropriate headers.</li>
+<li><strong>Heavy PDFs:</strong> Offload to background jobs and notify the user via email or WebSocket/ActionCable when ready. Provide a progress indicator or a 'Generating...' page.</li>
+<li><strong>Streaming:</strong> Use Rails streaming (ActionController::Live) or chunked responses to start sending parts early, but be mindful of server thread usage.</li>
+</ul>
+</section>
+<section><h2>Example: synchronous generation with WickedPDF</h2>
+<pre><code># Gemfile
+gem 'wicked_pdf'
+gem 'wkhtmltopdf-binary' # or install wkhtmltopdf separately
+
+# Controller
+class ReportsController &lt; ApplicationController
+  def show
+    @report = Report.find(params[:id])
+    html = render_to_string('reports/show.pdf.erb', layout: 'pdf', locals: { report: @report })
+    pdf = WickedPdf.new.pdf_from_string(html)
+    send_data pdf, filename: "report-\#{@report.id}.pdf", type: 'application/pdf', disposition: 'inline'
+  end
+end
+</code></pre>
+</section>
+<section><h2>Example: background generation pattern</h2>
+<ul>
+<li>User requests PDF → create a job (Sidekiq) that generates the PDF and uploads to S3.</li>
+<li>Notify user via ActionCable or email with a pre-signed S3 URL when ready.</li>
+</ul>
+<pre><code>class GenerateReportJob
+  include Sidekiq::Worker
+
+  def perform(report_id, user_id)
+    report = Report.find(report_id)
+    html = ApplicationController.renderer.render(template: 'reports/show.pdf', assigns: { report: report })
+    pdf = WickedPdf.new.pdf_from_string(html)
+    s3_key = "reports/\#{report_id}/\#{SecureRandom.hex(8)}.pdf"
+    s3.put_object(bucket: 'my-bucket', key: s3_key, body: pdf, content_type: 'application/pdf')
+    # notify user with presigned URL
+  end
+end
+</code></pre>
+</section>
+<section><h2>Performance & resource considerations</h2>
+<ul>
+<li>Rendering via headless Chrome or wkhtmltopdf can be CPU and memory intensive — isolate in worker pool with resource limits or use separate service with autoscaling.</li>
+<li>Cache generated PDFs for repeat requests and use conditional GET or ETag headers.</li>
+<li>Use pre-render templates and avoid heavy JS execution where possible to reduce runtime.</li>
+</ul>
+</section>
+<section><h2>Subquestions you should expect</h2>
+<ol>
+<li><strong>When to choose Prawn vs HTML-based rendering?</strong><br/>Prawn for programmatic, precise control (invoices with tables), HTML-based (WickedPDF/Grover) for WYSIWYG templates that designers can handle.</li>
+<li><strong>How to preview PDFs in app?</strong><br/>Stream inline PDFs in browser (<code>disposition: 'inline'</code>) or provide presigned S3 URL for direct viewing via CDN.</li>
+</ol>
+</section>
+
+
+<footer>I can provide a runnable example project using Grover + Sidekiq that demonstrates synchronous and background PDF generation patterns.</footer>
+</div>
+</body>
+</html>

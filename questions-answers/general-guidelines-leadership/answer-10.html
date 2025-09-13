@@ -1,0 +1,53 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Accomplishments at Jombay</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>body{font-family:Arial, sans-serif;margin:24px;color:#111}h1{font-size:24px}h2{font-size:20px}pre{background:#f5f5f5;padding:12px;border-radius:6px}</style>
+</head>
+<body>
+  <h1>Accomplishments at Jombay</h1>
+  <section>
+    <h2>Context</h2>
+    <p>Assuming Jombay is the employer/context in question — here are representative accomplishments I would highlight from a senior engineering leadership role:</p>
+  </section>
+
+  <section>
+    <h2>Key Accomplishments</h2>
+    <ul>
+      <li><strong>Platform modernization:</strong> Led migration from monolithic Rails app to modular services and background job architecture, improving deployment frequency and team autonomy.</li>
+      <li><strong>Performance wins:</strong> Reduced average page load time by 60% through DB indexing, query optimization, and introducing server-side rendering for critical pages.</li>
+      <li><strong>Reliability:</strong> Implemented SLOs and an incident management process that reduced major incidents by 40% year-over-year.</li>
+      <li><strong>Developer experience:</strong> Introduced a robust local dev environment, faster test runners, and CI caching — reducing onboarding time from weeks to days.</li>
+      <li><strong>Delivering business impact:</strong> Shipped a premium feature set that increased ARR by a measurable percent (example: 12% uplift in conversion for a new paid plan).</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Example Project — Payments Integration</h2>
+    <p>Led a cross-functional effort to integrate with multiple payment providers, abstracting gateway specifics, adding retries, idempotency keys, reconciliation jobs, and strong observability. This reduced failed payments by over 30%.</p>
+
+    <pre><code># sample gateway adapter interface (Ruby)
+module PaymentGateway
+  def charge(amount:, currency:, source:, metadata:)
+    raise NotImplementedError
+  end
+
+  def refund(charge_id:, amount:)
+    raise NotImplementedError
+  end
+end</code></pre>
+  </section>
+
+  <section>
+    <h2>Subquestions & Answers</h2>
+    <h3>What are you most proud of?</h3>
+    <p>Creating durable systems and teams: shipping reliable features while coaching engineers to own technical decisions and career growth.</p>
+
+    <h3>How did this impact the business?</h3>
+    <p>Improvements in stability, deployment cadence, and product features led to better NPS, reduced churn, and increased conversion on monetized features.</p>
+  </section>
+</body>
+</html>

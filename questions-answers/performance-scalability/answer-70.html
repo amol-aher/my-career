@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Detecting and Mitigating DDoS Using AWS Shield & WAF</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Detecting & Mitigating DDoS Attacks with AWS Shield and WAF</h1>
+
+  <h2>Layered defences</h2>
+  <ul>
+    <li><strong>Edge protection:</strong> Route traffic through CloudFront (or Global Accelerator) so attacks hit edge locations instead of origin.</li>
+    <li><strong>AWS Shield:</strong> Standard is automatic for CloudFront/ALB; Shield Advanced provides DDoS cost protection, more telemetry and mitigation.</li>
+    <li><strong>AWS WAF:</strong> Block/filter requests with rate-based rules, IP sets, geo-blocking, and managed rule groups.</li>
+    <li><strong>Firewall Manager:</strong> Manage WAF rules centrally across accounts.</li>
+  </ul>
+
+  <h2>Detection</h2>
+  <ul>
+    <li>Monitor CloudFront/ALB request metrics and sudden spikes in request count, 4xx/5xx, and network-level metrics.</li>
+    <li>Use Shield Advanced alerts and AWS GuardDuty for suspicious activity.</li>
+  </ul>
+
+  <h2>Mitigation playbook</h2>
+  <ol>
+    <li>Enable WAF rules to block obvious bad traffic (bots, bad UA, known bad IPs).</li>
+    <li>Apply rate limiting rules (e.g., per-IP limit).</li>
+    <li>Enable CAPTCHA/challenges for suspicious endpoints.</li>
+    <li>Engage AWS Shield Advanced for large attacks and use their DRT in extreme cases.</li>
+    <li>Scale edge caches and increase origin capacity if possible. Use origin failover and minimization of expensive dynamic work.</li>
+  </ol>
+</body>
+</html>

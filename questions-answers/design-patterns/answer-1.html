@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Design patterns — overview and example</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;line-height:1.6;color:#111;background:#f7f8fb;padding:28px}
+    .container{max-width:900px;margin:0 auto;background:#fff;padding:28px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px;margin-bottom:8px}
+    h2{font-size:18px;margin-top:18px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace;background:#eef2ff;padding:2px 6px;border-radius:4px}
+    ul{margin-left:18px}
+    .note{background:#fffceb;border-left:4px solid #ffd66b;padding:10px;border-radius:6px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Design patterns — overview and example</h1>
+    <p><strong>Executive summary</strong>: Design patterns are repeatable solutions to commonly occurring design problems in software. They capture best practice, improve communication across teams, and help build maintainable systems. This document explains what patterns are, categories, trade-offs, and walks through a concrete example (the <em>Strategy</em> pattern) with an idiomatic Ruby implementation and guidance on when to use — and when not to.</p>
+
+    <h2>What are design patterns?</h2>
+    <p>A design pattern is a named, proven solution describing how to solve a recurring software design problem. Patterns are not code templates but conceptual blueprints: they describe responsibilities of classes/objects and how they collaborate.</p>
+
+    <h2>Why use them?</h2>
+    <ul>
+      <li><strong>Shared vocabulary</strong> — saying "Strategy" conveys a lot of meaning to other engineers.</li>
+      <li><strong>Proven solutions</strong> — patterns encapsulate experience and edge cases.</li>
+      <li><strong>Maintainability</strong> — better separation of concerns and easier testing.</li>
+      <li><strong>Flexibility</strong> — many patterns enable easy swapping of behavior without code churn.</li>
+    </ul>
+
+    <h2>High-level categories</h2>
+    <ul>
+      <li><strong>Creational</strong> — control object creation (Factory, Builder, Singleton).</li>
+      <li><strong>Structural</strong> — compose classes/objects into larger structures (Adapter, Decorator, Composite, Facade).</li>
+      <li><strong>Behavioral</strong> — algorithms and object responsibilities (Strategy, Template Method, Observer, Command).</li>
+    </ul>
+
+    <h2>Example: Strategy pattern (Ruby)</h2>
+    <p><strong>Problem</strong>: You have a component that needs to perform one of several interchangeable behaviors (for example, different tax calculations, or different export formats for a report). You want to add new behaviors with minimal changes to the core flow.</p>
+    <p><strong>Solution</strong>: Use the Strategy pattern: define a family of algorithms (strategies), encapsulate each one behind a common interface, and inject the chosen strategy into the context.</p>
+
+    <h3>Why Strategy?</h3>
+    <ul>
+      <li>Encourages single responsibility — strategies focus on algorithm implementation.</li>
+      <li>Makes testing easy — swap in fakes or simple strategies for unit tests.</li>
+      <li>Open/Closed — add new strategies without modifying the context.</li>
+    </ul>
+
+    <h3>Ruby example — report exporter</h3>
+    <pre><code># plain Ruby illustration of Strategy for exporting a report
+
+module ExportStrategy
+  def export(report)
+    raise NotImplementedError
+  end
+end
+
+class CsvExport
+  include ExportStrategy
+  def export(report)
+    # produce CSV string
+    headers = report.columns.join(',')
+    rows = report.rows.map { |r| r.map(&:to_s).join(',') }
+    [headers, *rows].join("\n")
+  end
+end
+
+class JsonExport
+  include ExportStrategy
+  require 'json'
+  def export(report)
+    {meta: report.meta, rows: report.rows}.to_json
+  end
+end
+
+class ReportService
+  def initialize(exporter:)
+    @exporter = exporter
+  end
+
+  def generate_report(data)
+    report = build_report_from(data)
+    @exporter.export(report)
+  end
+
+  private
+
+  def build_report_from(data)
+    # return a simple PORO with columns/rows/meta
+    OpenStruct.new(columns: data[:columns], rows: data[:rows], meta: {created_at: Time.now})
+  end
+end
+
+# usage
+service = ReportService.new(exporter: CsvExport.new)
+puts service.generate_report(columns: ['id','name'], rows: [[1,'alice']])
+</code></pre>
+
+    <h2>Subquestions you might be asked (and short answers)</h2>
+    <ul>
+      <li><strong>Q: How is Strategy different from Template Method?</strong> <br>Template Method defines the skeleton of an algorithm in a base class and subclasses implement steps. Strategy encapsulates whole interchangeable algorithms as separate classes—more flexible at runtime.</li>
+      <li><strong>Q: When should I not use design patterns?</strong> <br>When they overcomplicate simple problems. Prefer simple functions/classes; patterns are for recurring design problems that justify the indirection.</li>
+      <li><strong>Q: How to test patterns?</strong> <br>Unit-test strategies independently. For the context, assert it delegates to strategy but mock the strategy for behavior isolation.</li>
+      <li><strong>Q: Are design patterns language specific?</strong> <br>Patterns are conceptual but idiomatic implementations differ. Ruby favors duck typing and modules; Java/C# rely on interfaces and inheritance.</li>
+    </ul>
+
+    <h2>Practical notes / anti-patterns</h2>
+    <ul>
+      <li>Avoid creating too many tiny classes for minor variations — this leads to class explosion.</li>
+      <li>Prefer composition over inheritance. Strategy uses composition and is usually safer.</li>
+      <li>Document the rationale: name the pattern in code comments to help maintainers.</li>
+    </ul>
+
+    <p class="note"><strong>Quick takeaway</strong>: Use design patterns as communication tools and tested blueprints. For interchangeable behavior, Strategy is lightweight, testable, and suits dynamic languages like Ruby well.</p>
+
+    <footer style="margin-top:18px;font-size:13px;color:#666">Prepared by a system architect — sample code is illustrative and concise for interview purposes.</footer>
+  </div>
+</body>
+</html>

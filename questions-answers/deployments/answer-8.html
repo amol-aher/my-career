@@ -1,0 +1,71 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Designing Highly Available Deployments on AWS</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:22px;color:#222;line-height:1.6}
+    h1{background:#00695c;color:#fff;padding:12px;border-radius:8px}
+    h2{color:#00695c}
+    pre{background:#f6f8f7;padding:12px;border-radius:6px;overflow:auto}
+    ul{margin:8px 0 8px 20px}
+  </style>
+</head>
+<body>
+  <h1>Designing Highly Available Deployments on AWS</h1>
+  <h2>Principles</h2>
+  <ul>
+    <li>Eliminate single points of failure.</li>
+    <li>Distribute across failure domains (AZs and regions).</li>
+    <li>Automate recovery: health checks, auto-healing and autoscaling.</li>
+    <li>Design for graceful degradation.</li>
+    <li>Test failover regularly (chaos engineering).</li>
+  </ul>
+
+  <h2>Architecture pattern (multi-AZ, single-region)</h2>
+  <pre><code>Client -> Route53 -> ALB (multi-AZ) -> AutoScaling Group / ECS tasks / EKS nodes (multi-AZ)
+                                       \-> RDS (Multi-AZ) -> Read replicas (for read scaling)
+                                       \-> ElastiCache (Multi-AZ)</code></pre>
+
+  <h2>Key components</h2>
+  <ul>
+    <li><strong>Networking:</strong> VPC with public/private subnets in at least two AZs. NAT gateways and route tables configured per AZ for resiliency.</li>
+    <li><strong>Load balancing:</strong> Use ALB for HTTP; enable cross-zone load balancing and health checks with meaningful endpoints.</li>
+    <li><strong>Auto scaling:</strong> Configure ASGs or Kubernetes HPA based on CPU/requests/custom metrics.</li>
+    <li><strong>Databases:</strong> Use RDS Multi-AZ or Aurora for automatic failover. Use read replicas for scaling reads and promote when needed.</li>
+    <li><strong>Stateless services:</strong> Store uploads in S3 and session state in ElastiCache or DynamoDB to allow horizontal scaling.</li>
+    <li><strong>Resilience:</strong> Implement retries with exponential backoff, circuit breakers and timeouts.</li>
+    <li><strong>Monitoring & Recovery:</strong> CloudWatch alarms, automated runbooks and Lambda/SSM automation to remediate common failures.</li>
+  </ul>
+
+  <h2>Multi-region considerations</h2>
+  <p>For stronger SLAs, replicate data and services across regions. Choose an appropriate DR strategy:</p>
+  <ul>
+    <li><strong>Warm standby:</strong> Smaller footprint in secondary region that can scale up.</li>
+    <li><strong>Pilot light:</strong> Minimal resources in the secondary region and automated scripts to scale up.</li>
+    <li><strong>Active-active:</strong> Full production in multiple regions with data replication and conflict resolution.</li>
+  </ul>
+
+  <h2>Testing and validation</h2>
+  <ul>
+    <li>Run failover drills and simulate AZ/network failures.</li>
+    <li>Use synthetic transactions to validate user journeys.</li>
+    <li>Ensure recovery time objectives (RTO) and recovery point objectives (RPO) meet requirements.</li>
+  </ul>
+
+  <h2>Subquestions & sample answers</h2>
+  <h3>How do you ensure the database doesn't become a single point of failure?</h3>
+  <p>Use RDS Multi-AZ for automatic failover and cross-region read-replicas for disaster recovery. For low RPO, use Aurora Global Database or multi-master solutions where conflict resolution is handled by the DB.</p>
+
+  <h3>How do you handle session state?</h3>
+  <p>Keep services stateless; store sessions in ElastiCache (Redis) or DynamoDB. Alternatively, use JWTs for sessionless authentication where appropriate.</p>
+
+  <h3>How to handle stateful workloads?</h3>
+  <p>Stateful workloads require careful planning: use persistent volumes (EBS) with replication strategies, or move to managed databases that handle replication (RDS/Aurora). For file artifacts, use S3 with lifecycle policies.</p>
+
+  <h2>Conclusion</h2>
+  <p>Highly available systems combine architectural choices (multi-AZ/region), managed services (RDS/Aurora), automation (autoscaling, health checks), and operational practices (monitoring, runbooks and chaos tests). These together form a resilient system.</p>
+</body>
+</html>

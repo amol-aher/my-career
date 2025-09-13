@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Challenges in Monolith to Microservices Migration</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1, h2, h3 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .code-block { margin: 20px 0; }
+        .subquestion { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Challenges in Moving from Monolith to Microservices</h1>
+    
+    <h2>1. Complexity Management</h2>
+    <ul>
+        <li><strong>Increased Operational Overhead:</strong> Managing multiple services requires sophisticated orchestration</li>
+        <li><strong>Debugging Difficulty:</strong> Distributed tracing becomes essential for diagnosing issues across services</li>
+        <li><strong>Coordination Challenges:</strong> Ensuring consistent deployment and rollback strategies</li>
+    </ul>
+    
+    <h2>2. Data Management Challenges</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Challenge</th>
+                <th>Impact</th>
+                <th>Mitigation Strategy</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Database Splitting</td>
+                <td>Referential integrity breaks</td>
+                <td>Eventual consistency with sagas, CQRS</td>
+            </tr>
+            <tr>
+                <td>Shared Data Access</td>
+                <td>Performance bottlenecks</td>
+                <td>Cache frequently accessed data, use read replicas</td>
+            </tr>
+            <tr>
+                <td>Transaction Management</td>
+                <td>Inconsistent states</td>
+                <td>Saga pattern for distributed transactions</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h2>3. Organizational Challenges</h2>
+    <ul>
+        <li><strong>Team Structure Changes:</strong> Shift from component teams to cross-functional product teams</li>
+        <li><strong>Communication Overhead:</strong> Increased coordination between independent teams</li>
+        <li><strong>Knowledge Silos:</strong> Risk of losing institutional knowledge during decomposition</li>
+    </ul>
+    
+    <h2>4. Deployment and Testing</h2>
+    <ul>
+        <li><strong>Integration Testing Complexity:</strong> Need for comprehensive contract testing between services</li>
+        <li><strong>Deployment Coordination:</strong> Coordinating releases across dependent services</li>
+        <li><strong>Rollback Difficulties:</strong> Partial rollbacks become more complex than monolithic rollbacks</li>
+    </ul>
+    
+    <h2>5. Cost Implications</h2>
+    <ul>
+        <li><strong>Infrastructure Costs:</strong> Higher operational costs for managing multiple services</li>
+        <li><strong>Tooling Investment:</strong> Significant investment in observability and DevOps tooling</li>
+        <li><strong>Training Requirements:</strong> Team retraining for distributed systems concepts</li>
+    </ul>
+    
+    <div class="subquestion">
+        <h3>Common Subquestions:</h3>
+        
+        <h4>Q: How do you handle service dependencies?</h4>
+        <p>Implement service meshes (Istio, Linkerd) for traffic management, use circuit breakers to prevent cascading failures, and establish clear SLAs between services.</p>
+        
+        <h4>Q: What's your approach to versioning microservices?</h4>
+        <p>Use semantic versioning with backward-compatible changes. Implement API gateways for version routing and deprecate old versions gradually.</p>
+        
+        <h4>Q: How do you maintain security in a distributed architecture?</h4>
+        <p>Implement mutual TLS authentication, centralize security policies with service mesh, conduct regular penetration testing, and enforce least privilege principles.</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Using CDNs — What they are and how to use them</title><style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.6; padding:28px; color:#111; background:#fff; }
+    .container{max-width:980px;margin:0 auto;}
+    header{border-bottom:1px solid #e6e6e6;margin-bottom:18px;padding-bottom:8px;}
+    h1{font-size:26px;margin:0 0 6px 0;}
+    h2{font-size:18px;margin-top:18px;color:#0b69ff;}
+    h3{font-size:15px;margin-top:14px;color:#0b69ff;}
+    p{margin:8px 0;}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:4px;}
+    ul{margin:8px 0 8px 20px;}
+    table{border-collapse:collapse;width:100%;margin:8px 0;}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+    .muted{color:#666;font-size:13px;}
+    footer{border-top:1px solid #e6e6e6;margin-top:22px;padding-top:12px;color:#666;font-size:13px;}
+    .kbd{background:#f4f4f4;padding:2px 6px;border-radius:4px;font-family:monospace;}
+    </style></head>
+<body>
+<div class="container">
+<header>
+<h1>Using CDNs — What they are and how to use them</h1>
+<p class="muted">Prepared by: Senior Software Engineer &amp; System Architect — Rails / AWS / SQL / Vue.js</p>
+<p class="muted">Date: 2025-09-10 (UTC)</p>
+</header>
+
+<p class="muted"><strong>Overview</strong></p>
+<p>Definition, benefits, configuration and examples of using CDNs with Rails (CloudFront, Fastly, Cloudflare, Akamai), signed URLs, cache-control strategies, and invalidation.</p>
+
+<section><h2>What is a CDN and why use one?</h2>
+<p>CDN = Content Delivery Network. A globally distributed network of edge servers that cache and deliver content (static assets, images, videos, APIs) closer to end users to reduce latency, save origin bandwidth, and improve availability.</p>
+<ul>
+<li>Benefits: lower latency, reduced origin load, DDoS mitigation at edge, geographic caching, and TLS termination at edge.</li>
+</ul>
+</section>
+<section><h2>Common CDN providers I've worked with</h2>
+<ul>
+<li><strong>AWS CloudFront:</strong> deeply integrated with S3, signed URLs, Lambda@Edge.</li>
+<li><strong>Fastly:</strong> programmable edge (VCL), real-time purging — good for dynamic caching strategies.</li>
+<li><strong>Cloudflare:</strong> easy global coverage, WAF, edge workers, and DNS integration.</li>
+<li><strong>Akamai:</strong> enterprise CDN with extensive features for high-volume media delivery.</li>
+</ul>
+</section>
+<section><h2>How to use CDN with Rails assets and uploads</h2>
+<ul>
+<li><strong>Assets pipeline:</strong> Configure Rails to serve assets from CDN host (asset_host). Precompile and upload assets to S3 or directly to CDN origin.</li>
+<li><strong>ActiveStorage:</strong> Use S3 for storage and serve via CloudFront with signed URLs for private objects.</li>
+<li><strong>Cache headers:</strong> Set appropriate <code>Cache-Control</code> and <code>Expires</code> headers. Use long-term caching for fingerprinted assets and short TTLs for dynamic content.</li>
+</ul>
+<pre><code># config/environments/production.rb
+config.action_controller.asset_host = "https://d123.cloudfront.net"
+config.active_storage.service = :amazon
+</code></pre>
+</section>
+<section><h2>Cache invalidation & purging</h2>
+<p>Approaches:</p>
+<ul>
+<li><strong>Versioned assets:</strong> Fingerprint files (e.g., app-abcdef.js) so you rarely need purging.</li>
+<li><strong>Explicit purge:</strong> Use CDN APIs to purge specific URLs or cache tags (Fastly supports surrogate keys).</li>
+<li><strong>Short TTLs for dynamic endpoints:</strong> Use Cache-Control: max-age=0, s-maxage=60 for edge caching with origin revalidation.</li>
+</ul>
+</section>
+<section><h2>Edge compute and tradeoffs</h2>
+<p>Edge compute (Lambda@Edge, Workers) allows running small logic at the edge (A/B tests, redirects, header rewrites). Use sparingly; consider complexity and debugging overhead.</p>
+</section>
+<section><h2>Security & CDN</h2>
+<ul>
+<li>Use TLS at edge and enforce HTTPS.</li>
+<li>Use WAF and rate-limiting at CDN level to block obvious attacks before they reach origin.</li>
+<li>Use signed URLs or cookies for access-controlled content (ActiveStorage + CloudFront signed URLs).</li>
+</ul>
+</section>
+<section><h2>Subquestions you should expect</h2>
+<ol>
+<li><strong>How to serve private files via CDN?</strong><br/>Use signed URLs or signed cookies; CloudFront signed URLs integrate well with S3 private buckets.</li>
+<li><strong>How to handle API caching?</strong><br/>Cache only idempotent, read-heavy endpoints. Use Vary, Cache-Control, and consider Edge Side Includes or surrogate keys for partial caching.</li>
+</ol>
+</section>
+
+
+<footer>I can produce a CloudFront + S3 + Rails example (Terraform + Rails config) with signed URLs for private assets.</footer>
+</div>
+</body>
+</html>

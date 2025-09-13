@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>ActiveRecord dynamic finders</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:18px;color:#111}
+    h1{color:#1a56db} h2{color:#0b5a78}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <h1>How ActiveRecord implemented dynamic finders like <code>find_by_name_and_email</code> (older versions)</h1>
+
+  <p>In older Rails (pre-4.x), ActiveRecord used <code>method_missing</code> to implement dynamic finders such as <code>find_by_name_and_email</code>. The idea: parse the method name to extract attribute names and compose a query.</p>
+
+  <h2>How it worked (simplified)</h2>
+  <pre><code class="language-ruby">def method_missing(method_name, *args, &blk)
+  if method_name =~ /^find_by_(.+)$/
+    attrs = $1.split('_and_')
+    conditions = attrs.zip(args).map { |a, v| "#{a} = ?" }.join(" AND ")
+    where([conditions, *args]).first
+  else
+    super
+  end
+end</code></pre>
+
+  <p>To improve performance, Rails later used a define-on-first-call pattern: once a dynamic finder was invoked, Rails defined a concrete method (via <code>define_singleton_method</code> on the model class) so subsequent calls avoid <code>method_missing</code> overhead.</p>
+
+  <h2>Why Rails moved away from many dynamic finders</h2>
+  <ul>
+    <li>Method explosion: large number of possible combinations made API surface hard to document and maintain.</li>
+    <li>Surprising behavior and subtle bugs when attribute names change or when associations are involved.</li>
+    <li>Encouraged brittle code that depended on method names rather than explicit queries.</li>
+  </ul>
+
+  <h2>Modern approach</h2>
+  <p>Modern Rails recommends using <code>where</code>, <code>find_by</code> (with hash), or named scopes for clarity:</p>
+  <pre><code class="language-ruby">User.where(name: 'Ada', email: 'a@b.com').first
+User.find_by(name: 'Ada', email: 'a@b.com')</code></pre>
+
+  <h2>Security considerations</h2>
+  <p>When implementing dynamic finders, ensure safe parameter binding. Never interpolate user input into SQL.</p>
+
+  <h2>Summary</h2>
+  <p>Dynamic finders were a clever metaprogramming convenience implemented via <code>method_missing</code> and later optimized by dynamically defining methods. Rails moved to more explicit APIs for maintainability and clarity.</p>
+</body>
+</html>

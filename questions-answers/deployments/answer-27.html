@@ -1,0 +1,54 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>CodePipeline vs CodeBuild vs CodeDeploy</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:24px;color:#222;line-height:1.6}
+    h1{background:#0dcaf0;color:#fff;padding:12px;border-radius:8px}
+    h2{color:#0dcaf0;margin-top:18px}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{border:1px solid #ddd;padding:10px;text-align:left}
+    th{background:#e9fafb}
+  </style>
+</head>
+<body>
+  <h1>Differences Between CodePipeline, CodeBuild, and CodeDeploy</h1>
+
+  <h2>Short definitions</h2>
+  <ul>
+    <li><strong>CodePipeline:</strong> Orchestrates stages and actions for the entire release process.</li>
+    <li><strong>CodeBuild:</strong> Fully-managed build service that compiles code, runs tests and produces build artifacts.</li>
+    <li><strong>CodeDeploy:</strong> Manages deployments to compute platforms (EC2, ECS, Lambda, on-premise) with strategies like in-place or blue-green.</li>
+  </ul>
+
+  <h2>Comparison table</h2>
+  <table>
+    <tr><th>Service</th><th>Primary purpose</th><th>Typical usage</th></tr>
+    <tr><td>CodePipeline</td><td>Orchestration</td><td>Wire up source -> build -> test -> deploy steps and approvals</td></tr>
+    <tr><td>CodeBuild</td><td>Build & test</td><td>Run buildspec.yml to build artifacts and run tests</td></tr>
+    <tr><td>CodeDeploy</td><td>Deployment</td><td>Perform ECS blue-green, EC2 in-place or Lambda deployments with lifecycle hooks</td></tr>
+  </table>
+
+  <h2>How they work together</h2>
+  <p>A typical flow: CodePipeline detects a change, triggers CodeBuild to build artifacts and run tests, then CodeDeploy (or CloudFormation) deploys the artifacts to target environments. CodePipeline coordinates and stores artifacts between actions.</p>
+
+  <h2>When to use alternatives</h2>
+  <ul>
+    <li>Use Jenkins/GitHub Actions for richer plugin ecosystems or advanced orchestration features if needed.</li>
+    <li>Use ArgoCD for Kubernetes GitOps-style continuous delivery.</li>
+  </ul>
+
+  <h2>Subquestions</h2>
+  <h3>How do I implement blue-green deployments with these?</h3>
+  <p>A: Use CodeDeploy (ECS) or CloudFormation with CodePipeline orchestrating the workflow. CodeDeploy will shift traffic and supports lifecycle hooks for validation and rollback.</p>
+
+  <h3>How to run tests in CodeBuild?</h3>
+  <p>A: Provide a buildspec.yml that runs tests during the build phase and outputs JUnit reports to be consumed by the pipeline.</p>
+
+  <h2>Conclusion</h2>
+  <p>Use CodePipeline for orchestration, CodeBuild for building/testing, and CodeDeploy for safe, auditable deployments. They integrate tightly and let you build robust end-to-end AWS-native CI/CD systems.</p>
+</body>
+</html>

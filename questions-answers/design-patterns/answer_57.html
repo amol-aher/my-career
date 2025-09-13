@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Repository + Unit of Work pattern in Rails</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:28px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Implementing Repository + Unit of Work in Rails</h1>
+
+    <p><strong>Concept</strong>: Repository abstracts data access operations; Unit of Work groups several operations into a single transaction (commit/rollback). Together they make complex data handling explicit and testable.</p>
+
+    <h2>Why use them in Rails?</h2>
+    <ul>
+      <li>Decouple domain logic from ActiveRecord and SQL.</li>
+      <li>Enable easier testing by mocking repository interfaces.</li>
+      <li>Centralize transaction boundaries and side-effect management.</li>
+    </ul>
+
+    <h2>Simple implementation</h2>
+    <pre><code>class OrderRepository
+  def find(id)
+    Order.find(id)
+  end
+
+  def save(order_entity)
+    record = order_from_entity(order_entity)
+    record.save!
+    order_from_record(record)
+  end
+
+  private
+  def order_from_entity(e); end
+  def order_from_record(r); end
+end
+
+class UnitOfWork
+  def initialize
+    @operations = []
+  end
+
+  def register(&blk)
+    @operations << blk
+  end
+
+  def commit
+    ActiveRecord::Base.transaction do
+      @operations.each(&:call)
+    end
+  end
+end
+
+# usage
+uow = UnitOfWork.new
+uow.register { OrderRepository.new.save(order_entity) }
+uow.register { InventoryRepository.new.decrement(items) }
+uow.commit
+</code></pre>
+
+    <h2>Variations and best practices</h2>
+    <ul>
+      <li>Implement transaction boundaries in application services rather than scattering them.</li>
+      <li>Keep repositories thin: CRUD and mapping logic only.</li>
+      <li>When using multiple DBs or microservices, Unit of Work cannot span them—use sagas or distributed transactions (compensating actions).</li>
+    </ul>
+
+    <h2>Testing</h2>
+    <ul>
+      <li>Unit-test domain services by mocking repositories (no DB).</li>
+      <li>Test repository implementations with integration tests hitting a test DB.</li>
+    </ul>
+
+    <h2>Interview tip</h2>
+    <p>Explain how UoW reduced partial-success bugs in an order/fulfillment flow and how you handled multi-system compensations via sagas when necessary.</p>
+  </div>
+</body>
+</html>

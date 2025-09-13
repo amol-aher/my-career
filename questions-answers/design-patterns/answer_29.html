@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Metaprogramming vs explicit design patterns in Ruby</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Trade-offs: metaprogramming vs explicit design patterns in Ruby</h1>
+
+    <h2>What is metaprogramming?</h2>
+    <p>Metaprogramming manipulates classes, methods, and code at runtime (define_method, method_missing, class_eval). Ruby’s dynamic nature makes it powerful.</p>
+
+    <h2>Benefits of metaprogramming</h2>
+    <ul>
+      <li>Reduces boilerplate (e.g., generate attribute methods dynamically)</li>
+      <li>Enables elegant DSLs (ActiveRecord macros, RSpec DSL)</li>
+      <li>Can make code more concise and expressive</li>
+    </ul>
+
+    <h2>Risks & trade-offs</h2>
+    <ul>
+      <li><strong>Readability:</strong> dynamic code can be harder for new team members to understand.</li>
+      <li><strong>Tooling:</strong> static analysis, IDEs and type checking struggle with dynamically created methods.</li>
+      <li><strong>Debugging:</strong> stack traces and introspection become more complex.</li>
+      <li><strong>Performance:</strong> some metaprogramming techniques add overhead.</li>
+    </ul>
+
+    <h2>When to prefer explicit patterns</h2>
+    <ul>
+      <li>Core domain logic that needs to be explicit and audited.</li>
+      <li>Public APIs or libraries where surprising behavior would be harmful.</li>
+      <li>When team familiarity and maintainability is a top priority.</li>
+    </ul>
+
+    <h2>Balanced approach</h2>
+    <ul>
+      <li>Use metaprogramming for DRY-ness and DSLs, but keep the surface area small and well-documented.</li>
+      <li>Prefer explicit code for business logic — use patterns like Strategy, Adapter, and Command.</li>
+      <li>Provide generated method documentation and examples; include tests that document behavior.</li>
+    </ul>
+
+    <h2>Example — method_missing vs explicit delegation</h2>
+    <pre><code># metaprogramming version
+class DynamicProxy
+  def initialize(target)
+    @target = target
+  end
+
+  def method_missing(name, *args, &blk)
+    if @target.respond_to?(name)
+      @target.public_send(name, *args, &blk)
+    else
+      super
+    end
+  end
+end
+
+# explicit delegation version
+require 'forwardable'
+class ExplicitProxy
+  extend Forwardable
+  def_delegators :@target, :foo, :bar
+  def initialize(target); @target = target; end
+end
+</code></pre>
+
+    <h2>Interview tip</h2>
+    <p>Talk about pragmatic trade-offs and provide examples where you replaced metaprogramming with explicit code to improve maintainability in a team setting.</p>
+  </div>
+</body>
+</html>

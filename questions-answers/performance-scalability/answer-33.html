@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>How Background Job Frameworks Improve Scalability (Sidekiq, Resque)</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>How Background Job Frameworks Improve Scalability (Sidekiq, Resque)</h1>
+  <p>Background job systems decouple work from request-response cycle, smoothing bursts, enabling retries, parallelism, and independent scaling.</p>
+
+  <h2>Key benefits</h2>
+  <ul>
+    <li><strong>Asynchronous processing:</strong> Move slow operations (email, reports, image processing) off the request path so web response latency stays low.</li>
+    <li><strong>Parallelism:</strong> Worker pools can be scaled horizontally to increase throughput.</li>
+    <li><strong>Retry & error handling:</strong> Built-in retry semantics and dead job tracking.</li>
+    <li><strong>Persistence & durability:</strong> Jobs are persisted (Redis for Sidekiq, Redis for Resque) so they survive restarts.</li>
+  </ul>
+
+  <h2>Sidekiq specifics</h2>
+  <ul>
+    <li>Uses Redis as a job store, highly concurrent with threads, efficient memory usage.</li>
+    <li>Supports queues, priorities, scheduled jobs, middleware hooks, and plugins (sidekiq-unique-jobs, sidekiq-throttled).</li>
+    <li>Easy horizontal scaling by adding more Sidekiq processes/pods.</li>
+  </ul>
+
+  <h2>Resque specifics</h2>
+  <ul>
+    <li>Process-based workers (forking model). Good isolation but more memory per worker.</li>
+    <li>Also uses Redis, offers plugins for retries and scheduling (resque-scheduler).</li>
+  </ul>
+
+  <h2>Practical patterns</h2>
+  <ul>
+    <li>Use dedicated queues for heavy jobs and lower concurrency there to avoid DB spikes.</li>
+    <li>Use bulk/batched processing to reduce DB round-trips.</li>
+    <li>Isolate CPU-bound jobs on separate worker clusters (different instance types) than IO-bound jobs.</li>
+  </ul>
+
+  <h2>Example: Sidekiq worker</h2>
+  <pre><code>class ReportWorker
+  include Sidekiq::Worker
+  sidekiq_options queue: 'reports', retry: 5
+
+  def perform(report_id)
+    report = Report.find(report_id)
+    report.generate!
+  end
+end
+  </code></pre>
+
+  <h2>Monitoring & scaling</h2>
+  <p>Monitor queue latency (time jobs spend in queue), throughput, retries and dead jobs. Scale workers based on queue depth and processing rate.</p>
+
+  <h2>Summary</h2>
+  <p>Background job frameworks are essential for scalability: they remove long-running tasks from the user-facing path, allow independent scaling of workers, and provide durability and retries. Choose Sidekiq for thread-efficient high throughput; use Resque if you prefer process isolation.</p>
+</body>
+</html>

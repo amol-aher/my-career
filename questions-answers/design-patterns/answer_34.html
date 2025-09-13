@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Decorator / Presenter pattern in Rails</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Implementing Decorator / Presenter in a Rails app</h1>
+
+    <p><strong>Purpose</strong>: Separate presentation logic from domain models. Presenters/Decorators format data for views (dates, currency, composed fields) and can wrap models to provide view-specific helpers.</p>
+
+    <h2>Option 1 — Use Draper gem (common, feature-rich)</h2>
+    <pre><code># Gemfile
+# gem 'draper'
+
+class ProductDecorator &lt; Draper::Decorator
+  delegate_all
+
+  def display_price
+    h.number_to_currency(object.price_cents / 100.0)
+  end
+
+  def title_with_brand
+    "#{object.brand.name} — #{object.title}"
+  end
+end
+
+# controller
+def show
+  @product = Product.find(params[:id]).decorate
+end
+
+# view
+= @product.display_price
+</code></pre>
+
+    <h2>Option 2 — SimpleDelegator-based presenter (no gem)</h2>
+    <pre><code>class ProductPresenter &lt; SimpleDelegator
+  include ActionView::Helpers::NumberHelper
+
+  def initialize(product)
+    super(product)
+  end
+
+  def display_price
+    number_to_currency(__getobj__.price_cents / 100.0)
+  end
+end
+
+# usage
+@presenter = ProductPresenter.new(Product.find(...))
+</code></pre>
+
+    <h2>Where to use presenters</h2>
+    <ul>
+      <li>Complex formatting used only by views</li>
+      <li>Composed values joining multiple models for display</li>
+      <li>Localizing strings or presentation rules without polluting models</li>
+    </ul>
+
+    <h2>Best practices</h2>
+    <ul>
+      <li>Keep presenters small and focused on presentation concerns.</li>
+      <li>Don't place business logic in presenters; they should read model state, not change it.</li>
+      <li>Favor decorators for view-specific helpers and service objects for domain logic.</li>
+    </ul>
+
+    <h2>Interview tip</h2>
+    <p>Show both Draper and a small SimpleDelegator-based example and explain the separation of concerns and testability benefits.</p>
+  </div>
+</body>
+</html>

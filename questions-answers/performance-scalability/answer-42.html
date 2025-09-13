@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Monolith vs Modular Monolith vs Microservices</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Monolith, Modular Monolith, and Microservices — Differences & Trade-offs</h1>
+
+  <h2>Monolith</h2>
+  <p>All components (UI, business logic, persistence) live in a single codebase and are deployed together.</p>
+  <ul><li><strong>Pros:</strong> Simple to develop, test, and deploy initially. Easier transaction boundaries and local debugging.</li>
+  <li><strong>Cons:</strong> Can become large, slow deploys, hard to scale specific parts independently.</li></ul>
+
+  <h2>Modular Monolith</h2>
+  <p>Single deployable process but with strict modular boundaries (modules, packages) enforced via code structure and interfaces.</p>
+  <ul><li><strong>Pros:</strong> Keeps operational simplicity while encouraging separation of concerns, easier to migrate to microservices later.</li>
+  <li><strong>Cons:</strong> Still a single failure domain and shared DB; must discipline the team to respect modules.</li></ul>
+
+  <h2>Microservices</h2>
+  <p>Many small, independently deployable services each owning its data and API.</p>
+  <ul><li><strong>Pros:</strong> Independent scaling, teams, and tech stacks; fault isolation.</li>
+  <li><strong>Cons:</strong> Operational complexity: distributed tracing, deployment pipelines, inter-service contracts, network failures.</li></ul>
+
+  <h2>When to pick what</h2>
+  <ul>
+    <li>Start with a modular monolith for early-stage products — simpler and faster.</li>
+    <li>Move to microservices when you need independent scaling, separate data governance, or independent release cadence for different domains.</li>
+  </ul>
+
+  <h2>Migration path</h2>
+  <p>Refactor into modules->extract bounded contexts->introduce asynchronous events->extract services. Keep APIs backward compatible and incrementally migrate.</p>
+</body>
+</html>

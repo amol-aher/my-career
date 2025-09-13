@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mentoring and Ensuring Growth while Maintaining Quality</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; padding:28px; background:#f6fbff; color:#071222; }
+    h1 { color:#0b3d91; }
+    section { background:#fff; padding:16px; border-radius:10px; box-shadow:0 1px 6px rgba(12,18,32,0.05); margin-bottom:12px; }
+    ul { margin-left:18px; }
+    .plan { background:#f0fff6; padding:10px; border-left:4px solid #2a9d8f; border-radius:6px; }
+    pre { background:#f3f9f5; padding:10px; border-radius:6px; overflow:auto; }
+  </style>
+</head>
+<body>
+  <h1>Mentoring and Ensuring Growth while Maintaining Quality</h1>
+
+  <section>
+    <h2>Principles</h2>
+    <ul>
+      <li>Growth is deliberate — set clear expectations, measurable goals, and regular feedback loops.</li>
+      <li>Teach by doing — use code reviews, pair-programming, and real-world tasks as learning vehicles.</li>
+      <li>Enable ownership — give engineers responsibility with safety nets (mentors, checkpoints).</li>
+      <li>Keep quality high by automating checks and making it easy to do the right thing.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Practical mentoring activities</h2>
+    <ul>
+      <li><strong>1:1s with a growth agenda</strong> — at minimum bi-weekly; set short-term goals and track progress.</li>
+      <li><strong>Pair programming</strong> — schedule focused pairing sessions (1–2 hours) to work through non-trivial problems.</li>
+      <li><strong>Code review as coaching</strong> — write educational comments, link to docs, suggest small follow-up tasks.</li>
+      <li><strong>Learning curriculum</strong> — create a curated reading list and small exercises (e.g., SQL tuning, system design).</li>
+      <li><strong>Brown-bag / Tech talks</strong> — team knowledge sharing to cover architecture, troubleshooting, and patterns.</li>
+      <li><strong>Rotation & ownership</strong> — rotate on-call, or own a small subsystem to gain end-to-end responsibility.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Keeping quality high while people grow</h2>
+    <ol>
+      <li><strong>Automate guardrails:</strong> test suites, linters (RuboCop), security scanners, type checks. Make failures visible and actionable.</li>
+      <li><strong>Definition of Done:</strong> require tests, docs, and monitoring for production-facing changes.</li>
+      <li><strong>Mentor-backed deployments:</strong> for less-experienced engineers, couple first few deploys with a mentor present (pair deploy).</li>
+      <li><strong>Tech debt cadence:</strong> schedule dedicated time to pay down debt so mentoring time isn't constantly consumed by firefighting.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Career development & measurable plans</h2>
+    <div class="plan">
+      <h3>Sample 30–60–90 day engineering growth plan</h3>
+      <ul>
+        <li><strong>30 days:</strong> Understand codebase, complete small bugfixes, and pair on one feature; get comfortable with test and deploy flow.</li>
+        <li><strong>60 days:</strong> Lead a small feature end-to-end with mentor oversight, add meaningful tests, and fix a minor performance bug.</li>
+        <li><strong>90 days:</strong> Own a component, improve its test coverage, and give a short internal presentation on lessons learned.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>Handling underperformance (compassionate & structured)</h2>
+    <ol>
+      <li><strong>Diagnose:</strong> identify gaps — skills, motivation, unclear expectations, or external blockers.</li>
+      <li><strong>Private feedback:</strong> be specific: show examples of behaviors, impact, and desired change.</li>
+      <li><strong>Actionable plan:</strong> create a time-boxed improvement plan with measurable checkpoints and resources (mentoring, training).</li>
+      <li><strong>Follow-up:</strong> frequent check-ins and document progress. If no improvement after agreed period, involve HR/people ops with documented evidence.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Scaling mentorship across a team</h2>
+    <ul>
+      <li>Establish a buddy system for onboarding.</li>
+      <li>Run cohort-based learning for common topics (databases, performance, testing).</li>
+      <li>Encourage "mentors of the week" to field questions and run office hours.</li>
+      <li>Maintain living documentation and exemplars (good PRs, ADRs, postmortems).</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Subquestions & answers</h2>
+    <h3>Q: How do you measure mentoring effectiveness?</h3>
+    <p>A: Mix quantitative (faster PR turnaround, fewer reworks, increased ownership metrics) and qualitative (peer feedback, confidence, satisfaction in 1:1s).</p>
+
+    <h3>Q: How to nurture senior-level thinking?</h3>
+    <p>A: Provide stretch problems with architectural scope, involve them in design reviews, encourage writing ADRs, and create opportunities to mentor others.</p>
+
+    <h3>Q: How to balance shipping speed vs developer training?</h3>
+    <p>A: Use a mix: permit focused mentoring (pairing, code reviews) on feature work and protect some capacity weekly for training and refactor work that raises team velocity long-term.</p>
+  </section>
+
+  <footer>
+    <p>Final note: consistent, small investments in mentorship compound — they reduce defects, increase velocity and create a healthier engineering culture.</p>
+  </footer>
+</body>
+</html>

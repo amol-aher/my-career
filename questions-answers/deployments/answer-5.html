@@ -1,0 +1,53 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>AWS Services I've Used</title>
+  <style>
+    body{font-family:Tahoma,Arial,sans-serif;margin:22px;color:#222;line-height:1.6}
+    h1{background:#0d47a1;color:#fff;padding:12px;border-radius:8px}
+    h2{color:#0d47a1}
+    table{border-collapse:collapse;width:100%;margin-top:8px}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left}
+    th{background:#f1f1f1}
+  </style>
+</head>
+<body>
+  <h1>AWS Services I've Used</h1>
+  <p>Below is a categorized list of AWS services I have practical experience with and typical usage patterns.</p>
+  <table>
+    <tr><th>Category</th><th>Service</th><th>Usage / Notes</th></tr>
+    <tr><td>Compute</td><td>EC2</td><td>Custom AMIs, autoscaling groups, SSH bastions</td></tr>
+    <tr><td></td><td>ECS (EC2 & Fargate)</td><td>Container orchestration for microservices; scheduled tasks</td></tr>
+    <tr><td></td><td>EKS</td><td>Managed Kubernetes for complex microservices and custom controllers</td></tr>
+    <tr><td></td><td>Lambda</td><td>Serverless functions for async jobs and lightweight APIs</td></tr>
+    <tr><td>Storage</td><td>S3</td><td>Static hosting, backups, artifact storage, lifecycle policies</td></tr>
+    <tr><td></td><td>EFS / EBS</td><td>File storage and block devices for stateful workloads</td></tr>
+    <tr><td>Databases</td><td>RDS (Postgres, MySQL)</td><td>Primary OLTP databases with Multi-AZ</td></tr>
+    <tr><td></td><td>Aurora</td><td>Serverless and provisioned modes for high throughput</td></tr>
+    <tr><td></td><td>DynamoDB</td><td>NoSQL, caching patterns</td></tr>
+    <tr><td>Networking</td><td>VPC / Subnets / Security Groups</td><td>Network design and hardened perimeter</td></tr>
+    <tr><td></td><td>Route53</td><td>DNS, health checks, failover routing</td></tr>
+    <tr><td></td><td>ALB / NLB</td><td>Layer 7 and Layer 4 load balancing</td></tr>
+    <tr><td>Security</td><td>IAM / STS / KMS</td><td>Fine-grained roles, temporary creds, encryption keys</td></tr>
+    <tr><td></td><td>Secrets Manager / SSM</td><td>Managed secrets and parameter storage</td></tr>
+    <tr><td>Monitoring</td><td>CloudWatch / X-Ray</td><td>Logs, metrics, traces, dashboards and alarms</td></tr>
+    <tr><td></td><td>GuardDuty / Inspector</td><td>Threat detection and vulnerability scanning</td></tr>
+    <tr><td>Messaging / Integration</td><td>SQS / SNS / EventBridge</td><td>Event buses, decoupling and fan-out patterns</td></tr>
+    <tr><td>Developer Tools</td><td>CodeBuild / CodePipeline / CodeDeploy</td><td>CI/CD building blocks and integrated deployment workflows</td></tr>
+    <tr><td>Data & Analytics</td><td>Redshift / Kinesis / Glue / Athena</td><td>Streaming and analytics pipelines</td></tr>
+  </table>
+
+  <h2>How I've combined these services</h2>
+  <p>Common patterns I've built include: backend services in EKS talking to RDS (multi-AZ) with ElastiCache for session/caching, frontends in S3+CloudFront, background jobs in Fargate tasks, and observability via CloudWatch + Grafana where needed.</p>
+
+  <h2>Subquestions interviewers often ask</h2>
+  <ul>
+    <li><strong>Which services reduce operational burden?</strong> Managed services like RDS/Aurora, EKS (managed control plane), Lambda and Fargate abstract away infrastructure operations.</li>
+    <li><strong>When to prefer serverless?</strong> For spiky or event-driven workloads with unpredictable scale, or when you want to minimize server ops and pay-per-use.</li>
+    <li><strong>Costs?</strong> Monitor CloudWatch billing metrics and use Cost Explorer; mix spot instances, savings plans and reserved instances to control compute costs.</li>
+  </ul>
+</body>
+</html>

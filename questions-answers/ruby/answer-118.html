@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 118</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 118: How would you parallelize IO-bound tasks in Ruby? Give examples.</h1>
+<h2>Concept</h2>
+<p>IO-bound tasks benefit from concurrency (threads, fibers, async IO). Use threads, evented libraries (EventMachine), async/fiber-based libraries, or concurrent-ruby thread pools.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Use threads or fiber-based async libraries. On MRI, threads can handle many concurrent IO tasks since IO operations often release the GVL. Use connection pools and backpressure.</p>
+
+<h2>Examples</h2>
+<pre><code class="language-ruby"># threads
+threads = urls.map do |u|
+  Thread.new { fetch(u) }
+end
+threads.each(&:join)
+
+# async with concurrent-ruby futures
+futures = urls.map { |u| Concurrent::Future.execute { fetch(u) } }
+futures.map(&:value)</code></pre>
+
+<h2>Best practices</h2>
+<ul>
+<li>Limit concurrent connections, use timeouts, and handle retries/backoff.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 118</footer>
+</body></html>

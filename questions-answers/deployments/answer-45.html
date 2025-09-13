@@ -1,0 +1,124 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Designing a GitOps Workflow for AWS with ArgoCD/Flux</title>
+  <style>
+    body{font-family:Inter,Arial,Helvetica,sans-serif;margin:22px;color:#222;line-height:1.65}
+    h1{background:#6f42c1;color:white;padding:12px;border-radius:8px}
+    h2{color:#6f42c1;margin-top:18px}
+    pre{background:#f7f4fb;padding:12px;border-radius:6px;overflow:auto}
+    ul{margin:8px 0 8px 20px}
+    .note{background:#eef6ff;border-left:4px solid #7b61ff;padding:10px;border-radius:6px}
+  </style>
+</head>
+<body>
+  <h1>Designing a GitOps Workflow for AWS Deployments (ArgoCD / Flux)</h1>
+
+  <h2>GitOps principles</h2>
+  <ul>
+    <li>Git is the single source of truth for desired system state (manifests).</li>
+    <li>Changes are made via pull requests and automatically reconciled to the cluster.</li>
+    <li>Declarative, observable, and auditable deployments.</li>
+  </ul>
+
+  <h2>Core components</h2>
+  <ul>
+    <li><strong>ArgoCD or Flux:</strong> Reconciler that watches Git repos and applies manifests to Kubernetes clusters.</li>
+    <li><strong>Image registry (ECR):</strong> Where container images are stored.</li>
+    <li><strong>CI system:</strong> Builds images and updates Git (image tag PRs) or triggers deploy repos.</li>
+    <li><strong>Secrets management:</strong> SOPS (with KMS) or ExternalSecrets (pull from Secrets Manager).</li>
+    <li><strong>Progressive delivery:</strong> Argo Rollouts or service mesh for canary and traffic shaping.</li>
+  </ul>
+
+  <h2>High-level workflow</h2>
+  <ol>
+    <li>Developer merges code -> CI builds image with commit SHA tag and pushes to ECR.</li>
+    <li>CI opens a PR in the infra repo updating the image tag (or uses automated image update tooling).</li>
+    <li>PR is reviewed and merged (policy checks, IaC checks).</li>
+    <li>ArgoCD/Flux detects change and reconciles cluster state, applying new manifests.</li>
+    <li>Argo Rollouts or service mesh increments traffic to new pods; monitors metrics and can rollback on failure.</li>
+  </ol>
+
+  <h2>Repository layout patterns</h2>
+  <ul>
+    <li><strong>Mono-repo:</strong> All k8s manifests in one repo with environment folders (prod/staging/dev).</li>
+    <li><strong>Multi-repo:</strong> One repo per service and one "environment" repo that composes apps (App of Apps)</li>
+    <li><strong>App of Apps:</strong> Central ArgoCD Application points to environment repo that contains child Applications per service.</li>
+  </ul>
+
+  <h2>Example ArgoCD Application manifest (app-of-apps)</h2>
+  <pre><code>apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: my-service
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/myorg/my-service-manifests
+    targetRevision: main
+    path: overlays/production
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: my-service
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true</code></pre>
+
+  <h2>Image update automation</h2>
+  <p>Use tools to automatically update manifests when new images are pushed:</p>
+  <ul>
+    <li><strong>Flux Image Automation</strong> — watches registry, updates Git manifests, and Flux reconciles.</li>
+    <li><strong>argocd-image-updater</strong> — ArgoCD companion that updates image tags in the Git repo.</li>
+    <li><strong>CI bot approach:</strong> CI opens PR to infra repo with updated image tag (works well with code review and approvals).</li>
+  </ul>
+
+  <h2>Secrets & config</h2>
+  <ul>
+    <li>Use SOPS encrypted files (git-crypt alternative) with KMS for storing secrets in Git securely.</li>
+    <li>Or use ExternalSecrets to inject secrets from AWS Secrets Manager at runtime; avoid plaintext secrets in git.</li>
+  </ul>
+
+  <h2>Progressive deployment & safety</h2>
+  <ul>
+    <li>Use Argo Rollouts for canary analysis and automated promotion when metrics look healthy.</li>
+    <li>Integrate Prometheus alertmanager with Argo for rollback triggers.</li>
+    <li>Use Kubernetes podDisruptionBudgets and readiness/liveness probes to maintain availability during rollouts.</li>
+  </ul>
+
+  <h2>Multi-cluster & multi-account</h2>
+  <p>Deploy ArgoCD per cluster or a central ArgoCD with cluster credentials. Use AWS IAM roles for service accounts (IRSA) and configure cross-account access for secrets and image pulls.</p>
+
+  <h2>CI integration example (simple)</h2>
+  <pre><code># CI job outline:
+- build image -> tag with SHA -> push to ECR
+- run security scans, tests
+- create PR on infra repo updating image tag (or call Flux image update API)
+- after merge, ArgoCD reconciles and deploys</code></pre>
+
+  <h2>Observability & audits</h2>
+  <ul>
+    <li>ArgoCD UI shows differences, sync history, and health.</li>
+    <li>Enable audit logs (K8s API server, ArgoCD, Git provider) for traceability.</li>
+    <li>Record who merged what PR, when, and which artifact was deployed.</li>
+  </ul>
+
+  <h2>Subquestions & answers</h2>
+  <h3>Q: How to handle secrets without committing them to Git?</h3>
+  <p>A: Use ExternalSecrets to fetch values from AWS Secrets Manager at runtime or use SOPS with KMS-encrypted secrets stored in Git (ensure KMS keys are tightly controlled).</p>
+
+  <h3>Q: How to do canary analysis automatically?</h3>
+  <p>A: Use Argo Rollouts with Prometheus analysis templates to measure p50/p95 latency, error rate, and custom business metrics. Configure automated promotion when metrics meet thresholds.</p>
+
+  <h3>Q: How to promote from staging to production?</h3>
+  <p>A: Promote by updating the production overlay in the infra repo (PR-based). For automation, use Flux or argocd-image-updater to create PRs that are reviewed and merged to promote.</p>
+
+  <div class="note"><strong>Note:</strong> GitOps scales well when teams agree on conventions (manifest layout, labels, sync policies). Treat Git as the audit source of truth and automate safely around it.</div>
+</body>
+</html>

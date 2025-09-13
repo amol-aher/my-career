@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Practical Experience with Sidekiq — Use Cases, Pitfalls, and Hard-Won Practices</title>
+<style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.6; padding:28px; color:#111; background:#fff; }
+    .container{max-width:980px;margin:0 auto;}
+    header{border-bottom:1px solid #e6e6e6;margin-bottom:18px;padding-bottom:8px;}
+    h1{font-size:26px;margin:0 0 6px 0;}
+    h2{font-size:18px;margin-top:18px;color:#0b69ff;}
+    h3{font-size:15px;margin-top:14px;color:#0b69ff;}
+    p{margin:8px 0;}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:4px;}
+    ul{margin:8px 0 8px 20px;}
+    table{border-collapse:collapse;width:100%;margin:8px 0;}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+    .muted{color:#666;font-size:13px;}
+    footer{border-top:1px solid #e6e6e6;margin-top:22px;padding-top:12px;color:#666;font-size:13px;}
+    </style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>Practical Experience with Sidekiq — Use Cases, Pitfalls, and Hard-Won Practices</h1>
+<p class="muted">Prepared by: Senior Software Engineer &amp; System Architect — Rails / AWS / SQL / Vue.js</p>
+<p class="muted">Date: 2025-09-10 (UTC)</p>
+</header>
+
+<p class="muted"><strong>Overview</strong></p>
+<p>A deep-dive into hands-on experience with Sidekiq — real-world patterns, production incidents, tuning, and operational playbooks gathered from running Sidekiq at scale.</p>
+
+<section><h2>Typical Sidekiq use cases I've implemented</h2>
+<ul>
+<li>Asynchronous mail delivery (high throughput multi-recipient batching).</li>
+<li>Image processing pipelines with chunked work and result aggregation.</li>
+<li>Data-sync jobs with external APIs using retries and exponential backoff.</li>
+<li>Scheduled maintenance tasks using sidekiq-scheduler or cron-like patterns.</li>
+<li>Background processing triggered by user actions and webhooks.</li>
+</ul>
+</section>
+<section><h2>Production hardening & best practices</h2>
+<ul>
+<li><strong>Idempotency:</strong> Every job should be safe to run more than once; use DB constraints and idempotency keys.</li>
+<li><strong>Job size limits:</strong> Keep payloads small (store large blobs in S3 and pass references).</li>
+<li><strong>Retry and error handling:</strong> Use Sidekiq's retry mechanism and add custom error handlers to notify and surface frequent failures.</li>
+<li><strong>Timeouts:</strong> Configure timeouts and kill runaway jobs; use Sidekiq job timeouts combined with reliable cleanup.</li>
+<li><strong>Unique jobs:</strong> Use sidekiq-unique-jobs or dedupe logic to avoid duplicate scheduling for the same business operation.</li>
+<li><strong>Monitor the retry set and dead set:</strong> Regularly inspect and triage recurring failures rather than relying solely on automatic retries.</li>
+</ul>
+</section>
+<section><h2>Scaling Sidekiq safely</h2>
+<ul>
+<li>Increase number of worker processes and tune thread counts based on CPU vs IO characteristics. Example: CPU-bound jobs -> fewer threads; IO-bound jobs -> more threads.</li>
+<li>Ensure ActiveRecord connection pool size >= threads per process. For puma + sidekiq on same host, size carefully to avoid DB connection exhaustion.</li>
+<li>Shard queues across worker roles (mailers, default, critical) and scale each role independently.</li>
+<li>Autoscale worker groups based on queue latency and length using CloudWatch/Datadog metrics.</li>
+</ul>
+</section>
+<section><h2>Common incidents & mitigations</h2>
+<ul>
+<li><strong>Redis OOM or eviction:</strong> Use larger nodes or Redis cluster; set eviction policies carefully and monitor memory. Avoid storing huge job payloads.</li>
+<li><strong>Job storms:</strong> Use rate limiting, backpressure at ingress, and circuit breakers in downstream calls to prevent cascading failures.</li>
+<li><strong>Schema changes:</strong> When changing job payload formats, support backward compatibility with migration code paths or versioned jobs.</li>
+</ul>
+</section>
+<section><h2>Operational snippets & configs</h2>
+<pre><code># Example: sidekiq.yml
+:concurrency: 25
+:queues:
+  - [critical, 7]
+  - [default, 5]
+  - [low, 1]
+</code></pre>
+
+<pre><code># Protect Sidekiq Web (Rails routes)
+require 'sidekiq/web'
+authenticate :user, ->(u) { u.admin? } do
+  mount Sidekiq::Web => '/sidekiq'
+end
+</code></pre>
+</section>
+<section><h2>Subquestions and FAQ</h2>
+<ol>
+<li><strong>How to handle external API rate limits?</strong><br/>Implement rate limiting and token buckets client-side, use batching, and implement retry-after honoring. Consider reserving dedicated worker pools for rate-limited integrations.</li>
+
+<li><strong>How to debug a stuck queue?</strong><br/>Inspect Sidekiq Web for worker counts, current jobs, Redis latency. Check Redis slowlog and worker logs. Use tracing/correlation IDs to follow a job lifecycle.</li>
+
+<li><strong>What monitoring do you set up?</strong><br/>Queue latency, retry counts, dead set size, Redis memory/latency, job duration histograms, and application error rates. Set alerts for thresholds and runbooks for responders.</li>
+</ol>
+</section>
+
+
+<footer>
+If you share your current queue topology and instance sizes, I can produce a tuned Sidekiq/Redis/DB configuration and a monitoring dashboard template.
+</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Notification Service Design</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px; }
+        .component { background-color: #e8f5e9; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .architecture-diagram { text-align: center; margin: 30px 0; }
+        .notification-flow { display: flex; justify-content: space-around; margin: 20px 0; }
+        .flow-step { text-align: center; padding: 10px; }
+        .flow-arrow { font-size: 24px; }
+    </style>
+</head>
+<body>
+    <h1>Real-Time Notification Service Architecture</h1>
+
+    <div class="component">
+        <h2>Core Components</h2>
+        <div class="architecture-diagram">
+            <div style="display: inline-block; vertical-align: top; margin-right: 20px;">
+                <h3>Notification Generator</h3>
+                <ul>
+                    <li>Business logic triggers</li>
+                    <li>User preference engine</li>
+                    <li>Template rendering</li>
+                </ul>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div style="display: inline-block; vertical-align: top; margin-right: 20px;">
+                <h3>Message Broker</h3>
+                <ul>
+                    <li>Kafka/RabbitMQ/NATS</li>
+                    <li>Queue management</li>
+                    <li>Routing rules</li>
+                </ul>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div style="display: inline-block; vertical-align: top;">
+                <h3>Delivery Engine</h3>
+                <ul>
+                    <li>Channel adapters (WebSocket, APNs, FCM)</li>
+                    <li>Rate limiting</li>
+                    <li>Retry policies</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="component">
+        <h2>Notification Types & Delivery Channels</h2>
+        <div class="notification-flow">
+            <div class="flow-step">
+                <h3>Email</h3>
+                <ul>
+                    <li>SMTP providers (SendGrid, Mailgun)</li>
+                    <li>Template system (Liquid, Mustache)</li>
+                    <li>Batch processing</li>
+                </ul>
+            </div>
+            <div class="flow-step">
+                <h3>Push Notifications</h3>
+                <ul>
+                    <li>APNS (iOS)</li>
+                    <li>FCM (Android)</li>
+                    <li>Web Push API</li>
+                </ul>
+            </div>
+            <div class="flow-step">
+                <h3>In-App Messages</h3>
+                <ul>
+                    <li>WebSocket connections</li>
+                    <li>Long polling fallback</li>
+                    <li>Client-side rendering</li>
+                </ul>
+            </div>
+            <div class="flow-step">
+                <h3>SMS</h3>
+                <ul>
+                    <li>Twilio, AWS SNS</li>
+                    <li>Character limits</li>
+                    <li>Global carrier support</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="component">
+        <h2>Scalability & Reliability Patterns</h2>
+        <div class="notification-flow">
+            <div class="flow-step">
+                <h3>Load Balancing</h3>
+                <ul>
+                    <li>Round-robin DNS</li>
+                    <li>Regional endpoints</li>
+                    <li>Connection pooling</li>
+                </ul>
+            </div>
+            <div class="flow-step">
+                <h3>Fault Tolerance</h3>
+                <ul>
+                    <li>Dead letter queues</li>
+                    <li>Circuit breakers</li>
+                    <li>Graceful degradation</li>
+                </ul>
+            </div>
+            <div class="flow-step">
+                <h3>Monitoring</h3>
+                <ul>
+                    <li>Delivery success rates</li>
+                    <li>Latency metrics</li>
+                    <li>Error tracking</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="component">
+        <h2>Advanced Features</h2>
+        <ul>
+            <li><strong>Personalization Engine:</strong> Dynamic content based on user preferences and context</li>
+            <li><strong>Scheduling System:</strong> Delayed notifications (e.g., "remind me tomorrow")</li>
+            <li><strong>Opt-Out Management:</strong> Global unsubscribe links and channel-specific preferences</li>
+            <li><strong>A/B Testing:</strong> Experiment with notification content and timing</li>
+            <li><strong>Analytics Dashboard:</strong> Track engagement metrics and optimize campaigns</li>
+        </ul>
+    </div>
+
+    <div class="component">
+        <h2>Technology Stack Recommendations</h2>
+        <div class="notification-flow">
+            <div class="flow-step">
+                <h3>Backend</h3>
+                <ul>
+                    <li>Elixir/Phoenix (high concurrency)</li>
+                    <li>Node.js with Socket.IO</li>
+                    <li>Ruby on Rails with Action Cable</li>
+                </ul>
+            </div>
+            <div class="flow-step">
+                <h3>Message Queue</h3>
+                <ul>
+                    <li>Kafka (high throughput)</li>
+                    <li>RabbitMQ (flexible routing)</li>
+                    <li>NATS (lightweight pub-sub)</li>
+                </ul>
+            </div>
+            <div class="flow-step">
+                <h3>Frontend</h3>
+                <ul>
+                    <li>React Native (mobile push)</li>
+                    <li>JavaScript WebSockets</li>
+                    <li>Service Workers (offline support)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="solution">
+        <h2>Implementation Roadmap</h2>
+        <ol>
+            <li><strong>Phase 1:</strong> Build core notification generator and email/sms channels</li>
+            <li><strong>Phase 2:</strong> Integrate push notification services (APNS/FCM)</li>
+            <li><strong>Phase 3:</strong> Add WebSocket support for web/in-app notifications</li>
+            <li><strong>Phase 4:</strong> Implement personalization and scheduling features</li>
+            <li><strong>Phase 5:</strong> Add analytics and A/B testing capabilities</li>
+        </ol>
+    </div>
+</body>
+</html>

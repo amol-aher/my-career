@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Sidekiq and SNS — Integration Patterns and Practical Approach</title>
+<style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.6; padding:28px; color:#111; background:#fff; }
+    .container{max-width:980px;margin:0 auto;}
+    header{border-bottom:1px solid #e6e6e6;margin-bottom:18px;padding-bottom:8px;}
+    h1{font-size:26px;margin:0 0 6px 0;}
+    h2{font-size:18px;margin-top:18px;color:#0b69ff;}
+    h3{font-size:15px;margin-top:14px;color:#0b69ff;}
+    p{margin:8px 0;}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:4px;}
+    ul{margin:8px 0 8px 20px;}
+    table{border-collapse:collapse;width:100%;margin:8px 0;}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+    .muted{color:#666;font-size:13px;}
+    footer{border-top:1px solid #e6e6e6;margin-top:22px;padding-top:12px;color:#666;font-size:13px;}
+    </style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>Sidekiq and SNS — Integration Patterns and Practical Approach</h1>
+<p class="muted">Prepared by: Senior Software Engineer &amp; System Architect — Rails / AWS / SQL / Vue.js</p>
+<p class="muted">Date: 2025-09-10 (UTC)</p>
+</header>
+
+<p class="muted"><strong>Overview</strong></p>
+<p>Explains whether Sidekiq can be used directly with SNS, common patterns for integrating SNS/SQS with Sidekiq, and recommended architectures for reliable event processing.</p>
+
+<section><h2>Can Sidekiq consume SNS or SQS directly?</h2>
+<p><strong>Short answer:</strong> No — Sidekiq natively consumes jobs from Redis, not SQS/SNS.</p>
+<p>However, you can integrate SNS/SQS with Sidekiq using bridging patterns. The right approach depends on requirements (throughput, latency, FIFO, deduplication, AWS-native features).</p>
+</section>
+<section><h2>Common integration patterns</h2>
+<h3>1) SNS -> SQS -> Shoryuken (or custom consumer) -> Sidekiq</h3>
+<p>Subscribe an SQS queue to an SNS topic. Run a lightweight SQS consumer (Shoryuken or a tiny Ruby process) that reads messages from SQS and enqueues Sidekiq jobs:</p>
+<pre><code># pseudo-code inside SQS consumer
+sqs_msg = receive_message(...)
+Sidekiq::Client.push('class' => MyWorker, 'args' => [sqs_msg.body])
+sqs.delete_message(receipt_handle)
+</code></pre>
+
+<h3>2) SNS -> Lambda -> Enqueue Sidekiq (or call API)</h3>
+<p>Use an AWS Lambda triggered by SNS that either:</p>
+<ul>
+<li>Calls your Rails API endpoint to create a Sidekiq job (HTTP POST)</li>
+<li>Directly enqueues a job by calling Redis/Sidekiq client if network/security allows</li>
+</ul>
+
+<h3>3) Use SQS-native consumers (Shoryuken) instead of Sidekiq</h3>
+<p>If you want a simpler architecture with SQS as the only queue, use <code>shoryuken</code> which can process SQS messages directly and supports threads and AWS integrations.</p>
+
+<h3>4) Event-driven — make consumers idempotent</h3>
+<p>Because SQS is at-least-once delivery, ensure the Sidekiq job or the downstream processing is idempotent or uses deduplication.</p>
+</section>
+<section><h2>Why use SNS + Sidekiq hybrid?</h2>
+<ul>
+<li><strong>Durability &amp; fanout:</strong> SNS can fan-out events to multiple SQS queues or Lambda consumers simultaneously.</li>
+<li><strong>Leverage AWS features:</strong> Use SQS DLQs, FIFO queues, and SNS filtering without coupling all consumers to Redis.</li>
+<li><strong>Separation of concerns:</strong> Use SNS/SQS for inter-service messaging and Sidekiq for internal asynchronous processing.</li>
+</ul>
+</section>
+<section><h2>Example: SQS consumer enqueuing Sidekiq job (Ruby, Shoryuken or custom)</h2>
+<pre><code># Example using shoryuken (simplified)
+class MySqsWorker
+  include Shoryuken::Worker
+  shoryuken_options queue: 'my-queue', auto_delete: true
+
+  def perform(sqs_msg, body)
+    payload = JSON.parse(body)
+    # Enqueue to Sidekiq for internal processing
+    SendWelcomeEmailWorker.perform_async(payload['user_id'])
+  end
+end
+</code></pre>
+<p>This keeps SQS as the durable transport and Sidekiq for CPU-bound/IO-bound work inside your app.</p>
+</section>
+<section><h2>Subquestions and answers</h2>
+<ol>
+<li><strong>Is latency worse with bridging?</strong><br/>Some added latency exists (SQS poll + enqueue step), but it's usually small and the benefit of durability and decoupling outweighs it for many systems.</li>
+
+<li><strong>How to handle visibility timeouts and reprocessing?</strong><br/>Ensure the consumer deletes SQS messages only after successful enqueue, and set visibility timeout long enough for the enqueue operation plus a safety margin.</li>
+
+<li><strong>Why not push directly to Sidekiq from producers?</strong><br/>If producers are external services, they may not have access to your Redis or you may want to decouple with durable messaging so producers don't fail when your app is down.</li>
+</ol>
+</section>
+
+
+<footer>
+I can create a sample Lambda or Shoryuken consumer that subscribes to SNS and reliably enqueues Sidekiq jobs, with idempotency examples.
+</footer>
+</div>
+</body>
+</html>

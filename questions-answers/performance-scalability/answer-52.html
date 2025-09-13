@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Retries and Exponential Backoff</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}h2{color:#2b7a4b;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Implementing Retries and Exponential Backoff</h1>
+
+  <h2>Key ideas</h2>
+  <ul>
+    <li><strong>Exponential backoff:</strong> wait times grow exponentially: base * 2^attempts.</li>
+    <li><strong>Jitter:</strong> add randomness to avoid thundering herd (full jitter recommended).</li>
+    <li><strong>Max retries and circuit breakers:</strong> combine with circuit breakers to stop wasting resources.</li>
+  </ul>
+
+  <h2>Example Ruby implementation</h2>
+  <pre><code>def with_retry(max_attempts: 5, base_sleep: 0.5)
+  attempts = 0
+  begin
+    attempts += 1
+    yield
+  rescue TransientError =&gt; e
+    raise if attempts &gt;= max_attempts
+    sleep_time = base_sleep * (2 ** (attempts - 1))
+    sleep_time = sleep_time * rand # full jitter
+    sleep(sleep_time)
+    retry
+  end
+end
+  </code></pre>
+
+  <h2>Sidekiq example</h2>
+  <pre><code>class MyWorker
+  include Sidekiq::Worker
+  sidekiq_options retry: 5
+
+  def perform(*args)
+    # work
+  end
+end
+  </code></pre>
+</body>
+</html>

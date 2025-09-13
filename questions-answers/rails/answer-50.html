@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Debt Management in Software Development</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; }
+        .subquestion { margin-top: 30px; padding-left: 15px; border-left: 3px solid #3498db; }
+        .code-block { background-color: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; padding: 12px; margin: 15px 0; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>Tech Debt Management in Software Development</h1>
+
+    <p>Tech debt refers to the implied cost of additional rework caused by choosing an easy (limited) solution instead of using a better approach that would take longer. It accumulates over time and must be actively managed to maintain system health.</p>
+
+    <h2>Types of Tech Debt:</h2>
+
+    <ol>
+        <li><strong>Code Debt:</strong> Poorly written or duplicated code</li>
+        <li><strong>Design Debt:</strong> Architectural shortcuts that complicate future changes</li>
+        <li><strong>Testing Debt:</strong> Insufficient test coverage</li>
+        <li><strong>Documentation Debt:</strong> Outdated or missing documentation</li>
+        <li><strong>Configuration Debt:</strong> Complex, undocumented deployment processes</li>
+    </ol>
+
+    <div class="subquestion">
+        <h2>Sub-question: How to identify tech debt items?</h2>
+        <p>Common indicators include:</p>
+        
+        <ul>
+            <li><strong>Code Smells:</strong> Long methods, duplicate code, poor naming</li>
+            <li><strong>Slow Development Velocity:</strong> Features taking unexpectedly long to implement</li>
+            <li><strong>High Bug Rate:</strong> Recurring issues in specific areas</li>
+            <li><strong>Build Failures:</strong> Frequent broken builds due to dependency issues</li>
+            <li><strong>Developer Frustration:</strong> Team members expressing difficulty working with certain parts of the codebase</li>
+        </ul>
+    </div>
+
+    <div class="subquestion">
+        <h2>Sub-question: Strategies for paying down tech debt</h2>
+        <p>Effective approaches include:</p>
+        
+        <ul>
+            <li><strong>Timeboxed Refactoring:</strong> Allocate regular sprint time for refactoring</li>
+            <li><strong>Incremental Improvements:</strong> Tackle small, manageable chunks rather than big bang refactorings</li>
+            <li><strong>Automated Refactoring Tools:</strong> Use IDE features and RuboCop for safe transformations</li>
+            <li><strong>Pair Programming:</strong> Collaborative sessions to improve knowledge sharing</li>
+            <li><strong>Test-Driven Development:</strong> Write tests before refactoring to ensure safety</li>
+        </ul>
+    </div>
+
+    <div class="subquestion">
+        <h2>Sub-question: Balancing new features vs tech debt</h2>
+        <p>Finding the right balance depends on several factors:</p>
+        
+        <ul>
+            <li><strong>Business Priorities:</strong> Critical features may temporarily outweigh technical perfection</li>
+            <li><strong>Risk Assessment:</strong> Evaluate the impact of delaying fixes versus potential future costs</li>
+            <li><strong>Team Capacity:</strong> Dedicate percentage of sprint velocity to tech debt</li>
+            <li><strong>Long-term Vision:</strong> Strategic investments in infrastructure pay dividends later</li>
+        </ul>
+        
+        <p>A common strategy is the "80/20 rule"—spending 80% of effort on new features and 20% on technical improvements.</p>
+    </div>
+
+    <div class="subquestion">
+        <h2>Sub-question: How to communicate tech debt to stakeholders?</h2>
+        <p>Effective communication strategies:</p>
+        
+        <ul>
+            <li><strong>Quantify Impact:</strong> Show concrete metrics (e.g., "This module takes 3x longer to modify")</li>
+            <li><strong>Visualize Risks:</strong> Diagram potential failure points and their consequences</li>
+            <li><strong>Propose Solutions:</strong> Present clear plans with estimated effort and benefits</li>
+            <li><strong>Align with Goals:</strong> Connect technical improvements to business objectives</li>
+            <li><strong>Regular Reporting:</strong> Include tech debt status in sprint reviews</li>
+        </ul>
+    </div>
+
+    <div class="subquestion">
+        <h2>Sub-question: Preventing future tech debt accumulation</h2>
+        <p>Proactive measures include:</p>
+        
+        <ul>
+            <li><strong>Code Reviews:</strong> Enforce coding standards and architectural guidelines</li>
+            <li><strong>Automated Testing:</strong> Maintain high test coverage to enable safe refactoring</li>
+            <li><strong>Continuous Integration:</strong> Catch regressions early</li>
+            <li><strong>Knowledge Sharing:</strong> Regular team meetings to discuss design decisions</li>
+            <li><strong>Technical Debt Register:</strong> Track and prioritize items in a visible backlog</li>
+        </ul>
+    </div>
+</body>
+</html>

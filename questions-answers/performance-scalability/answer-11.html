@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Index Limits — Alternatives When Indexes Slow Down Writes</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Index Limits — Alternatives When Indexes Slow Down Writes</h1>
+  <p>When you're constrained on how many indexes you can add (because each index increases write cost and storage), you need an ensemble of techniques to retain read performance while preserving write throughput. Below are pragmatic approaches, trade-offs, and examples.</p>
+
+  <h2>1. Measure first</h2>
+  <p>Use <code>pg_stat_user_indexes</code>, <code>EXPLAIN (ANALYZE, BUFFERS)</code>, and APM traces to identify the hot queries where an index will be most beneficial. Prioritize indexing those queries that yield the best ROI.</p>
+
+  <h2>2. Partial / Conditional Indexes</h2>
+  <p>Create indexes that only cover rows you actually query often (e.g., active=true). This reduces index size and write overhead.</p>
+  <pre><code>-- Postgres: partial index
+CREATE INDEX CONCURRENTLY idx_orders_active_created_at ON orders (created_at)
+WHERE status = 'active';
+  </code></pre>
+
+  <h2>3. Expression / Functional Indexes</h2>
+  <p>Index the expression you query instead of raw column (useful for lower cardinality or computed values).</p>
+  <pre><code>CREATE INDEX CONCURRENTLY idx_users_lower_email ON users (lower(email));
+  </code></pre>
+
+  <h2>4. Covering Indexes and Index-only scans</h2>
+  <p>Design composite indexes that include columns used in WHERE and SELECT so the DB can satisfy the query from the index itself (index-only scan) and avoid touching heap pages.</p>
+  <pre><code>CREATE INDEX CONCURRENTLY idx_sales_product_day ON sales (product_id, created_at) INCLUDE (amount);
+  </code></pre>
+
+  <h2>5. BRIN for very large append-only tables</h2>
+  <p>Use BRIN indexes for large, naturally ordered datasets (e.g., time-series) — tiny and cheap for writes.</p>
+  <pre><code>CREATE INDEX idx_logs_created_at_brin ON logs USING BRIN (created_at);
+  </code></pre>
+
+  <h2>6. Materialized Views / Pre-aggregation</h2>
+  <p>Offload heavy aggregations to materialized views that refresh periodically or incrementally, so reads don't require adding more indexes.</p>
+  <pre><code>CREATE MATERIALIZED VIEW daily_user_stats AS
+SELECT date_trunc('day', created_at) AS day, user_id, count(*) as cnt
+FROM events GROUP BY day, user_id;
+-- Refresh periodically
+REFRESH MATERIALIZED VIEW CONCURRENTLY daily_user_stats;
+  </code></pre>
+
+  <h2>7. Denormalization and read-optimized tables</h2>
+  <p>Duplicate frequently-read fields into purpose-built read tables or documents (cache hot read-paths) maintained via background jobs or event streams.</p>
+
+  <h2>8. Use an external search/index engine</h2>
+  <p>Move complex multi-field search to Elasticsearch/Opensearch where inverted indexes are designed for read-heavy, complex queries without polluting transactional DB indexes.</p>
+
+  <h2>9. Batching & Write Path Optimization</h2>
+  <p>Batch writes to reduce index maintenance overhead per-row: bulk insert/upsert, deferred constraints, and write-behind queues.</p>
+
+  <h2>10. Selective Index Retention</h2>
+  <p>Maintain index lifecycle: add, monitor, and remove indexes that provide little benefit. Use telemetry to show hit rate and size.</p>
+
+  <h2>11. Practical checklist</h2>
+  <ul>
+    <li>Identify top queries and candidate indexes with <code>EXPLAIN</code>.</li>
+    <li>Start with partial/functional/BRIN indexes before adding full indexes.</li>
+    <li>Consider materialized views or denormalized read tables for complex aggregations.</li>
+    <li>Move complex search to a separate search engine.</li>
+    <li>Monitor write latency and index bloat; iterate.</li>
+  </ul>
+</body>
+</html>

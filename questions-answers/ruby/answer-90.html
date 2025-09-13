@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 90</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 90: What profiling tools exist for Ruby?</h1>
+<h2>Concept</h2>
+<p>Profiling tools include microbenchmarks and profilers for CPU and memory. Choose based on interpreter (MRI vs JRuby) and need (sampling vs instrumenting).</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Common tools: Benchmark/Benchmark.ips, ruby-prof, stackprof (sampling), rack-mini-profiler (web), memory_profiler, derailed_benchmarks, flamegraph tools, and async-profiler for JVM/JRuby.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>Sampling vs instrumenting:</strong> sampling profilers (stackprof) have lower overhead; instrumenting (ruby-prof) gives precise timings but higher overhead.</li>
+<li><strong>Flamegraphs:</strong> visualize stack traces over time to spot hot methods.</li>
+</ul>
+
+<h2>Example</h2>
+<pre><code class="language-ruby"># using stackprof
+require 'stackprof'
+StackProf.run(mode: :cpu, out: 'tmp/stackprof.dump', raw: true) do
+  run_my_app_workload
+end</code></pre>
+
+<h2>Best practices / Pitfalls</h2>
+<ul>
+<li>Profile in an environment similar to production; warm up the VM and collect multiple samples.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 90</footer>
+</body></html>

@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Scaling Kafka / Queue Consumers — Real-world Experiences</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}</style>
+</head>
+<body>
+  <h1>Scaling Kafka / Queue Consumers — Real-world Experiences</h1>
+  <p>Yes — I've worked on systems requiring consumer scaling across Kafka and other queues. Below are operational and architectural strategies that worked well.</p>
+
+  <h2>Fundamentals</h2>
+  <ul>
+    <li>Kafka scales by partitions; consumers in a consumer group share partitions.</li>
+    <li>RabbitMQ scales via multiple consumers (competing consumer pattern) and clustering.</li>
+  </ul>
+
+  <h2>Practical techniques</h2>
+  <h3>Increase partitions</h3>
+  <p>To enable more parallel consumers, increase topic partition count (note: partitions are a unit of ordering and cannot be decreased easily without re-partitioning).</p>
+
+  <h3>Horizontal scaling</h3>
+  <p>Run more consumer instances (pods), each with its own thread pool; ensure partitions >= consumer threads.</p>
+
+  <h3>Batching & micro-batching</h3>
+  <p>Consume messages in batches and process with bulk writes to reduce IO overhead.</p>
+
+  <h3>Idempotency & deduplication</h3>
+  <p>Design consumer to be idempotent (idempotent writes, dedupe keys) to handle retries and duplicates.</p>
+
+  <h3>Offset management</h3>
+  <p>Control commit frequency — commit in batches after successful processing to avoid reprocessing on crash.</p>
+
+  <h3>Graceful rebalancing</h3>
+  <p>Tune session.timeout.ms and max.poll.interval.ms to avoid flapping rebalances; use cooperative rebalancers when supported.</p>
+
+  <h2>Observed pitfalls</h2>
+  <ul>
+    <li>Too many partitions increases broker overhead and controller load.</li>
+    <li>Frequent rebalances hurt throughput; reduce unnecessary scaling churn.</li>
+    <li>Consumer lag vs throughput: monitor lag and scale before lag grows too large.</li>
+  </ul>
+
+  <h2>Monitoring</h2>
+  <p>Track consumer lag, processing time per message, throughput, and broker metrics (under-replicated partitions, ISR size).</p>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Code Review Checklist</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.5; padding:32px; color:#0b1220; background:#f7f9fc; }
+    header { margin-bottom: 18px; }
+    h1 { font-size:28px; margin:0 0 6px 0; }
+    h2 { font-size:18px; margin-top:20px; color:#0b3d91; }
+    p.lead { margin-top:6px; color:#253341; }
+    section { background:#fff; padding:18px; border-radius:10px; box-shadow:0 1px 4px rgba(11,18,32,0.06); margin-bottom:16px; }
+    ul { margin-left:18px; }
+    pre { background:#f3f6fb; padding:12px; border-radius:6px; overflow:auto; }
+    .severity { font-weight:700; color:#b03000; }
+    .example { background:#f1f8f5; padding:10px; border-left:4px solid #2a9d8f; border-radius:4px; margin:8px 0; }
+    footer { margin-top:12px; color:#556; font-size:13px; }
+    .two-col { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    table { border-collapse:collapse; width:100%; }
+    td, th { padding:8px; border-bottom:1px solid #eee; text-align:left; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Code Review Checklist</h1>
+    <p class="lead">A lead-level checklist that I use during reviews. Organized by priority (Blocking → Important → Nice-to-have)
+       with concrete examples and reviewer comment templates you can reuse.</p>
+  </header>
+
+  <section>
+    <h2>Why a checklist?</h2>
+    <p>Code reviews aim to ensure correctness, safety, maintainability and team knowledge-sharing. A checklist reduces cognitive load,
+       ensures consistent coverage, and helps junior reviewers learn what's important.</p>
+  </section>
+
+  <section>
+    <h2>Top-level quick-scan (first 60–120s)</h2>
+    <ul>
+      <li>Does the PR description explain intent, scope, migration steps, and how to test? (look for reproduction steps)</li>
+      <li>Does the change match the stated scope (no unrelated churn)?</li>
+      <li>Are there automated tests and CI passing?</li>
+      <li>Any DB migration or external dependency changes? (mark as high risk)</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Detailed checklist (grouped)</h2>
+
+    <h3>Correctness & Business Logic (Blocking)</h3>
+    <ul>
+      <li>Does the code implement the stated requirement? Validate assumptions by reading a few code paths and tests.</li>
+      <li>Edge cases handled? (nil/empty inputs, invalid params, concurrent writes)</li>
+      <li>Are invariants preserved? (data integrity, transactional boundaries)</li>
+    </ul>
+
+    <h3>Tests & QA (Blocking)</h3>
+    <ul>
+      <li>Are there unit/integration tests covering the new behavior and common edge cases?</li>
+      <li>Do tests assert observable outcomes (DB changes, side effects, API responses) rather than internal implementation?</li>
+      <li>Is test data deterministic and isolated? Long-running flakiness or use of sleep is a smell.</li>
+    </ul>
+
+    <h3>Data & Migrations (Blocking)</h3>
+    <ul>
+      <li>Are migrations reversible or backward-compatible for zero-downtime deploys?</li>
+      <li>Does the migration lock large tables? If so, is there a plan to mitigate (batched migrations, pt-online-schema-change, safer alter sequences)?</li>
+      <li>Is data migration validated and monitored? Are there roll-back steps documented?</li>
+    </ul>
+
+    <h3>Security & Privacy (Blocking)</h3>
+    <ul>
+      <li>Any user input being interpolated into SQL/HTML/commands? Check for SQL-injection, XSS, command injection.</li>
+      <li>Are secrets and credentials handled safely (no secrets in code or logs)?</li>
+      <li>Verify authorization checks — not only authentication. Is access control enforced at controller and service boundaries?</li>
+    </ul>
+
+    <h3>Performance & Scalability (Important)</h3>
+    <ul>
+      <li>Database query count and shape — watch for N+1 queries (look for `.includes` vs N+1 patterns).</li>
+      <li>Are heavy operations done in request thread? Consider background jobs, streaming responses, pagination.</li>
+      <li>Caching strategy — appropriate caching and cache invalidation explained?</li>
+    </ul>
+
+    <h3>Observability & Error Handling (Important)</h3>
+    <ul>
+      <li>Are errors handled and logged with enough context (request id, user id) and without leaking PII?</li>
+      <li>Are metrics and traces emitted for important flows? Any new external calls instrumented for latency/errors?</li>
+      <li>Are exceptions re-thrown where necessary, or swallowed silently?</li>
+    </ul>
+
+    <h3>Maintainability & Readability (Important)</h3>
+    <ul>
+      <li>Is the code easy to read? Prefer expressive variable names and small functions.</li>
+      <li>Is there duplication that should be extracted?</li>
+      <li>Are public method signatures and side effects clear? Add docstrings where behavior is non-obvious.</li>
+    </ul>
+
+    <h3>Architecture & Design (Important)</h3>
+    <ul>
+      <li>Does the change follow the project's architectural patterns? If diverging, is there an architecture note rationalizing the choice?</li>
+      <li>Is coupling and cohesion balanced — avoid introducing tight coupling between unrelated modules.</li>
+    </ul>
+
+    <h3>Frontend-specific (Vue.js) (Important/Nice-to-have)</h3>
+    <ul>
+      <li>Component reactivity and props — avoid mutating props, prefer emits for parent communication.</li>
+      <li>Are components small and reusable? Is state management (Vuex/Pinia) used appropriately?</li>
+      <li>Accessibility basics (labels, keyboard, aria) and responsive behavior.</li>
+    </ul>
+
+    <h3>DevOps & CI (Important)</h3>
+    <ul>
+      <li>Will this change impact build time, deploy sequence, or infra (new env vars, SQS topics, IAM changes)?</li>
+      <li>Are releases safe? Are feature flags used for risky features?</li>
+    </ul>
+
+    <h3>Licensing & Third-party (Nice-to-have)</h3>
+    <ul>
+      <li>Does adding a new dependency introduce licensing, security or maintenance concerns?</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Severity & Comment Templates</h2>
+    <table>
+      <thead>
+        <tr><th>Severity</th><th>Action</th><th>Comment Tone / Template</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="severity">Blocking</td>
+          <td>Request changes</td>
+          <td><pre>Blocking: This can corrupt data if X occurs. Can we make the operation transactional or validate earlier?</pre></td>
+        </tr>
+        <tr>
+          <td>Important</td>
+          <td>Request changes or ask for justification</td>
+          <td><pre>Important: This endpoint does not emit a metric. Can you add one so we can track usage/errors?</pre></td>
+        </tr>
+        <tr>
+          <td>Nice-to-have</td>
+          <td>Optional suggestion</td>
+          <td><pre>Nit: Prefer `user.active?` over `user.active == true` for clarity — not blocking.</pre></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Common subquestions & answers</h2>
+    <h3>Q: How large should a PR be?</h3>
+    <p>A: Aim for PRs that are <strong>conceptually small</strong>. Good practical rules: under 400–800 lines of change, focused on one intent. When a change spans multiple subsystems, consider an architecture note and break into smaller PRs. Small PRs review faster and reduce risk.</p>
+
+    <h3>Q: How to handle style nits?</h3>
+    <p>A: If the project has an auto-formatter (RuboCop, Prettier), prefer to auto-fix style. Leave only higher-level style discussions for PR comments and avoid bikeshedding. Use "nit" comments for trivial preferences.</p>
+
+    <h3>Q: How to review migrations safely?</h3>
+    <p>A: Look for non-blocking migrations (ADD COLUMN with default causes table rewrite in Postgres). Prefer null-then-backfill-then-constraint approach. Request a rollout plan for large tables and confirm monitoring/rollback steps.</p>
+
+    <h3>Q: What to do when you discover an architectural smell?</h3>
+    <p>A: For smaller issues suggest refactors with examples. For larger architecture problems, ask the author to open a design/ADR and schedule a synchronous discussion if needed.</p>
+  </section>
+
+  <footer>
+    <p>Usage tip: Keep a short, team-specific review checklist in your PR template so reviewers and authors converge on expectations.</p>
+  </footer>
+</body>
+</html>

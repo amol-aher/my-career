@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Strategy pattern and Ruby duck typing</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>How Ruby supports the Strategy pattern via duck typing</h1>
+
+    <p><strong>Strategy</strong> encapsulates interchangeable algorithms behind a common interface. In Ruby, duck typing means you don’t need formal interfaces — objects that implement the expected methods can be used interchangeably.</p>
+
+    <h2>Example: Payment strategies</h2>
+    <pre><code>class StripeGateway
+  def charge(amount, currency)
+    # call stripe
+  end
+end
+
+class PaypalGateway
+  def charge(amount, currency)
+    # call paypal
+  end
+end
+
+class PaymentService
+  def initialize(gateway)
+    @gateway = gateway
+  end
+
+  def checkout(amount:, currency: 'USD')
+    @gateway.charge(amount, currency)
+  end
+end
+
+# usage
+service = PaymentService.new(StripeGateway.new)
+service.checkout(amount: 1000)
+
+service = PaymentService.new(PaypalGateway.new)
+service.checkout(amount: 1000)
+</code></pre>
+
+    <p>No inheritance or interface required — as long as the gateway responds to <code>charge</code>, it can be swapped in. This makes testing easy (use test doubles) and extensions straightforward.</p>
+
+    <h2>Advantages in Ruby</h2>
+    <ul>
+      <li>Low ceremony — fewer classes and no interfaces required.</li>
+      <li>Easy to mock/stub strategies in tests.</li>
+      <li>Supports runtime swapping of behavior (DI via constructor or setter).</li>
+    </ul>
+
+    <h2>Best practices</h2>
+    <ul>
+      <li>Document the expected methods for the strategy to avoid confusion.</li>
+      <li>Fail fast if methods are missing (<code>raise ArgumentError</code> during initialization) to make errors obvious.</li>
+      <li>Use small adapters if provider APIs differ significantly to normalize method names.</li>
+    </ul>
+
+    <h2>Interview tip</h2>
+    <p>Show the simple example, explain duck typing benefits, and note that you can still enforce contracts via tests or use lightweight RBS/type checking if desired.</p>
+  </div>
+</body>
+</html>

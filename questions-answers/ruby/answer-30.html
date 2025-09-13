@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"/><title>Answer 30</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6; color:#111 }
+pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto }
+code { font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace }
+h1,h2,h3 { color:#0b5394 }
+footer { color:#666; font-size:0.9em }
+</style></head><body>
+<h1>Question 30: Do you understand how Ruby creates threads internally? Are they fully concurrent?</h1>
+<h2>Concept</h2>
+<p>Internally, MRI threads map to native OS threads, but MRI enforces a Global VM Lock (GVL/GIL) which ensures only one thread runs Ruby bytecode at a time. Thus they're not fully concurrent for CPU-bound Ruby code. JRuby maps to JVM threads without a GVL.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>MRI threads are backed by OS threads but constrained by GVL for Ruby execution. IO-bound actions or native extensions that release the GVL can run in parallel. For real parallelism, use JRuby or processes.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>When do threads run in parallel?</strong> — When the VM releases the GVL (blocking IO, C extensions), or when using JRuby.</li>
+<li><strong>How to get full CPU usage?</strong> — Use multiple processes, JRuby, or spawn workers across cores.</li>
+</ul>
+
+<h2>Best practices / Pitfalls</h2>
+<ul>
+<li>Don't assume threads speed up CPU-bound tasks on MRI; benchmark and choose processes if needed.</li>
+</ul>
+
+<hr/>
+<footer>Generated HTML for question 30</footer>
+</body></html>

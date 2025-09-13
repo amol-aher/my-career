@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Optimizing ActiveRecord for Large Datasets</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Optimizing ActiveRecord Queries for Large Datasets</h1>
+  <p>Large datasets require careful query patterns to avoid memory blowups and long-running queries. Here are strategies and code examples.</p>
+
+  <h2>1. Use pagination and batching</h2>
+  <pre><code># ActiveRecord find_each batches by primary key (default batch_size 1000)
+User.find_each(batch_size: 1000) do |u|
+  process(u)
+end
+  </code></pre>
+
+  <h2>2. Select only required columns</h2>
+  <pre><code>Product.select(:id, :price).where(active: true).find_each do |p|
+  # only id and price loaded
+end
+  </code></pre>
+
+  <h2>3. Use pluck for scalar results</h2>
+  <pre><code>emails = User.where(active: true).pluck(:email)
+  </code></pre>
+
+  <h2>4. Indexes and EXPLAIN</h2>
+  <p>Always validate queries with <code>EXPLAIN</code> and add appropriate indexes (including covering indexes).</p>
+
+  <h2>5. Bulk operations</h2>
+  <pre><code># activerecord-import or insert_all for bulk upserts
+Model.insert_all(rows)
+  </code></pre>
+
+  <h2>6. Use database-side filtering & aggregation</h2>
+  <p>Shift aggregation to SQL where possible instead of loading rows into Ruby.</p>
+  <pre><code>counts = Order.group(:status).count
+  </code></pre>
+
+  <h2>7. When to use read replicas or OLAP stores</h2>
+  <p>Move analytical heavy queries to read replicas or warehouses to avoid impacting transactional DB.</p>
+</body>
+</html>

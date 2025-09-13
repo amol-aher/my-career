@@ -1,0 +1,69 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Optimizing a Slow-Running Pipeline</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:24px;color:#222;line-height:1.6}
+    h1{background:#ff6b6b;color:#fff;padding:12px;border-radius:8px}
+    h2{color:#ff6b6b;margin-top:18px}
+    pre{background:#fff6f6;padding:12px;border-radius:6px;overflow:auto}
+    ul{margin:8px 0 8px 20px}
+  </style>
+</head>
+<body>
+  <h1>How to Optimize a Slow-Running Pipeline</h1>
+
+  <h2>Diagnose before optimizing</h2>
+  <ol>
+    <li>Collect metrics: total pipeline time, per-step durations, queue times, resource utilization.</li>
+    <li>Identify hotspots: long test suites, dependency downloads, container image build time, or infra provisioning delays.</li>
+  </ol>
+
+  <h2>Common optimizations</h2>
+  <ul>
+    <li><strong>Cache dependencies:</strong> Use dependency caches between runs (npm, pip, bundler, gradle caches).</li>
+    <li><strong>Parallelize work:</strong> Split tests/builds into shards and run on multiple runners.</li>
+    <li><strong>Incremental builds:</strong> Only rebuild changed components (monorepo tooling like Bazel, Nx).</li>
+    <li><strong>Use prebuilt base images:</strong> Avoid installing OS packages every run — use pre-baked images with common dependencies.</li>
+    <li><strong>Optimize container layers:</strong> Order Dockerfile steps to maximize layer cache reuse.</li>
+    <li><strong>Reduce unnecessary steps:</strong> Skip slow steps on trivial changes (eg. docs-only PRs).</li>
+    <li><strong>Use self-hosted runners:</strong> For heavy workloads, self-hosted runners with more CPU/RAM can reduce runtime vs shared runner quotas.</li>
+    <li><strong>Run expensive suites off the PR path:</strong> Move long-running regression or performance tests to nightly or separate pipelines.</li>
+  </ul>
+
+  <h2>Practical examples</h2>
+  <h3>GitHub Actions cache example</h3>
+  <pre><code>- name: Cache Ruby gems
+  uses: actions/cache@v3
+  with:
+    path: vendor/bundle
+    key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+    restore-keys: |
+      ${{ runner.os }}-gems-</code></pre>
+
+  <h3>Parallel test sharding (conceptual)</h3>
+  <pre><code>1. Determine N shards based on historical test time.
+2. Assign tests to shards using a test-split tool.
+3. Run N parallel jobs and aggregate results.</code></pre>
+
+  <h2>Trade-offs</h2>
+  <ul>
+    <li>Caching adds complexity and can cause stale-state issues if not invalidated properly.</li>
+    <li>Parallelization increases resource cost.</li>
+    <li>Self-hosted runners require maintenance and security discipline.</li>
+  </ul>
+
+  <h2>Subquestions & quick answers</h2>
+  <h3>How do you measure success?</h3>
+  <p>A: Track mean pipeline time, 90th percentile, queue wait time, and developer feedback. Validate improvements via A/B (before vs after) and monitor cost impact.</p>
+
+  <h3>How to avoid flaky tests when sharding?</h3>
+  <p>A: Ensure deterministic tests, avoid shared state, and use parallel-safe test frameworks. Record failures by shard to triage problematic tests quickly.</p>
+
+  <h2>Conclusion</h2>
+  <p>Optimizing pipelines is a continuous exercise: measure, isolate, apply targeted optimizations (caching, parallelization, incremental builds), and validate outcomes while balancing cost and complexity.</p>
+</body>
+</html>

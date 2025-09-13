@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Enforcing immutability via metaprogramming</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:20px;color:#111}
+    h1{color:#1a56db} h2{color:#0b5a78}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <h1>Enforcing immutability via metaprogramming</h1>
+
+  <p>You can enforce immutability in Ruby using a combination of metaprogramming techniques: remove/override mutator methods, freeze objects, and validate attempted mutations. Below are safe approaches and examples.</p>
+
+  <h2>1. Shallow freeze on construction</h2>
+  <pre><code class="language-ruby">class FrozenStruct
+  def initialize(hash)
+    hash.each { |k,v| instance_variable_set("@\#{k}", v.freeze) }
+    freeze
+  end
+end</code></pre>
+  <p>This prevents replacing instance variables and freezes immediate values, but nested mutable objects might still be mutable unless frozen recursively.</p>
+
+  <h2>2. Deep freeze utility</h2>
+  <pre><code class="language-ruby">def deep_freeze(obj, seen = {})
+  return obj if seen[obj.object_id]
+  seen[obj.object_id] = true
+  if obj.respond_to?(:each_pair)
+    obj.each_pair { |k,v| deep_freeze(v, seen) }
+  elsif obj.respond_to?(:each)
+    obj.each { |v| deep_freeze(v, seen) }
+  end
+  obj.freeze
+end</code></pre>
+
+  <h2>3. Macro to remove mutators and define readers</h2>
+  <pre><code class="language-ruby">module Immutable
+  def immutable_attr(*names)
+    names.each do |n|
+      attr_reader n
+      remove_method "#{n}=" if method_defined?("#{n}=") rescue nil
+    end
+  end
+end
+
+class Person
+  extend Immutable
+  immutable_attr :name, :age
+
+  def initialize(name, age)
+    @name = name.freeze
+    @age = age
+    freeze
+  end
+end</code></pre>
+
+  <h2>4. Override mutating methods to raise</h2>
+  <pre><code class="language-ruby">module PreventMutations
+  def initialize(*); super; freeze end
+
+  def []=(k, v) raise TypeError, "frozen" end
+  def <<(v) raise TypeError, "frozen" end
+end
+
+class ImmutableArray &lt; Array
+  include PreventMutations
+end</code></pre>
+
+  <h2>5. Runtime enforcement via method hooks</h2>
+  <p>Intercept attempts to define writers on an immutable class and prevent them:</p>
+  <pre><code class="language-ruby">module ImmutableEnforcer
+  def method_added(name)
+    if name.to_s.end_with?('=') && @immutable
+      remove_method(name) # block the writer
+      raise "Cannot add mutator to immutable class"
+    end
+    super
+  end
+
+  def make_immutable!
+    @immutable = true
+    freeze
+  end
+end</code></pre>
+
+  <h2>Notes & trade-offs</h2>
+  <ul>
+    <li><strong>Shallow vs deep:</strong> Deep freezing may be expensive; decide based on your data shapes.</li>
+    <li><strong>Compatibility:</strong> Some libraries mutate objects; immutable objects may not work with them unless you adapt.</li>
+    <li><strong>Performance:</strong> Freezing is cheap; deep freeze and guards add cost.</li>
+  </ul>
+
+  <h2>Summary</h2>
+  <p>Combine frozen construction, removal/override of mutators, and defensive programming (raise on modifications) to enforce immutability. Provide clear API and tests so other team members understand the constraints.</p>
+</body>
+</html>

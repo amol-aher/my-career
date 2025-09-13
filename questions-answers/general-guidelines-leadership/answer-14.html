@@ -1,0 +1,43 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Disagreeing with a Technical Decision</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:24px;color:#111}h1{font-size:24px}h2{font-size:20px}pre{background:#f5f5f5;padding:12px;border-radius:6px;overflow:auto}ul{margin-left:18px}</style>
+</head>
+<body>
+  <h1>Disagreeing with a Technical Decision — Example & Approach</h1>
+
+  <section>
+    <h2>Situation</h2>
+    <p>On one project at Jombay, product wanted to adopt a third‑party search product quickly. The team favored a hosted solution to speed delivery. I was concerned about long‑term cost, vendor lock‑in, and limitations for custom ranking logic.</p>
+  </section>
+
+  <section>
+    <h2>Actions I took</h2>
+    <ol>
+      <li><strong>Gathered data:</strong> Estimated TCO for 3 years, performance expectations, and integration effort.</li>
+      <li><strong>Built a small spike:</strong> Created a quick prototype using an open-source search (Elasticsearch) to validate feasibility and integration complexity.</li>
+      <li><strong>Presented tradeoffs:</strong> Laid out TCO, operational overhead, and roadmap limitations for both hosted and self-managed approaches.</li>
+      <li><strong>Suggested compromise:</strong> Proceed with hosted search for initial MVP but design abstractions (adapter layer) so swapping later would be straightforward. Added monitoring and cost triggers to revisit the decision.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Outcome</h2>
+    <p>Team accepted the compromise. We shipped faster with the hosted option while keeping technical flexibility. Six months later, based on usage and cost, we re-evaluated and migrated core, high‑volume indexes to a managed cluster plus caching for hot queries.</p>
+  </section>
+
+  <section>
+    <h2>General approach to disagreements</h2>
+    <ul>
+      <li>Be data-driven: quantify performance, cost, and risk.</li>
+      <li>Prototype where useful to de-risk decisions.</li>
+      <li>Focus on options and tradeoffs, not personalities.</li>
+      <li>Find a compromise that keeps future options open (abstraction, feature flags, adapters).</li>
+    </ul>
+  </section>
+</body>
+</html>

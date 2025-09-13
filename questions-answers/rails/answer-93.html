@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Common Performance Bottlenecks in Ruby on Rails Applications</title><style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.6; padding:28px; color:#111; background:#fff; }
+    .container{max-width:980px;margin:0 auto;}
+    header{border-bottom:1px solid #e6e6e6;margin-bottom:18px;padding-bottom:8px;}
+    h1{font-size:26px;margin:0 0 6px 0;}
+    h2{font-size:18px;margin-top:18px;color:#0b69ff;}
+    h3{font-size:15px;margin-top:14px;color:#0b69ff;}
+    p{margin:8px 0;}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:4px;}
+    ul{margin:8px 0 8px 20px;}
+    table{border-collapse:collapse;width:100%;margin:8px 0;}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+    .muted{color:#666;font-size:13px;}
+    footer{border-top:1px solid #e6e6e6;margin-top:22px;padding-top:12px;color:#666;font-size:13px;}
+    .kbd{background:#f4f4f4;padding:2px 6px;border-radius:4px;font-family:monospace;}
+    </style></head>
+<body>
+<div class="container">
+<header>
+<h1>Common Performance Bottlenecks in Ruby on Rails Applications</h1>
+<p class="muted">Prepared by: Senior Software Engineer &amp; System Architect — Rails / AWS / SQL / Vue.js</p>
+<p class="muted">Date: 2025-09-10 (UTC)</p>
+</header>
+
+<p class="muted"><strong>Overview</strong></p>
+<p>Typical bottlenecks and how to detect and mitigate them: DB queries, N+1, missing indexes, GC, view rendering, external I/O, connection limits, memory bloat, and asset delivery.</p>
+
+<section><h2>Database-related bottlenecks</h2>
+<ul>
+<li>N+1 queries and inefficient joins.</li>
+<li>Missing or poorly designed indexes causing seq scans.</li>
+<li>Large unbounded queries and OFFSET-based pagination.</li>
+<li>Long-running transactions blocking other operations.</li>
+</ul>
+<p>Detection: EXPLAIN ANALYZE, slow query logs, APM traces.</p>
+</section>
+<section><h2>Application-level bottlenecks</h2>
+<ul>
+<li>Heavy CPU-bound work performed in-request rather than background jobs (image processing, PDF generation).</li>
+<li>Slow view rendering due to complex templates or un-cached fragments.</li>
+<li>Poorly optimized Ruby code and excessive object allocations leading to GC pressure.</li>
+<li>Thread/connection pool starvation (Puma threads > DB pool size).</li>
+</ul>
+</section>
+<section><h2>External I/O & network</h2>
+<ul>
+<li>Blocking external API calls without timeouts or retries.</li>
+<li>Large synchronous file uploads or downloads done in-request.</li>
+<li>CDN/misconfigured caching causing repeated full-origin loads.</li>
+</ul>
+</section>
+<section><h2>Infrastructure and configuration</h2>
+<ul>
+<li>Underprovisioned DB (insufficient IOPS, small instance types).</li>
+<li>Single Redis node causing latency for Sidekiq or cache ops.</li>
+<li>Improper autoscaling policies leading to slow scaling reactions.</li>
+</ul>
+</section>
+<section><h2>Runtime and GC issues</h2>
+<ul>
+<li>High object allocation rates causing frequent GC pauses. Tune Ruby GC (RUBY_GC_HEAP_*, GC.compact where available).</li>
+<li>Memory leaks in code or gems causing increased paging or OOM restarts.</li>
+</ul>
+</section>
+<section><h2>Mitigation checklist</h2>
+<ul>
+<li>Profile first (rack-mini-profiler, Skylight, NewRelic).</li>
+<li>Fix N+1s and add targeted indexes.</li>
+<li>Move heavy tasks to background workers and cache results.</li>
+<li>Tune Puma workers/threads and DB pool sizes.</li>
+<li>Use CDNs for static assets and cache API responses where safe.</li>
+</ul>
+</section>
+<section><h2>Subquestions you should expect</h2>
+<ol>
+<li><strong>How to prioritize optimizations?</strong><br/>Target the critical path for user-perceived latency and high-frequency requests first; focus on hot code paths identified by profiling.</li>
+<li><strong>How to measure improvement?</strong><br/>Use before/after metrics: p95 latency, DB query counts per request, CPU and memory usage, and error rates.</li>
+</ol>
+</section>
+
+
+<footer>I can run a profiling checklist or generate a sample plan to fix a set of slow endpoints if you provide logs or traces.</footer>
+</div>
+</body>
+</html>

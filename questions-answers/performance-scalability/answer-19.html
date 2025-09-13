@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Troubleshooting Performance Bottlenecks in Rails Apps</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:32px;line-height:1.6;}h1{color:#1f4e79;}pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}code{background:#eef;padding:2px 4px;border-radius:4px;}</style>
+</head>
+<body>
+  <h1>Troubleshooting Performance Bottlenecks in Rails Apps</h1>
+  <p>When a Rails app is slow, I follow a structured approach: measure, isolate, fix, and validate. Below are concrete steps and examples.</p>
+
+  <h2>1. Profiling & Observability</h2>
+  <ul>
+    <li>APM (NewRelic, Datadog) for traces and slow endpoints.</li>
+    <li>rack-mini-profiler and flamegraphs for local profiling.</li>
+    <li>Bullet gem to find N+1 queries.</li>
+  </ul>
+
+  <h2>2. Common fixes</h2>
+  <h3>N+1 query elimination</h3>
+  <pre><code># bad
+orders.each { |o| puts o.user.name }
+# good
+orders.includes(:user).each { |o| puts o.user.name }
+  </code></pre>
+
+  <h3>Caching</h3>
+  <p>Use fragment, action, and low-level caching for expensive renders and queries. Example:</p>
+  <pre><code>Rails.cache.fetch("product:#{id}:summary", expires_in: 5.minutes) do
+  Product.find(id).decorate.summary
+end
+  </code></pre>
+
+  <h3>Backgrounding heavy work</h3>
+  <p>Push heavy computations to Sidekiq with appropriate concurrency limits and batching.</p>
+
+  <h3>Database optimizations</h3>
+  <p>Add or tune indexes, use read replicas, and partition large tables.</p>
+
+  <h3>Optimize serialization</h3>
+  <p>Use fast JSON serializers (Oj, fast_jsonapi) and select only required fields.</p>
+
+  <h2>3. Web server and connection tuning</h2>
+  <p>Choose Puma with threads tuned to DB pool size; set keepalive and proxy buffering in Nginx. Use pgbouncer if DB connections are scarce.</p>
+
+  <h2>4. Load tests and validation</h2>
+  <p>Run k6 or JMeter scenarios that mimic production load and validate latency improvements before deploy.</p>
+
+  <h2>5. Example remediation workflow</h2>
+  <ol>
+    <li>Identify top offenders by p99 latency in APM.</li>
+    <li>Reproduce locally with sample data.</li>
+    <li>Apply fix (index change, eager loading, caching).</li>
+    <li>Load test and deploy with canary.</li>
+  </ol>
+</body>
+</html>

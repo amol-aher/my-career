@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Using the Proxy pattern in Rails</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Applying the Proxy pattern in a Rails application</h1>
+
+    <p><strong>Intent</strong>: provide a surrogate or placeholder for another object to control access, add lazy loading, caching, logging, or access control.</p>
+
+    <h2>Use cases in Rails</h2>
+    <ul>
+      <li>Lazy-loading heavy resources (e.g., large JSON from external APIs)</li>
+      <li>Caching proxy for expensive service calls</li>
+      <li>Access control layer that validates permissions before delegating</li>
+    </ul>
+
+    <h2>Simple caching proxy example</h2>
+    <pre><code>class ProductApiClient
+  def fetch(id)
+    # HTTP call to external API
+  end
+end
+
+class ProductApiProxy
+  def initialize(client = ProductApiClient.new)
+    @client = client
+  end
+
+  def fetch(id)
+    Rails.cache.fetch([:product_api, id], expires_in: 5.minutes) do
+      @client.fetch(id)
+    end
+  end
+end
+
+# usage
+proxy = ProductApiProxy.new
+product_data = proxy.fetch(123)
+</code></pre>
+
+    <h2>Lazy loading proxy with SimpleDelegator</h2>
+    <pre><code>require 'delegate'
+class LazyExternalResource &lt; SimpleDelegator
+  def initialize(id, client = ExternalClient.new)
+    @id = id
+    @client = client
+    super(nil)
+  end
+
+  def __getobj__
+    @real_obj ||= @client.fetch(@id)
+  end
+end
+</code></pre>
+
+    <h2>Considerations</h2>
+    <ul>
+      <li>Proxy adds a layer — keep it thin and predictable.</li>
+      <li>Ensure errors in underlying service bubble appropriately or are translated to domain errors.</li>
+      <li>Document that a proxy is used to avoid surprise behavior in tests.</li>
+    </ul>
+
+    <h2>Interview tip</h2>
+    <p>Give a concrete example where adding a caching proxy reduced latency and API costs, and explain how you measured the improvement.</p>
+  </div>
+</body>
+</html>

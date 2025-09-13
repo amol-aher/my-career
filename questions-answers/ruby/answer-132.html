@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 132</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 132: How can volatile or atomic semantics be achieved in Ruby? (e.g., atomics from stdlib/gem)</h1>
+<h2>Concept</h2>
+<p>Volatile/atomic semantics ensure reads/writes have memory ordering and atomicity properties. Ruby provides gems and stdlib utilities to achieve atomic operations.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Use Mutex for coarse-grained atomicity, or use gems like <code>concurrent-ruby</code> which provide AtomicFixnum, AtomicBoolean, and atomics that use native primitives for lock-free updates where supported.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>concurrent-ruby Atomics:</strong> <code>Concurrent::AtomicFixnum.new</code> supports atomic increments.</li>
+<li><strong>Volatile semantics:</strong> JVM provides <code>volatile</code> for visibility in JRuby; use Java interop for advanced needs.</li>
+</ul>
+
+<h2>Example</h2>
+<pre><code class="language-ruby">require 'concurrent-ruby'
+a = Concurrent::AtomicFixnum.new(0)
+threads = 10.times.map do
+  Thread.new { 1000.times { a.increment } }
+end
+threads.each(&:join)
+puts a.value # => 10000</code></pre>
+
+<h2>Best practices / Pitfalls</h2>
+<ul>
+<li>Use atomic types for counters and lightweight coordination; use Mutex for complex invariants.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 132</footer>
+</body></html>

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>REST API design — principles, patterns, and practical examples</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;line-height:1.6;color:#111;background:#f7f8fb;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:28px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px;margin-bottom:6px}
+    h2{font-size:18px;margin-top:18px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:monospace}
+    ul{margin-left:18px}
+    .bullet{margin-top:8px}
+    .callout{background:#eef8ff;border-left:4px solid #9fd3ff;padding:10px;border-radius:6px}
+    table{border-collapse:collapse;width:100%;margin-top:10px}
+    th,td{border:1px solid #eee;padding:8px;text-align:left}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>REST API design — principles, patterns and practical examples</h1>
+
+    <p><strong>Snapshot:</strong> Good REST API design blends clear resource modeling, consistent HTTP semantics, strong error handling, versioning, security, and operational concerns (pagination, caching, rate limiting). Below is a practical checklist, patterns, and interview-ready examples.</p>
+
+    <h2>Core design principles</h2>
+    <ul>
+      <li><strong>Model resources as nouns:</strong> Use URIs to represent resources: <code>/users</code>, <code>/orders</code>, <code>/reports/123</code>.</li>
+      <li><strong>Use HTTP verbs correctly:</strong> GET (read), POST (create), PUT/PATCH (replace/partial update), DELETE (remove). Prefer PATCH for partial updates.</li>
+      <li><strong>Statelessness:</strong> Each request contains the information needed (auth token, context). Externalize state if necessary (session store).</li>
+      <li><strong>Proper status codes:</strong> 200 OK, 201 Created, 204 No Content, 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 409 Conflict, 422 Unprocessable Entity, 429 Too Many Requests, 500 Internal Server Error.</li>
+      <li><strong>Consistent error format:</strong> Use RFC 7807 (Problem Details) or a company-standard error schema with code, message, details, and optionally a user-facing hint.</li>
+      <li><strong>Idempotency:</strong> Design endpoints so retries are safe (PUT/DELETE are idempotent; use Idempotency-Key for POSTs that must not duplicate).</li>
+      <li><strong>Pagination & filtering:</strong> Use cursor/keyset pagination for large sets; support flexible filtering and sorting through query parameters.</li>
+      <li><strong>Versioning:</strong> Expose API versions via the URL (<code>/v1/</code>) or via content negotiation; make breaking changes explicit and sparse.</li>
+    </ul>
+
+    <h2>Design patterns & concrete practices</h2>
+    <ul>
+      <li class="bullet"><strong>Resources & relationships:</strong> Represent relationships with sub-resources (<code>/users/{id}/posts</code>) or links in response body (HATEOAS) when helpful.</li>
+      <li class="bullet"><strong>Filtering & search:</strong> Provide expressive query parameters (e.g., <code>?status=active&created_after=...</code>). Use dedicated search endpoints when full-text search or complex filters required.</li>
+      <li class="bullet"><strong>Pagination:</strong> Prefer cursor-based pagination: return <code>next_cursor</code> and <code>prev_cursor</code>. Avoid offset-based pagination for large/volatile datasets.</li>
+      <li class="bullet"><strong>ETags & conditional GET:</strong> Implement <code>ETag</code> and <code>If-None-Match</code> to reduce bandwidth and support client-side caching.</li>
+      <li class="bullet"><strong>Rate limiting:</strong> Provide response headers (e.g., <code>X-RateLimit-Limit</code>, <code>X-RateLimit-Remaining</code>, <code>X-RateLimit-Reset</code>) and return 429 when exceeded.</li>
+      <li class="bullet"><strong>Pagination + caching:</strong> Cache frequent list endpoints and use short TTLs with cache revalidation for freshness.</li>
+      <li class="bullet"><strong>Batching & bulk operations:</strong> Provide bulk endpoints when it reduces chattiness (e.g., <code>POST /v1/jobs/batch</code>), but keep error semantics clear per item.</li>
+    </ul>
+
+    <h2>Example endpoints with semantics</h2>
+    <pre><code>POST /v1/reports                 # returns 202 Accepted + job id (async)
+GET  /v1/reports/{id}              # 200 with status & metadata
+GET  /v1/reports/{id}/download     # 200 + file stream or 302 to S3 signed url
+
+GET  /v1/users?cursor=abc&limit=25 # cursor pagination
+PATCH /v1/users/{id}               # partial update; idempotent semantics
+DELETE /v1/users/{id}              # 204 No Content on success
+</code></pre>
+
+    <h2>Error response example (Problem Details)</h2>
+    <pre><code>HTTP/1.1 422 Unprocessable Entity
+Content-Type: application/problem+json
+
+{
+  "type":"https://example.com/probs/invalid-params",
+  "title":"Invalid parameters",
+  "status":422,
+  "detail":"'start_date' must be earlier than 'end_date'",
+  "instance":"/v1/reports"
+}
+</code></pre>
+
+    <h2>Security & Authentication</h2>
+    <ul>
+      <li>Always enforce TLS and HSTS.</li>
+      <li>Use OAuth2 bearer tokens or mutual TLS for service-to-service auth. For internal microservices, mTLS and short-lived certificates are ideal.</li>
+      <li>Validate scopes/claims at the API gateway or service boundary; use least privilege for service accounts.</li>
+      <li>Sanitize and validate inputs; use whitelisting for sort/filter params.</li>
+    </ul>
+
+    <h2>Operational concerns</h2>
+    <ul>
+      <li>Expose health endpoints for orchestrators (<code>/healthz</code>, <code>/readyz</code>).</li>
+      <li>Support graceful shutdown and connection draining.</li>
+      <li>Instrument with structured logs, metrics, and distributed traces (OpenTelemetry).</li>
+      <li>Provide OpenAPI/Swagger specs and keep them in sync with code (contract-first or code-gen pipelines).</li>
+    </ul>
+
+    <h2>When to choose alternatives</h2>
+    <ul>
+      <li><strong>GraphQL:</strong> When clients need flexible queries and want to reduce over/under-fetching — but consider complexity in caching, rate-limiting and server-side performance controls.</li>
+      <li><strong>gRPC:</strong> For high-performance internal services that can accept binary protocols and require streaming; provide REST+JSON gateways for external clients.</li>
+    </ul>
+
+    <h2>Interview follow-ups & suggested answers</h2>
+    <ul>
+      <li><strong>Backward compatibility:</strong> Make additive changes, deprecate fields gently, run consumer contract tests, and provide migration guides. Use API versioning where needed.</li>
+      <li><strong>Idempotency for POST:</strong> Use <code>Idempotency-Key</code> header persisted for the operation's lifetime (common for payments/orders).</li>
+      <li><strong>Partial response / field masking:</strong> Support a <code>fields=</code> parameter when clients need small payloads (document and limit complexity).</li>
+      <li><strong>Caching strategy:</strong> Use cache-control, ETags, and CDNs for public endpoints; use Redis for server-side caches and be explicit about cache invalidation policies.</li>
+    </ul>
+
+    <div class="callout">
+      <strong>Interview tip:</strong> Give concrete examples from past systems (e.g., “I designed an orders API using cursor pagination and ETags, which reduced client traffic by 35%”) — numbers and trade-offs score well.
+    </div>
+
+    <p style="margin-top:14px;color:#666">This document is an interview-ready summary — expand with architecture diagrams, OpenAPI snippets, or product

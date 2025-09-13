@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rails Callbacks Explained</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px; }
+        .callback-type { background-color: #f0f8ff; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .example-code { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0; font-family: monospace; }
+        .warning { background-color: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 15px 0; }
+        .best-practices { background-color: #e8f5e9; padding: 15px; border-radius: 5px; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <h1>Rails Callbacks: Understanding and Usage</h1>
+
+    <div class="callback-type">
+        <h2>Callback Types by Execution Phase</h2>
+        <div class="example-code">
+            <pre>// Model lifecycle callbacks
+class User &lt; ApplicationRecord
+  before_validation :normalize_email
+  after_commit :send_welcome_email, on: :create
+  
+  private
+  
+  def normalize_email
+    self.email = email.downcase.strip
+  end
+  
+  def send_welcome_email
+    WelcomeMailer.deliver(self)
+  end
+end</pre>
+        </div>
+        
+        <h3>Before Actions</h3>
+        <ul>
+            <li><strong>before_validation:</strong> Modify attributes before validation runs</li>
+            <li><strong>before_save:</strong> Final chance to modify record before saving</li>
+            <li><strong>before_create:</strong> Only called when creating new records</li>
+            <li><strong>before_update:</strong> Only called when updating existing records</li>
+        </ul>
+        
+        <h3>After Actions</h3>
+        <ul>
+            <li><strong>after_validation:</strong> Run after validations pass</li>
+            <li><strong>after_save:</strong> Called after save/create/update</li>
+            <li><strong>after_create:</strong> Only after successful creation</li>
+            <li><strong>after_update:</strong> Only after successful update</li>
+            <li><strong>after_destroy:</strong> After record deletion</li>
+        </ul>
+    </div>
+
+    <div class="callback-type">
+        <h2>Common Callback Examples</h2>
+        
+        <h3>1. Data Normalization</h3>
+        <div class="example-code">
+            <pre>// Normalize phone numbers
+before_save :format_phone_number
+
+private
+
+def format_phone_number
+  self.phone = phone.gsub(/\D/, '') if phone.present?
+end</pre>
+        </div>
+        
+        <h3>2. Audit Logging</h3>
+        <div class="example-code">
+            <pre>// Log changes to audit trail
+after_save :log_changes
+
+private
+
+def log_changes
+  AuditLog.create!(
+    user_id: current_user.id,
+    action: "#{self.class.name} #{action_name}",
+    changes: previous_changes
+  )
+end</pre>
+        </div>
+        
+        <h3>3. File Attachment Cleanup</h3>
+        <div class="example-code">
+            <pre>// Remove old attachments
+before_destroy :remove_attachments
+
+private
+
+def remove_attachments
+  avatar.purge if avatar.attached?
+end</pre>
+        </div>
+    </div>
+
+    <div class="callback-type">
+        <h2>Callback Anti-Patterns</h2>
+        
+        <div class="warning">
+            <h3>1. Callback Chains Creating Dependencies</h3>
+            <p>Callbacks that trigger other callbacks can create circular dependencies:</p>
+            <div class="example-code">
+                <pre>// Problematic chain
+class Order &lt; ApplicationRecord
+  belongs_to :user
+  after_save :update_user_stats
+  after_save :send_invoice
+  
+  private
+  
+  def update_user_stats
+    user.update_last_purchase_date!
+  end
+  
+  def send_invoice
+    InvoiceMailer.deliver(self)
+  end
+end</pre>
+            </div>
+        </div>
+        
+        <div class="warning">
+            <h3>2. Side Effects in Callbacks</h3>
+            <p>Callbacks performing non-trivial work violate SRP:</p>
+            <div class="example-code">
+                <pre>// Bad practice
+before_save :process_payment
+
+private
+
+def process_payment
+  PaymentGateway.charge!(amount)
+  send_confirmation_email
+end</pre>
+            </div>
+        </div>
+        
+        <div class="warning">
+            <h3>3. Unpredictable Callback Ordering</h3>
+            <p>Order matters but isn't guaranteed:</p>
+            <div class="example-code">
+                <pre>// Risky ordering
+class Product &lt; ApplicationRecord
+  before_save :calculate_tax
+  before_save :apply_discount
+  
+  private
+  
+  def calculate_tax
+    # Tax calculation logic
+  end
+  
+  def apply_discount
+    # Discount application logic
+  end
+end</pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="best-practices">
+        <h2>Best Practices for Callback Usage</h2>
+        <ul>
+            <li><strong>Keep Them Simple:</strong> One responsibility per callback method</li>
+            <li><strong>Use Service Objects:</strong> Move complex logic out of models</li>
+            <li><strong>Explicit Ordering:</strong> Use `prepend` instead of relying on implicit order</li>
+            <li><strong>Conditional Execution:</strong> Check conditions before proceeding</li>
+            <li><strong>Test Thoroughly:</strong> Cover edge cases and callback interactions</li>
+        </ul>
+    </div>
+
+    <div class="solution">
+        <h2>Modern Alternatives</h2>
+        <ul>
+            <li><strong>Service Objects:</strong> Encapsulate business logic outside models</li>
+            <li><strong>ActiveSupport::Concern:</strong> Share callback patterns between models</li>
+            <li><strong>Custom Concerns:</strong> Reusable modules for common callbacks</li>
+            <li><strong>Form Objects:</strong> Handle complex form processing without callbacks</li>
+        </ul>
+    </div>
+</body>
+</html>

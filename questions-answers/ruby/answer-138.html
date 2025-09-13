@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Answer 138</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial; max-width:900px; margin:30px auto; padding:0 18px; line-height:1.6} pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto } code { font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace } h1,h2 { color:#0b5394 }</style></head><body>
+<h1>Question 138: Explain how method_missing, define_method, or dynamic code generation interact with thread safety.</h1>
+<h2>Concept</h2>
+<p>Dynamic method generation modifies class objects at runtime. In multithreaded environments, defining methods concurrently can create race conditions if multiple threads attempt to define the same method.</p>
+
+<h2>Optimal answer (concise)</h2>
+<p>Guard dynamic definitions with synchronization (Mutex) and prefer defining methods at boot time. If using method_missing for dynamic behavior, ensure respond_to_missing? and define_method caching are thread-safe.</p>
+
+<h2>Subquestions & answers</h2>
+<ul>
+<li><strong>Define-once pattern:</strong> check if method exists and synchronize defining it to avoid duplicate defs.</li>
+<li><strong>method_missing perf:</strong> method_missing is slower; consider defining concrete methods under lock after first hit.</li>
+</ul>
+
+<h2>Example</h2>
+<pre><code class="language-ruby">m = Mutex.new
+def dynamic_define(klass, name, &blk)
+  return if klass.method_defined?(name)
+  m.synchronize do
+    unless klass.method_defined?(name)
+      klass.define_method(name, &blk)
+    end
+  end
+end</code></pre>
+
+<h2>Best practices / Pitfalls</h2>
+<ul>
+<li>Avoid heavy dynamic generation at runtime in a multithreaded server; prefer AOT generation at startup.</li>
+</ul>
+
+<hr/><footer>Generated HTML for question 138</footer>
+</body></html>

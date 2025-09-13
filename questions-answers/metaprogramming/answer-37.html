@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Auto-logging method calls</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:20px;color:#111}
+    h1{color:#1a56db} h2{color:#0b5a78}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    code{font-family:monospace}
+  </style>
+</head>
+<body>
+  <h1>Automatically log method calls without modifying each method</h1>
+
+  <p>There are several approaches. The cleanest and least invasive is to use <code>Module#prepend</code> to add a wrapper module that instruments calls via <code>super</code>. Alternatives include <code>method_added</code> to wrap methods at definition time or TracePoint for global tracing.</p>
+
+  <h2>1. Instrument class methods using <code>prepend</code></h2>
+  <pre><code class="language-ruby">module MethodLogger
+  def self.prepended(base)
+    base.instance_methods(false).each do |m|
+      wrap_method(base, m)
+    end
+  end
+
+  def self.wrap_method(base, m)
+    base.class_eval do
+      original = instance_method(m)
+      define_method(m) do |*args, &blk|
+        logger = defined?(Rails) ? Rails.logger : STDOUT
+        logger.puts "CALL \#{self.class}##{m} args=\#{args.inspect}"
+        result = original.bind(self).call(*args, &blk)
+        logger.puts "RETURN \#{self.class}##{m} => \#{result.inspect}"
+        result
+      end
+    end
+  end
+end
+
+class Worker
+  prepend MethodLogger
+  def run(x); x * 2 end
+end
+
+# Usage
+Worker.new.run(3) # logs call and return</code></pre>
+
+  <h2>2. Wrap methods as they are defined (method_added)</h2>
+  <pre><code class="language-ruby">module AutoLog
+  def method_added(name)
+    return if @_logging || name.to_s.start_with?("_logged_")
+    @_logging = true
+    original = instance_method(name)
+    define_method(name) do |*a, &b|
+      puts "CALL #{name} \#{a.inspect}"
+      original.bind(self).call(*a, &b)
+    end
+    @_logging = false
+  end
+end
+
+class Foo
+  extend AutoLog
+  def bar(x); x+1 end
+end
+
+Foo.new.bar(2) # logs</code></pre>
+
+  <h2>3. Global tracing with TracePoint (non-invasive)</h2>
+  <pre><code class="language-ruby">TracePoint.trace(:call) do |tp|
+  puts "CALL #{tp.defined_class}##{tp.method_id}"
+end</code></pre>
+  <p>TracePoint is powerful but heavy; prefer for debugging or sampled tracing.</p>
+
+  <h2>Choosing an approach</h2>
+  <ul>
+    <li><strong>Prepend</strong> is clean and efficient for a known set of classes.</li>
+    <li><strong>method_added</strong> works when you control class definitions and want automatic wrapping at definition time.</li>
+    <li><strong>TracePoint</strong> is best for short-lived diagnostics or central APM collectors.</li>
+  </ul>
+
+  <h2>Production considerations</h2>
+  <ul>
+    <li>Make logging levels configurable and avoid verbose logging in hot paths.</li>
+    <li>Consider structured logging (JSON) for easier aggregation.</li>
+    <li>Monitor overhead — use sampling or async logging if necessary.</li>
+  </ul>
+
+  <h2>Summary</h2>
+  <p>Use <code>prepend</code> for predictable instrumentation, <code>method_added</code> for automatic wrapping, and TracePoint when you need broader tracing. Always profile and tune logging in production.</p>
+</body>
+</html>

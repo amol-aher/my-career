@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Multi-step form workflows in Rails</title>
+  <style>
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;background:#f7f8fb;color:#111;margin:0;padding:28px}
+    .container{max-width:980px;margin:0 auto;background:#fff;padding:28px;border-radius:10px;box-shadow:0 6px 30px rgba(15,23,42,0.06)}
+    h1{font-size:22px}
+    pre{background:#0b1220;color:#dfe8ff;padding:12px;border-radius:8px;overflow:auto}
+    ul{margin-left:18px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Handling multi-step form workflows in Rails</h1>
+
+    <p>Multi-step forms (wizards) require orchestration of state, validation and persistence. Options range from lightweight Form Objects + session storage to robust state-machine based flows with resumability.</p>
+
+    <h2>Approaches</h2>
+    <ol>
+      <li><strong>Form Object + Session</strong> — keep partial data in session until final submit; simple and fast for short-lived flows.</li>
+      <li><strong>Persisted Wizard (Form Object + DB)</strong> — persist progress to DB so users can resume later; use a <code>wizard_state</code> column.</li>
+      <li><strong>State machine + Step definitions</strong> — use AASM to represent steps and transitions, helpful when rules are complex.</li>
+      <li><strong>Use a gem (Wicked)</strong> — provides routing & step management; still preferable to keep validation/persistence in your form objects/services.</li>
+    </ol>
+
+    <h2>Example: FormObject-based wizard (persisted)</h2>
+    <pre><code>class SignupWizard
+  include ActiveModel::Model
+  attr_accessor :step, :email, :name, :address
+
+  def initialize(user:, params: {})
+    @user = user
+    super(params)
+  end
+
+  def save
+    case step
+    when 'personal'
+      validate_personal && persist_personal
+    when 'address'
+      validate_address && persist_address
+    end
+  end
+
+  def persist_personal
+    @user.update!(email: email, name: name)
+  end
+
+  def persist_address
+    @user.create_address!(address: address)
+  end
+end
+
+# controller
+def update
+  wizard = SignupWizard.new(user: current_user, params: wizard_params)
+  if wizard.save
+    redirect_to next_step
+  else
+    render :show
+  end
+end
+</code></pre>
+
+    <h2>Resumability and persistence</h2>
+    <ul>
+      <li>Persist intermediate state to a <code>wizard_sessions</code> table or store in Redis with TTL for resume capability.</li>
+      <li>Store only minimal necessary data and reference IDs to avoid serialization issues.</li>
+    </ul>
+
+    <h2>Validation strategy</h2>
+    <ul>
+      <li>Validate per-step attributes to show immediate feedback.</li>
+      <li>Run full validation before final commit if necessary.</li>
+    </ul>
+
+    <h2>When to use state machines</h2>
+    <p>When transitions have guards, side-effects, or complex branching (e.g., payment required only on certain conditions). Example: AASM for <code>wizard_state</code> column with states like <code>personal</code>, <code>address</code>, <code>confirm</code>.</p>
+
+    <h2>UX considerations</h2>
+    <ul>
+      <li>Provide previews of completed steps and allow backward navigation.</li>
+      <li>Show progress indicators and save checkpoints.</li>
+      <li>Protect endpoints and resume tokens from tampering (use signed IDs).</li>
+    </ul>
+
+    <h2>Interview tips</h2>
+    <p>Explain trade-offs: session storage is simpler but not resumable across devices; DB persistence is durable but requires migration strategies. Be ready to show code that migrates partial state to final models.</p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!doctype html><html><head><meta charset='utf-8'><title>Identifying early risk to timeline and actions to take</title>
+<style>
+body{font-family:Segoe UI,Arial,Helvetica,sans-serif;line-height:1.5;padding:24px;max-width:900px;margin:auto;color:#111}
+header{border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:18px}
+h1{font-size:20px;margin:0 0 6px 0}
+.role{color:#555;font-size:13px;margin-bottom:6px}
+pre{background:#f6f6f6;padding:12px;border-radius:6px;overflow:auto}
+code{font-family:monospace;font-size:13px}
+section{margin-bottom:18px}
+.sub{font-weight:600;margin-top:8px}
+ul{margin-left:18px}
+ol{margin-left:18px}
+</style></head><body><header><h1>Identifying early risk to timeline and actions to take</h1><div class='role'>System architect · Technical lead · Senior software engineer (Ruby on Rails, AWS, SQL, Vue.js)</div></header>
+<section>
+<p><strong>Summary:</strong> Early risk is identified via deviations in key metrics (velocity drop, increased blockers), failing critical path tasks, and feedback from the team. I combine automated detection with proactive communication and corrective actions like re-scoping and resource reallocation.</p>
+
+<div class='sub'>Early warning signs</div>
+<ul>
+<li>Missed daily progress on critical path stories.</li>
+<li>Velocity trending down across sprints.</li>
+<li>Rising count of blocked tickets or high review/PR time.</li>
+<li>High uncertainty stories without spikes completed.</li>
+</ul>
+
+<div class='sub'>Immediate actions</div>
+<ol>
+<li><strong>Assess impact:</strong> quantify how much of the timeline is at risk.</li>
+<li><strong>Mitigate:</strong> run spikes, pair senior engineers on blockers, or bring in temporary help.</li>
+<li><strong>Re-scope:</strong> cut non-essential scope to meet the committed date.</li>
+<li><strong>Increase transparency:</strong> issue a risk report with current status and proposed mitigations.</li>
+</ol>
+
+<div class='sub'>Communication template for early risk</div>
+<pre><code>Subject: Risk: Feature X delivery at risk (current sprint)
+
+Summary: 3 critical stories are blocked due to external API instability; estimated impact: 5 business days delay.
+
+Actions taken:
+- Started spike to mock API (owner: @alice)
+- Paired senior engineer to unblock story (owner: @bob)
+- Proposal: defer non-critical sub-feature (addresses) to next sprint
+
+Request: approval to re-scope or allocate additional resources.</code></pre>
+</section>
+</body></html>

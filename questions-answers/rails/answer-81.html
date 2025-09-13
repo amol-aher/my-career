@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Adding a New Feature to an Existing Rails App — End-to-end Approach</title>
+<style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.6; padding:28px; color:#111; background:#fff; }
+    .container{max-width:980px;margin:0 auto;}
+    header{border-bottom:1px solid #e6e6e6;margin-bottom:18px;padding-bottom:8px;}
+    h1{font-size:26px;margin:0 0 6px 0;}
+    h2{font-size:18px;margin-top:18px;color:#0b69ff;}
+    h3{font-size:15px;margin-top:14px;color:#0b69ff;}
+    p{margin:8px 0;}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:4px;}
+    ul{margin:8px 0 8px 20px;}
+    table{border-collapse:collapse;width:100%;margin:8px 0;}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+    .muted{color:#666;font-size:13px;}
+    footer{border-top:1px solid #e6e6e6;margin-top:22px;padding-top:12px;color:#666;font-size:13px;}
+    </style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>Adding a New Feature to an Existing Rails App — End-to-end Approach</h1>
+<p class="muted">Prepared by: Senior Software Engineer &amp; System Architect — Rails / AWS / SQL / Vue.js</p>
+<p class="muted">Date: 2025-09-10 (UTC)</p>
+</header>
+
+<p class="muted"><strong>Overview</strong></p>
+<p>Step-by-step approach from database changes to API and UI delivery, emphasizing safety, iteration, testing, and observability.</p>
+
+<section><h2>1) Discovery & Requirements</h2>
+<p>Understand the feature: functional requirements, non-functional requirements (performance, security), owners, SLA, and success metrics.</p>
+<ul>
+<li>Talk to product and stakeholders to capture acceptance criteria.</li>
+<li>Create example user journeys and API contracts (request/response examples).</li>
+<li>Identify data model changes and surface areas impacted (background jobs, caches, indexes).</li>
+</ul>
+</section>
+<section><h2>2) Design & API Contract</h2>
+<p>Design the database schema changes, API endpoints (REST or GraphQL), UI wireframes, and migration strategy. Prefer backward-compatible APIs when possible.</p>
+<ul>
+<li>Define request/response shapes and error codes.</li>
+<li>Define feature flags and rollout strategy.</li>
+<li>Design migrations as expand → backfill → switch → contract.</li>
+</ul>
+</section>
+<section><h2>3) Plan the work & break into small tasks</h2>
+<p>Split the work into small, testable PRs: schema changes, migrations, models, service objects, API endpoints, background jobs, UI. Each PR should be deployable independently if possible.</p>
+</section>
+<section><h2>4) Implement database changes safely</h2>
+<p>Follow expand-contract pattern:</p>
+<ol>
+<li>Add new nullable columns or new tables.</li>
+<li>Deploy code that writes to both old and new fields (dual-write) or publishes events for backfill.</li>
+<li>Backfill data using background jobs with throttling and monitoring.</li>
+<li>Switch reads to new columns once backfill is complete.</li>
+<li>Remove old columns after verification.</li>
+</ol>
+<pre><code># example migration
+class AddRatingToProducts < ActiveRecord::Migration[7.0]
+  def change
+    add_column :products, :rating, :decimal, precision: 3, scale: 2, default: nil
+    add_index :products, :rating
+  end
+end
+</code></pre>
+</section>
+<section><h2>5) Implement business logic & layering</h2>
+<p>Keep controllers thin — implement business logic in model methods, service objects, or domain classes. Add validations and use form objects for complex params.</p>
+<pre><code># example service
+class CreateProductReview
+  def initialize(user:, product:, params:)
+    @user = user
+    @product = product
+    @params = params
+  end
+
+  def call
+    Review.transaction do
+      review = Review.create!(user: @user, product: @product, **@params)
+      RecalculateProductRatingJob.perform_later(@product.id)
+      review
+    end
+  end
+end
+</code></pre>
+</section>
+<section><h2>6) API layer & authentication</h2>
+<p>Expose endpoints with clear versioning and authorization checks. Use serializers (fast_jsonapi / ActiveModelSerializers) for stable outputs and document via OpenAPI.</p>
+</section>
+<section><h2>7) UI implementation & progressive enhancement</h2>
+<p>Implement UI components (Vue.js) with feature flags, client-side validations, and progressive enhancement. Keep API responses minimal to avoid overfetching.</p>
+</section>
+<section><h2>8) Testing strategy</h2>
+<ul>
+<li>Unit tests for models and services.</li>
+<li>Request/integration tests for APIs (RSpec + request specs).</li>
+<li>System tests for UI flows (Capybara or Cypress).</li>
+<li>Contract tests if integrating with other services.</li>
+</ul>
+</section>
+<section><h2>9) Deploy, monitor & iterate</h2>
+<p>Deploy to staging, run smoke tests, monitor logs/metrics, and perform canary/gradual rollout behind feature flags. Observe SLOs and error budgets, then promote to production and monitor.</p>
+</section>
+<section><h2>Subquestions you should expect</h2>
+<ol>
+<li><strong>How do you perform rolling back?</strong><br/>Use immutable artifacts and deploy the previous image; ensure database migrations are backward compatible or have compensating migrations for rollback windows.</li>
+<li><strong>How to avoid long downtime for migrations?</strong><br/>Use online schema changes, avoid blocking statements, and perform backfills asynchronously.</li>
+<li><strong>How to keep API backwards compatible?</strong><br/>Add new optional fields, version endpoints, and deprecate old fields with clear timelines.</li>
+</ol>
+</section>
+
+
+<footer>
+I can create a PR checklist and CI job templates tailored to this feature if you'd like.
+</footer>
+</div>
+</body>
+</html>
